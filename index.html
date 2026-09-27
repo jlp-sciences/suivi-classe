@@ -845,6 +845,7 @@ function viewFiche() {
     <div class="ttl"><h1>${esc(s.first + ' ' + s.last)}</h1><div class="sub">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
     <span class="grow"></span>
     <div class="seg" role="group" aria-label="Période">${seg}</div>
+    <button class="btn" data-act="stu-edit" data-sid="${s.id}">Modifier</button>
     <button class="btn" data-act="export-stu">${ICON.down}Exporter</button>
   </header>
   <main class="main"><div class="fiche">
@@ -896,6 +897,7 @@ function setClasses() {
       <span class="nm">${esc(s.last.toUpperCase())} ${esc(s.first)}</span>
       <select data-chg="group" data-sid="${s.id}" aria-label="Demi-groupe de ${esc(s.first)}"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select>
       <span class="btn filebtn" style="min-height:40px">Photo<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de ${esc(s.first)}"></span>
+      <button class="btn" style="min-height:40px" data-act="stu-edit" data-sid="${s.id}">Modifier</button>
       <button class="btn ghost" style="min-height:40px" data-act="del-stu" data-sid="${s.id}">Retirer</button></li>`).join('');
   const imp = V.imp ? importPanel(c) : '';
   return `<div class="split"><div>${left}</div><div style="display:flex;flex-direction:column;gap:14px;min-width:0">
@@ -1879,6 +1881,32 @@ const ACT = {
     IMP.rows.forEach(r => DB.students.push({id: uid(), cid: V.cid, first: r.first, last: r.last, group: r.group}));
     const n = IMP.rows.length; save(); V.imp = false; IMP = null; render(); toast(plural(n, 'élève') + ' importé' + (n > 1 ? 's' : ''));
   },
+  'stu-edit': el => {
+    const s = stu(el.dataset.sid); if (!s) return;
+    const opts = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true})).map(c => `<option value="${c.id}" ${c.id === s.cid ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+    openModal(`<h2>Modifier l'élève</h2>
+      <div class="row" style="gap:14px;align-items:center"><span class="avatar">${photoHTML(s)}</span>
+        <span class="btn filebtn">${PHOTOS[s.id] ? 'Changer la photo' : 'Ajouter une photo'}<input type="file" accept="image/*" data-chg="photo-edit" data-sid="${s.id}" aria-label="Photo"></span>
+        ${PHOTOS[s.id] ? `<button class="btn ghost" data-act="stu-photo-del" data-sid="${s.id}">Retirer la photo</button>` : ''}</div>
+      <div class="form-grid">
+        <label class="f" for="se-first">Prénom<input type="text" id="se-first" value="${esc(s.first)}"></label>
+        <label class="f" for="se-last">Nom<input type="text" id="se-last" value="${esc(s.last)}"></label>
+        <label class="f" for="se-group">Demi-groupe<select id="se-group"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select></label>
+        <label class="f" for="se-cid">Classe<select id="se-cid">${opts}</select></label>
+      </div>
+      <p class="err" id="se-err" hidden></p>
+      <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn ink" data-act="stu-save" data-sid="${s.id}">Enregistrer</button></div>`);
+  },
+  'stu-save': el => {
+    const s = stu(el.dataset.sid); if (!s) return;
+    const first = titleCase($('#se-first').value.trim()), last = titleCase($('#se-last').value.trim());
+    if (!first || !last) { const e = $('#se-err'); e.textContent = 'Le prénom et le nom sont obligatoires.'; e.hidden = false; return; }
+    const cid = $('#se-cid').value;
+    s.first = first; s.last = last; s.group = $('#se-group').value;
+    if (cid && cid !== s.cid) { s.cid = cid; DB.obs.forEach(o => { if (o.sid === s.id) o.cid = cid; }); }
+    save(); closeModal(); render(); toast('Élève modifié');
+  },
+  'stu-photo-del': el => { const id = el.dataset.sid; delete PHOTOS[id]; if (STORAGE_OK) Store.delPhoto(id); save(); closeModal(); render(); toast('Photo retirée'); },
   'del-stu': el => {
     const s = stu(el.dataset.sid);
     openModal(`<h2>Retirer ${esc(s.first + ' ' + s.last)} ?</h2><p>Sa photo et ses observations seront supprimées.</p><div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn danger" data-act="del-stu-go" data-sid="${s.id}">Retirer</button></div>`);
@@ -2004,7 +2032,7 @@ const ACT = {
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
 /* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
-const UNDO_MSG = {'p-save': 'Observation enregistrée', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+const UNDO_MSG = {'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
   'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'sep-del': 'Paire retirée'};
@@ -2017,6 +2045,7 @@ Object.keys(UNDO_MSG).forEach(name => {
   };
 });
 const CHG = {
+  'photo-edit': async el => { const f = el.files[0]; if (!f) return; const ok = await setPhoto(el.dataset.sid, f); closeModal(); render(); toast(ok ? 'Photo enregistrée' : "Cette image n'a pas pu être lue."); },
   photo: async el => { const f = el.files[0]; if (!f) return; const ok = await setPhoto(el.dataset.sid, f); render(); toast(ok ? 'Photo enregistrée' : "Cette image n'a pas pu être lue."); },
   'bulk-photos': async el => {
     const files = [...el.files]; const list = studentsOf(el.dataset.cid); let ok = 0; const miss = [];

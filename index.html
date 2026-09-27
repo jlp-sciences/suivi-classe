@@ -1,0 +1,1226 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Suivi de classe</title>
+<meta name="theme-color" content="#1E6B5C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+:root{
+  --bg:#F3F1EC; --surface:#FFFFFF; --surface-2:#ECEAE5; --ink:#1B1E23; --ink-2:#3F444C; --muted:#5B6068;
+  --line:#DDD9D1; --line-2:#C9C5BC;
+  --pos:#1E6B5C; --pos-ink:#154C41; --pos-soft:#E3F0EC; --pos-line:#B9D8CF; --on-pos:#FFFFFF;
+  --neg:#9A3F1B; --neg-ink:#7A3115; --neg-soft:#F7E7DF; --neg-line:#E6C3B3; --on-neg:#FFFFFF;
+  --ph:#DAD5CB; --ph-ink:#6E675C; --scrim:rgba(27,30,35,.45); --shadow:0 12px 32px rgba(0,0,0,.18);
+  --warn-soft:#FBF1D9; --warn-ink:#6B4A0B; --warn-line:#E9D39C;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#15171A; --surface:#1E2125; --surface-2:#2A2E33; --ink:#EDEBE6; --ink-2:#CFCCC5; --muted:#A3A7AD;
+    --line:#33373D; --line-2:#454A51;
+    --pos:#5FB7A2; --pos-ink:#9ED8C8; --pos-soft:#1C332D; --pos-line:#2E5249; --on-pos:#0E1A17;
+    --neg:#E08A63; --neg-ink:#F2B399; --neg-soft:#3A2419; --neg-line:#5A3525; --on-neg:#1E0F08;
+    --ph:#2E3237; --ph-ink:#8E939A; --scrim:rgba(0,0,0,.6); --shadow:0 12px 32px rgba(0,0,0,.5);
+    --warn-soft:#3A3018; --warn-ink:#F0D597; --warn-line:#5E4E24;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#15171A; --surface:#1E2125; --surface-2:#2A2E33; --ink:#EDEBE6; --ink-2:#CFCCC5; --muted:#A3A7AD;
+  --line:#33373D; --line-2:#454A51;
+  --pos:#5FB7A2; --pos-ink:#9ED8C8; --pos-soft:#1C332D; --pos-line:#2E5249; --on-pos:#0E1A17;
+  --neg:#E08A63; --neg-ink:#F2B399; --neg-soft:#3A2419; --neg-line:#5A3525; --on-neg:#1E0F08;
+  --ph:#2E3237; --ph-ink:#8E939A; --scrim:rgba(0,0,0,.6); --shadow:0 12px 32px rgba(0,0,0,.5);
+  --warn-soft:#3A3018; --warn-ink:#F0D597; --warn-line:#5E4E24;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--pos);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+h1,h2,h3{margin:0;text-wrap:balance}
+.app{height:100%;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar .grow{flex:1 1 auto}
+.ttl{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ttl h1{font-family:var(--serif);font-size:26px;font-weight:600;line-height:1.15}
+.ttl .sub{font-size:14px;color:var(--muted)}
+.bar,.tabs,.foot{flex:none}
+.main{flex:1 1 auto;min-height:0;overflow:auto;padding:20px 24px 24px}
+.btn{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:15px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.btn:hover{border-color:var(--line-2)}
+.btn.primary{background:var(--pos);border-color:var(--pos);color:var(--on-pos);font-weight:600}
+.btn.ink{background:var(--ink);border-color:var(--ink);color:var(--surface);font-weight:600}
+.btn.danger{background:var(--neg);border-color:var(--neg);color:var(--on-neg);font-weight:600}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn svg{width:18px;height:18px;flex:none}
+.icon-btn{width:44px;height:44px;padding:0}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:7px;font-size:13px;font-weight:600;white-space:nowrap}
+.chip.pos{background:var(--pos-soft);color:var(--pos-ink)}
+.chip.neg{background:var(--neg-soft);color:var(--neg-ink)}
+.chip.neu,.chip.abs{background:var(--surface-2);color:var(--ink-2)}
+.chip.dark{background:var(--ink);color:var(--surface)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.lbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-radius:12px;background:var(--warn-soft);color:var(--warn-ink);border:1px solid var(--warn-line);margin-bottom:14px}
+.banner p{margin:0;flex:1 1 260px}
+.wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+
+/* Aujourd'hui */
+.slots{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.slot{width:100%;display:flex;align-items:center;gap:20px;padding:16px 22px;border-radius:14px;background:var(--surface);border:1px solid var(--line);text-align:left}
+.slot.now{border:2px solid var(--pos);box-shadow:0 4px 16px rgba(30,107,92,.14)}
+.slot .time{width:124px;flex:none;font-weight:600;font-variant-numeric:tabular-nums}
+.slot .mid{flex:1 1 auto;display:flex;flex-direction:column;gap:3px;min-width:0}
+.slot .cls{font-family:var(--serif);font-size:22px;font-weight:600}
+.slot.now .cls{font-size:25px}
+.slot .open{min-height:44px;padding:0 20px;border-radius:10px;background:var(--pos);color:var(--on-pos);font-weight:600;display:inline-flex;align-items:center}
+.status{padding:4px 11px;border-radius:8px;font-size:13px;font-weight:600;background:var(--surface-2);color:var(--ink-2)}
+.status.now{background:var(--pos-soft);color:var(--pos-ink)}
+.empty{text-align:center;padding:48px 16px;display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--muted)}
+.empty p{margin:0}
+.welcome h2{font-family:var(--serif);font-size:24px;margin-bottom:8px}
+.welcome ol{margin:0 0 16px;padding-left:20px;color:var(--ink-2)}
+
+/* Grille */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;align-content:start}
+.tiles.compact{grid-template-columns:repeat(auto-fill,minmax(116px,1fr));gap:10px}
+.tile{padding:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;text-align:left;display:flex;flex-direction:column;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;transition:transform .08s}
+.tile:active{transform:scale(.97)}
+.tile .ph{position:relative;aspect-ratio:5/4;background:var(--ph);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.tiles.compact .tile .ph{aspect-ratio:3/2}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.ini{font-family:var(--serif);font-size:30px;font-weight:600;color:var(--ph-ink)}
+.tiles.compact .ini{font-size:24px}
+.tile .nm{padding:7px 9px 0;font-size:14px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .nm span{font-weight:400;color:var(--muted)}
+.tile .cnt{display:flex;gap:4px;padding:5px 9px 9px;min-height:31px}
+.tile.is-absent{opacity:.5}
+.tag-abs{position:absolute;top:6px;left:6px}
+.foot{display:flex;gap:18px;flex-wrap:wrap;padding:10px 24px;font-size:14px;color:var(--muted);border-top:1px solid var(--line);background:var(--surface)}
+.foot .grow{flex:1}
+
+/* Panneau */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:20}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(580px,100%);background:var(--surface);z-index:21;display:flex;flex-direction:column;box-shadow:var(--shadow);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet .scroll{flex:1 1 auto;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:16px}
+.sheet .hd{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.avatar{width:72px;height:72px;border-radius:12px;background:var(--ph);overflow:hidden;display:flex;align-items:center;justify-content:center;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.sheet h2{font-family:var(--serif);font-size:23px;font-weight:600}
+.cats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.cats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cat{min-height:46px;padding:4px 8px;border-radius:10px;font-size:15px;font-weight:500;line-height:1.15}
+.cat.pos{border:1px solid var(--pos-line);background:var(--pos-soft);color:var(--pos-ink)}
+.cat.neg{border:1px solid var(--neg-line);background:var(--neg-soft);color:var(--neg-ink)}
+.cat.pos[aria-pressed="true"]{background:var(--pos);border-color:var(--pos);color:var(--on-pos);font-weight:600;box-shadow:inset 0 0 0 2px var(--pos-ink)}
+.cat.neg[aria-pressed="true"]{background:var(--neg);border-color:var(--neg);color:var(--on-neg);font-weight:600;box-shadow:inset 0 0 0 2px var(--neg-ink)}
+.sec-t{font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.sec-t.pos{color:var(--pos)} .sec-t.neg{color:var(--neg)}
+textarea,input[type=text],input[type=date],input[type=time],select{width:100%;min-height:44px;padding:9px 12px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink)}
+textarea{resize:vertical;min-height:80px}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500;color:var(--ink-2)}
+.err{margin:0;color:var(--neg);font-size:14px;font-weight:500}
+.sheet .ft{display:flex;gap:10px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--line)}
+.done{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.done .chip button{border:none;background:transparent;padding:0 0 0 4px;min-width:24px;min-height:24px;color:inherit;font-size:15px;line-height:1}
+
+/* Modal */
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 32px));max-height:calc(100% - 48px);overflow:auto;background:var(--surface);border-radius:16px;z-index:31;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.modal h2{font-family:var(--serif);font-size:22px}
+.modal p{margin:0}
+.modal .ft{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.scrim.m{z-index:30}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.pick button[aria-pressed="true"],.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink);font-weight:600}
+.seg{display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:var(--surface-2);flex-wrap:wrap}
+.seg button{min-height:40px;padding:0 14px;border-radius:9px;border:1px solid transparent;background:transparent;color:var(--ink-2);font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);border-color:var(--line)}
+
+/* Toast */
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;display:flex;gap:12px;align-items:center;padding:10px 12px 10px 18px;border-radius:12px;background:var(--ink);color:var(--surface);font-size:15px;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+#toast button{min-height:40px;border:none;border-radius:8px;padding:0 12px;background:transparent;color:var(--surface);font-weight:700;text-decoration:underline}
+
+/* Fiche */
+.fiche{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:820px){.fiche{grid-template-columns:1fr}}
+.bigph{aspect-ratio:1/1;border-radius:14px;background:var(--ph);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.bigph img{width:100%;height:100%;object-fit:cover}
+.bigph .ini{font-size:72px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{padding:12px 14px;border-radius:12px;display:flex;flex-direction:column;gap:2px;border:1px solid var(--line)}
+.stat b{font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.stat.pos{background:var(--pos-soft);border-color:transparent;color:var(--pos-ink)}
+.stat.neg{background:var(--neg-soft);border-color:transparent;color:var(--neg-ink)}
+.stat span{font-size:14px}
+.bars{display:flex;flex-direction:column;gap:9px}
+.barrow{display:grid;grid-template-columns:150px minmax(0,1fr) 28px;align-items:center;gap:10px;font-size:14px}
+.barrow .tr{height:12px;border-radius:6px;background:var(--surface-2);overflow:hidden}
+.barrow .fl{height:100%;border-radius:6px}
+.fl.pos{background:var(--pos)} .fl.neg{background:var(--neg)}
+.barrow b{font-variant-numeric:tabular-nums;text-align:right}
+.log{list-style:none;margin:0;padding:0}
+.log li{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.log .d{width:88px;flex:none;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.log .n{flex:1 1 200px;font-size:14px;color:var(--ink-2)}
+.log .x{min-height:36px;padding:0 10px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:13px}
+.log .x.confirm{border-color:var(--neg);color:var(--neg);font-weight:600}
+
+/* Trombinoscope */
+.tr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.tr-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.tr-card.is-skip{opacity:.5}
+.tr-ph{aspect-ratio:1/1;background:var(--ph)}
+.tr-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.tr-body{padding:10px;display:flex;flex-direction:column;gap:8px}
+.tr-raw{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr-names{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tr-body .seg button{min-height:36px;padding:0 12px}
+/* Réglages */
+.tabs{display:flex;gap:4px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{min-height:48px;padding:0 16px;border:none;border-bottom:3px solid transparent;background:transparent;color:var(--muted);font-weight:500;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.split{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+.clist{display:flex;flex-direction:column;gap:6px}
+.clist button{justify-content:space-between}
+.clist button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.stable{list-style:none;margin:0;padding:0}
+.stable li{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.thumb{width:44px;height:44px;border-radius:8px;background:var(--ph);overflow:hidden;display:flex;align-items:center;justify-content:center;flex:none;font-family:var(--serif);font-weight:600;color:var(--ph-ink)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.stable .nm{flex:1 1 160px;font-weight:500}
+.stable select{width:auto;min-width:90px}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-items:end}
+.day{margin-top:14px}
+.day h3{font-size:15px;margin-bottom:4px}
+table.prev{border-collapse:collapse;width:100%;font-size:14px}
+table.prev td,table.prev th{padding:6px 8px;border-top:1px solid var(--line);text-align:left}
+.overflow{overflow-x:auto}
+.danger-zone{border-color:var(--neg-line)}
+.check{display:flex;align-items:center;gap:10px;min-height:44px}
+.check input{width:22px;height:22px}
+@media (max-width:600px){.bar{padding:10px 16px}.main{padding:16px}.slot{flex-wrap:wrap;gap:10px}.slot .time{width:auto}.foot{padding:10px 16px}.tabs{padding:0 8px}}
+</style>
+</head>
+<body>
+
+
+<div class="app" id="app"></div>
+<div id="layer"></div>
+<div id="modal"></div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+'use strict';
+/* ---------- utilitaires ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const pad = n => String(n).padStart(2, '0');
+const dstr = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const parseD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const todayStr = () => dstr(new Date());
+const addDays = (s, n) => { const d = parseD(s); d.setDate(d.getDate() + n); return dstr(d); };
+const isoWeek = s => { const d = parseD(s); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return Math.ceil(((t - y0) / 864e5 + 1) / 7); };
+const weekType = s => ((isoWeek(s) % 2 === 0) === DB.settings.evenIsA) ? 'A' : 'B';
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const fmtLong = s => cap(parseD(s).toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'}));
+const fmtShort = s => parseD(s).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+const fmtT = t => { const [h, m] = t.split(':'); return (+h) + ' h ' + m; };
+const tMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
+const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const IS_DEMO = /claude/.test(location.hostname);
+
+const ICON = {
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',
+  next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.5-9.97A6 6 0 0 1 18 7a4.5 4.5 0 0 1-.5 9H16"/><path d="M12 12v9"/><path d="M9 15l3-3 3 3"/></svg>'
+};
+
+/* ---------- catégories ---------- */
+const CATS = [
+  ['participe','Participe','pos'],['moteur','Moteur','pos'],['actif','Actif','pos'],['question','Bonne question','pos'],
+  ['aide','Aide un camarade','pos'],['soigne','Travail soigné','pos'],['progres','Progrès / effort','pos'],
+  ['materiel','Oubli de matériel','neg'],['devoir','Devoir non fait','neg'],['bavarde','Bavarde','neg'],['samuse',"S'amuse",'neg'],
+  ['passif','Passif','neg'],['retard','Retard','neg'],['securite','Sécurité TP','neg'],['comportement','Comportement','neg'],
+  ['ras','RAS','neu'],['absent','Absent','abs']
+].map(([k, l, t]) => ({k, l, t}));
+const CAT = Object.fromEntries(CATS.map(c => [c.k, c]));
+const catChip = k => { const c = CAT[k]; if (!c) return ''; const sign = c.t === 'pos' ? '+ ' : c.t === 'neg' ? '− ' : ''; return `<span class="chip ${c.t}">${sign}${esc(c.l)}</span>`; };
+
+/* ---------- données ---------- */
+function defaultSettings() {
+  return {
+    evenIsA: true, lastBackup: null,
+    periods: {
+      semestre: [{n:'Semestre 1', s:'2026-09-01', e:'2027-01-08'}, {n:'Semestre 2', s:'2027-01-09', e:'2027-06-19'}],
+      trimestre: [{n:'Trimestre 1', s:'2026-09-01', e:'2026-11-27'}, {n:'Trimestre 2', s:'2026-11-28', e:'2027-03-05'}, {n:'Trimestre 3', s:'2027-03-06', e:'2027-06-19'}]
+    }
+  };
+}
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], settings: defaultSettings()});
+let DB = freshDB();
+let PHOTOS = {};
+let STORAGE_OK = false;
+
+function migrate(core) {
+  const d = Object.assign(freshDB(), core || {});
+  d.settings = Object.assign(defaultSettings(), d.settings || {});
+  ['classes','students','slots','obs'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
+  return d;
+}
+
+const Store = {
+  db: null,
+  async open() {
+    if (!('indexedDB' in window)) return false;
+    try {
+      this.db = await new Promise((res, rej) => {
+        const r = indexedDB.open('suivi-classe', 1);
+        r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains('kv')) d.createObjectStore('kv'); if (!d.objectStoreNames.contains('photos')) d.createObjectStore('photos'); };
+        r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); r.onblocked = () => rej(new Error('blocked'));
+      });
+      return true;
+    } catch (e) { this.db = null; return false; }
+  },
+  run(name, mode, fn) {
+    return new Promise((res, rej) => {
+      if (!this.db) return res(null);
+      try { const tx = this.db.transaction(name, mode); const out = fn(tx.objectStore(name)); tx.oncomplete = () => res(out && out.result); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); }
+      catch (e) { rej(e); }
+    });
+  },
+  async load() {
+    const core = await this.run('kv', 'readonly', s => s.get('db'));
+    const photos = {};
+    if (this.db) await new Promise((res, rej) => {
+      const tx = this.db.transaction('photos', 'readonly'); const rq = tx.objectStore('photos').openCursor();
+      rq.onsuccess = () => { const c = rq.result; if (c) { photos[c.key] = c.value; c.continue(); } };
+      tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+    });
+    return {core, photos};
+  },
+  saveCore() { return this.run('kv', 'readwrite', s => s.put(JSON.parse(JSON.stringify(DB)), 'db')); },
+  putPhoto(id, url) { return this.run('photos', 'readwrite', s => s.put(url, id)); },
+  delPhoto(id) { return this.run('photos', 'readwrite', s => s.delete(id)); },
+  async replaceAll() {
+    if (!this.db) return;
+    await this.run('photos', 'readwrite', s => s.clear());
+    await new Promise((res, rej) => { const tx = this.db.transaction('photos', 'readwrite'); const st = tx.objectStore('photos'); Object.entries(PHOTOS).forEach(([k, v]) => st.put(v, k)); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    await this.saveCore();
+  }
+};
+function save() { if (!STORAGE_OK) return; Store.saveCore().catch(() => toast("Enregistrement impossible sur cet appareil. Faites une sauvegarde dès que possible.")); }
+
+const cls = id => DB.classes.find(c => c.id === id);
+const stu = id => DB.students.find(s => s.id === id);
+const byName = (a, b) => (a.last + ' ' + a.first).localeCompare(b.last + ' ' + b.first, 'fr');
+const studentsOf = (cid, group = 'all') => DB.students.filter(s => s.cid === cid && (group === 'all' || s.group === group)).sort(byName);
+const hasGroups = cid => DB.students.some(s => s.cid === cid && (s.group === 'G1' || s.group === 'G2'));
+const groupLabel = g => g === 'all' ? 'Classe entière' : 'Demi-groupe ' + g;
+const initials = s => ((s.first || '')[0] || '') + ((s.last || '')[0] || '');
+const photoHTML = s => PHOTOS[s.id] ? `<img src="${PHOTOS[s.id]}" alt="" draggable="false">` : `<span class="ini">${esc(initials(s))}</span>`;
+
+function slotsOn(date) {
+  const wd = parseD(date).getDay(), wt = weekType(date);
+  return DB.slots.filter(s => s.day === wd && (s.week === 'all' || s.week === wt) && cls(s.cid)).sort((a, b) => a.start.localeCompare(b.start));
+}
+const sesFromSlot = (date, s) => ({key: date + '|' + s.id, date, cid: s.cid, group: s.group, label: fmtT(s.start) + ' – ' + fmtT(s.end)});
+const sesOther = (date, cid, group) => ({key: date + '|x|' + cid + '|' + group, date, cid, group, label: 'Hors emploi du temps'});
+function sesSummary(key) {
+  const m = {};
+  DB.obs.forEach(o => { if (o.ses !== key) return; const r = m[o.sid] || (m[o.sid] = {pos:0, neg:0, ras:false, abs:false}); const t = CAT[o.cat]?.t; if (t === 'pos') r.pos++; else if (t === 'neg') r.neg++; else if (o.cat === 'ras') r.ras = true; else if (o.cat === 'absent') r.abs = true; });
+  return m;
+}
+function periodsFor(c) {
+  const list = (DB.settings.periods[c?.pt] || DB.settings.periods.semestre).slice();
+  if (list.length) list.push({n:'Année', s:list[0].s, e:list[list.length - 1].e});
+  return list;
+}
+function currentPeriodIndex(list) { const t = todayStr(); const i = list.findIndex((p, j) => j < list.length - 1 && t >= p.s && t <= p.e); return i >= 0 ? i : list.length - 1; }
+
+/* ---------- navigation ---------- */
+let V = {name:'today', date: todayStr()};
+let STACK = [];
+function go(v) { STACK.push(V); V = v; closeLayer(); render(); $('.main')?.scrollTo(0, 0); }
+function back() { V = STACK.pop() || {name:'today', date: todayStr()}; closeLayer(); render(); }
+
+function render() {
+  const app = $('#app');
+  if (V.name === 'today') app.innerHTML = viewToday();
+  else if (V.name === 'grid') app.innerHTML = viewGrid();
+  else if (V.name === 'fiche') app.innerHTML = viewFiche();
+  else if (V.name === 'settings') app.innerHTML = viewSettings();
+  else if (V.name === 'trombi') app.innerHTML = viewTrombi();
+}
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg, action) {
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(msg)}</span>` + (action ? `<button type="button" id="toast-act">${esc(action.label)}</button>` : '');
+  t.hidden = false;
+  if (action) $('#toast-act').onclick = () => { action.fn(); t.hidden = true; };
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, action ? 7000 : 3500);
+}
+
+/* ---------- bannières ---------- */
+function backupDue() {
+  if (!DB.classes.length) return null;
+  const lb = DB.settings.lastBackup, t = todayStr();
+  if (!lb) return DB.obs.length ? 'never' : null;
+  if ((parseD(t) - parseD(lb)) / 864e5 >= 7) return 'week';
+  const sl = slotsOn(t);
+  if (sl.length && lb !== t && nowMin() >= tMin(sl[sl.length - 1].end) && DB.obs.some(o => o.date === t)) return 'day';
+  return null;
+}
+function banners() {
+  let h = '';
+  if (IS_DEMO) h += `<div class="banner"><p><strong>Version d'essai.</strong> Les élèves sont fictifs. N'y saisissez pas vos vraies classes : utilisez la version installée sur la tablette.</p></div>`;
+  if (!STORAGE_OK && !IS_DEMO) h += `<div class="banner"><p>Ce navigateur ne permet pas d'enregistrer les données : elles seront perdues à la fermeture.</p></div>`;
+  const due = backupDue();
+  if (due && !IS_DEMO) {
+    const msg = due === 'day' ? 'Les cours du jour sont terminés : pensez à sauvegarder.' : due === 'week' ? "Aucune sauvegarde depuis plus d'une semaine." : "Aucune sauvegarde n'a encore été faite.";
+    h += `<div class="banner"><p>${msg}</p><button class="btn ink" data-act="backup">${ICON.save}Sauvegarder</button></div>`;
+  }
+  return h;
+}
+
+/* ---------- vue : Aujourd'hui ---------- */
+function viewToday() {
+  const d = V.date, t = todayStr(), wt = weekType(d);
+  const slots = slotsOn(d);
+  let body = banners();
+  if (!DB.classes.length) body += welcomeCard();
+  else if (!slots.length) body += `<div class="empty"><p>Aucun cours prévu ${d === t ? "aujourd'hui" : 'ce jour-là'} (semaine ${wt}).</p><div class="row"><button class="btn" data-act="other">Ouvrir une classe</button><button class="btn" data-act="settings" data-tab="edt">${ICON.cal}Emploi du temps</button></div></div>`;
+  else body += '<ol class="slots">' + slots.map(s => slotCard(d, s)).join('') + '</ol>';
+  return `
+  <header class="bar">
+    <button class="btn icon-btn" data-act="day" data-n="-1" aria-label="Jour précédent">${ICON.back}</button>
+    <div class="ttl"><h1>${fmtLong(d)}</h1><div class="sub">${d === t ? "Aujourd'hui" : `<button class="btn ghost" style="min-height:28px;padding:0;color:var(--pos)" data-act="day" data-n="0">Revenir à aujourd'hui</button>`}</div></div>
+    <button class="btn icon-btn" data-act="day" data-n="1" aria-label="Jour suivant">${ICON.next}</button>
+    <span class="chip dark" style="font-size:14px;padding:5px 12px">Semaine ${wt}</span>
+    <span class="grow"></span>
+    <button class="btn" data-act="other">Autre classe</button>
+    <button class="btn" data-act="settings" data-tab="classes">${ICON.gear}Réglages</button>
+  </header>
+  <main class="main"><div class="wrap">${body}</div></main>`;
+}
+function slotCard(d, s) {
+  const t = todayStr(), c = cls(s.cid), ses = sesFromSlot(d, s);
+  let st;
+  if (d < t) st = 'done'; else if (d > t) st = 'next';
+  else { const n = nowMin(); st = n < tMin(s.start) ? 'next' : n < tMin(s.end) ? 'now' : 'done'; }
+  const n = studentsOf(s.cid, s.group).length;
+  const k = DB.obs.filter(o => o.ses === ses.key && o.cat !== 'absent').length;
+  const info = plural(n, 'élève') + (k ? ' · ' + plural(k, 'observation') : '');
+  const right = st === 'now' ? `<span class="status now">En cours</span><span class="open">Ouvrir</span>` : `<span class="status">${st === 'done' ? 'Terminé' : 'À venir'}</span>`;
+  return `<li><button class="slot ${st === 'now' ? 'now' : ''}" data-act="open-slot" data-slot="${s.id}">
+    <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
+    <span class="mid"><span class="row" style="gap:10px"><span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span></span><span class="small muted">${info}</span></span>
+    ${right}</button></li>`;
+}
+function welcomeCard() {
+  return `<section class="card welcome">
+    <h2>Bienvenue</h2>
+    <ol><li>Créez vos classes et importez vos listes d'élèves (avec leur demi-groupe).</li><li>Ajoutez les photos.</li><li>Saisissez votre emploi du temps : l'écran du jour s'affichera tout seul.</li></ol>
+    <div class="row">
+      <button class="btn primary" data-act="settings" data-tab="classes">Créer une classe</button>
+      <span class="btn filebtn">Restaurer une sauvegarde<input type="file" accept=".txt,.json,text/plain,application/json" data-chg="restore" aria-label="Restaurer une sauvegarde"></span>
+      <button class="btn ghost" data-act="demo">Essayer avec des élèves fictifs</button>
+    </div></section>`;
+}
+
+/* ---------- vue : grille ---------- */
+function viewGrid() {
+  const ses = V.ses, c = cls(ses.cid);
+  if (!c) { V = {name:'today', date: todayStr()}; return viewToday(); }
+  const list = studentsOf(ses.cid, ses.group), sum = sesSummary(ses.key);
+  const compact = list.length > 24;
+  let abs = 0, seen = 0;
+  const tiles = list.map(s => {
+    const r = sum[s.id] || {}; if (r.abs) abs++; else if (r.pos || r.neg || r.ras) seen++;
+    const name = compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`;
+    const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '');
+    return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}">
+      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent</span>' : ''}</span>
+      <span class="nm">${name}</span><span class="cnt">${chips}</span></button>`;
+  }).join('');
+  const present = list.length - abs;
+  const sub = `${groupLabel(ses.group)} · Semaine ${weekType(ses.date)} · ${ses.label}` + (ses.date !== todayStr() ? ' · ' + fmtLong(ses.date) : '');
+  const body = list.length ? `<div class="tiles ${compact ? 'compact' : ''}">${tiles}</div>`
+    : `<div class="empty"><p>Aucun élève dans ${ses.group === 'all' ? 'cette classe' : 'ce demi-groupe'}.</p><button class="btn" data-act="settings" data-tab="classes" data-cid="${c.id}">Ajouter des élèves</button></div>`;
+  return `
+  <header class="bar">
+    <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
+    <div class="ttl"><h1>${esc(c.name)}</h1><div class="sub">${esc(sub)}</div></div>
+    <span class="grow"></span>
+    <button class="btn" data-act="export" data-cid="${c.id}">${ICON.down}Export</button>
+    <button class="btn primary" data-act="rasrest">${ICON.check}Reste de la classe : RAS</button>
+  </header>
+  <main class="main">${body}</main>
+  <footer class="foot"><span>Toucher une photo : noter une observation</span><span>Appui long : fiche de l'élève</span><span class="grow"></span><span>${present} présents · ${plural(abs, 'absent')} · ${Math.max(0, present - seen)} non observés</span></footer>`;
+}
+
+/* ---------- panneau d'observation ---------- */
+let P = null;
+function closeLayer() { $('#layer').innerHTML = ''; P = null; }
+function openPanel(sid) { P = {sid, sel: new Set()}; renderPanel(); }
+function renderPanel() {
+  const s = stu(P.sid), ses = V.ses, c = cls(s.cid);
+  const list = DB.obs.filter(o => o.ses === ses.key && o.sid === s.id);
+  const isAbs = list.some(o => o.cat === 'absent');
+  const catBtns = t => CATS.filter(x => x.t === t).map(x => `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
+  const done = list.length ? `<div><div class="lbl" style="margin-bottom:6px">Déjà noté pendant cette séance</div><div class="done">${list.map(o => {
+      const c2 = CAT[o.cat]; const sign = c2.t === 'pos' ? '+ ' : c2.t === 'neg' ? '− ' : '';
+      return `<span class="chip ${c2.t}">${sign}${esc(c2.l)}<button type="button" data-act="p-del" data-oid="${o.id}" aria-label="Retirer ${esc(c2.l)}">×</button></span>`; }).join('')}</div></div>` : '';
+  $('#layer').innerHTML = `<div class="scrim" data-act="p-close"></div>
+  <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="p-name">
+    <div class="scroll">
+      <div class="hd">
+        <div class="avatar">${photoHTML(s)}</div>
+        <div style="flex:1 1 140px;min-width:0"><h2 id="p-name">${esc(s.first + ' ' + s.last)}</h2><div class="small muted">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
+        <button class="btn" data-act="p-fiche">Fiche</button>
+        <button class="btn icon-btn ghost" data-act="p-close" aria-label="Fermer">${ICON.close}</button>
+      </div>
+      <div class="row"><button class="btn" data-act="p-ras">RAS</button><button class="btn" data-act="p-abs">${isAbs ? "Retirer l'absence" : 'Absent'}</button></div>
+      ${done}
+      <div><div class="sec-t pos">+ Positif</div><div class="cats">${catBtns('pos')}</div></div>
+      <div><div class="sec-t neg">− Négatif</div><div class="cats">${catBtns('neg')}</div></div>
+      <label class="f" for="p-note" style="display:block">Commentaire <span class="muted" style="font-weight:400">(facultatif, obligatoire pour « Comportement »)</span></label>
+      <textarea id="p-note" rows="3" placeholder="Ce qui s'est passé…"></textarea>
+      <p class="err" id="p-err" hidden></p>
+    </div>
+    <div class="ft"><button class="btn" data-act="p-close">Annuler</button><button class="btn ink" data-act="p-save" id="p-save" ${P.sel.size ? '' : 'disabled'}>Enregistrer</button></div>
+  </aside>`;
+}
+function addObs(sid, cat, note = '', t = Date.now()) {
+  const ses = V.ses; const o = {id: uid(), sid, cid: ses.cid, date: ses.date, ses: ses.key, lbl: ses.label, cat, note, t};
+  DB.obs.push(o); return o;
+}
+const removeObs = pred => { DB.obs = DB.obs.filter(o => !pred(o)); };
+
+/* ---------- vue : fiche élève ---------- */
+function viewFiche() {
+  const s = stu(V.sid); if (!s) { back(); return ''; }
+  const c = cls(s.cid), periods = periodsFor(c);
+  if (V.p == null || V.p >= periods.length) V.p = currentPeriodIndex(periods);
+  const per = periods[V.p];
+  const obs = DB.obs.filter(o => o.sid === s.id && o.date >= per.s && o.date <= per.e).sort((a, b) => b.date.localeCompare(a.date) || b.t - a.t);
+  const cnt = {}; obs.forEach(o => cnt[o.cat] = (cnt[o.cat] || 0) + 1);
+  const tot = t => obs.filter(o => CAT[o.cat]?.t === t).length;
+  const bars = CATS.filter(x => (x.t === 'pos' || x.t === 'neg') && cnt[x.k]).sort((a, b) => cnt[b.k] - cnt[a.k]);
+  const max = Math.max(1, ...bars.map(b => cnt[b.k]));
+  const seg = periods.map((p, i) => `<button type="button" data-act="period" data-i="${i}" aria-pressed="${i === V.p}">${esc(p.n)}</button>`).join('');
+  const log = obs.length ? `<ul class="log">${obs.map(o => `<li><span class="d">${fmtShort(o.date)}</span>${catChip(o.cat)}<span class="n">${esc(o.note)}${o.note ? '' : `<span class="muted small">${esc(o.lbl || '')}</span>`}</span><button type="button" class="x" data-act="o-del" data-oid="${o.id}">Supprimer</button></li>`).join('')}</ul>`
+    : `<p class="muted">Aucune observation sur cette période.</p>`;
+  return `
+  <header class="bar">
+    <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
+    <div class="ttl"><h1>${esc(s.first + ' ' + s.last)}</h1><div class="sub">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
+    <span class="grow"></span>
+    <div class="seg" role="group" aria-label="Période">${seg}</div>
+    <button class="btn" data-act="export-stu">${ICON.down}Exporter</button>
+  </header>
+  <main class="main"><div class="fiche">
+    <aside style="display:flex;flex-direction:column;gap:12px">
+      <div class="bigph">${photoHTML(s)}</div>
+      <span class="btn filebtn">${PHOTOS[s.id] ? 'Changer la photo' : 'Ajouter une photo'}<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de l'élève"></span>
+      <div class="stats">
+        <div class="stat pos"><b>+${tot('pos')}</b><span>positives</span></div>
+        <div class="stat neg"><b>−${tot('neg')}</b><span>négatives</span></div>
+        <div class="stat"><b>${cnt.ras || 0}</b><span class="muted">séances RAS</span></div>
+        <div class="stat"><b>${cnt.absent || 0}</b><span class="muted">${(cnt.absent || 0) > 1 ? 'absences' : 'absence'}</span></div>
+      </div>
+      <p class="small muted" style="margin:0">${esc(per.n)} : du ${fmtShort(per.s)} au ${fmtShort(per.e)}</p>
+    </aside>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <section class="card"><h2 style="font-size:16px;margin-bottom:12px">Répartition</h2>${bars.length ? `<div class="bars">${bars.map(b => `<div class="barrow"><span>${esc(b.l)}</span><span class="tr"><span class="fl ${b.t}" style="display:block;width:${(cnt[b.k] / max * 100).toFixed(1)}%"></span></span><b>${cnt[b.k]}</b></div>`).join('')}</div>` : '<p class="muted" style="margin:0">Rien à afficher pour l\'instant.</p>'}</section>
+      <section class="card"><h2 style="font-size:16px;margin-bottom:8px">Chronologie</h2>${log}</section>
+    </div>
+  </div></main>`;
+}
+
+/* ---------- vue : réglages ---------- */
+function viewSettings() {
+  const tab = V.tab || 'classes';
+  const tabs = [['classes','Classes et élèves'],['edt','Emploi du temps'],['periodes','Périodes'],['sauvegarde','Sauvegarde']];
+  let body = '';
+  if (tab === 'classes') body = setClasses();
+  if (tab === 'edt') body = setEdt();
+  if (tab === 'periodes') body = setPeriodes();
+  if (tab === 'sauvegarde') body = setBackup();
+  return `
+  <header class="bar"><button class="btn ghost" data-act="home">${ICON.back}Aujourd'hui</button><div class="ttl"><h1>Réglages</h1></div></header>
+  <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${k === tab}" data-act="tab" data-tab="${k}">${l}</button>`).join('')}</nav>
+  <main class="main"><div class="wrap" style="max-width:1100px">${body}</div></main>`;
+}
+function setClasses() {
+  if (!V.cid || !cls(V.cid)) V.cid = DB.classes[0]?.id;
+  const c = cls(V.cid);
+  const clist = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric:true})).map(x => `<button class="btn" data-act="sel-class" data-cid="${x.id}" aria-pressed="${x.id === V.cid}"><span>${esc(x.name)}</span><span class="small">${DB.students.filter(s => s.cid === x.id).length}</span></button>`).join('');
+  const left = `<div class="clist">${clist}</div>
+    <form class="card" data-form="new-class" style="display:flex;flex-direction:column;gap:10px;padding:14px">
+      <label class="f" for="nc-name">Nouvelle classe</label><input type="text" id="nc-name" placeholder="ex. 4e 5" required>
+      <select id="nc-pt" aria-label="Découpage de l'année"><option value="semestre">Semestres</option><option value="trimestre">Trimestres</option></select>
+      <button class="btn primary" type="submit">Ajouter la classe</button></form>`;
+  if (!c) return `<div class="split"><div>${left}</div><div class="empty"><p>Créez votre première classe pour y importer vos élèves.</p></div></div>`;
+  const list = studentsOf(c.id);
+  const g1 = list.filter(s => s.group === 'G1').length, g2 = list.filter(s => s.group === 'G2').length;
+  const rows = list.map(s => `<li><span class="thumb">${PHOTOS[s.id] ? `<img src="${PHOTOS[s.id]}" alt="">` : esc(initials(s))}</span>
+      <span class="nm">${esc(s.last.toUpperCase())} ${esc(s.first)}</span>
+      <select data-chg="group" data-sid="${s.id}" aria-label="Demi-groupe de ${esc(s.first)}"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select>
+      <span class="btn filebtn" style="min-height:40px">Photo<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de ${esc(s.first)}"></span>
+      <button class="btn ghost" style="min-height:40px" data-act="del-stu" data-sid="${s.id}">Retirer</button></li>`).join('');
+  const imp = V.imp ? importPanel(c) : '';
+  return `<div class="split"><div>${left}</div><div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+    <section class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div class="row"><h2 style="font-family:var(--serif);font-size:22px;flex:1">${esc(c.name)}</h2>
+        <select data-chg="class-pt" data-cid="${c.id}" style="width:auto" aria-label="Découpage de l'année"><option value="semestre" ${c.pt === 'semestre' ? 'selected' : ''}>Semestres</option><option value="trimestre" ${c.pt === 'trimestre' ? 'selected' : ''}>Trimestres</option></select></div>
+      <p class="small muted" style="margin:0">${plural(list.length, 'élève')} · G1 : ${g1} · G2 : ${g2} · ${plural(list.filter(s => PHOTOS[s.id]).length, 'photo')}</p>
+      <div class="row">
+        <button class="btn primary" data-act="imp-open">Importer une liste</button>
+        <span class="btn filebtn">Importer le trombinoscope (PDF)<input type="file" accept="application/pdf,.pdf" data-chg="trombi" data-cid="${c.id}" aria-label="Importer le trombinoscope"></span>
+        <span class="btn filebtn">Photos en lot<input type="file" accept="image/*" multiple data-chg="bulk-photos" data-cid="${c.id}" aria-label="Photos en lot"></span>
+        <button class="btn ghost" data-act="del-class" data-cid="${c.id}">Supprimer la classe</button>
+      </div>
+      <p class="small muted" style="margin:0">Trombinoscope : le PDF d'École Directe est lu sur la tablette, rien n'est envoyé. Vous vérifiez chaque photo avant de valider.</p>
+      <p class="small muted" style="margin:0">Photos en lot : nommez chaque fichier <strong>NOM_Prénom.jpg</strong> (ou Prénom_NOM) ; l'app les associe aux bons élèves.</p>
+    </section>
+    ${imp}
+    <form class="card form-grid" data-form="add-stu" data-cid="${c.id}" style="padding:14px">
+      <label class="f" for="as-first">Prénom<input type="text" id="as-first" required></label>
+      <label class="f" for="as-last">Nom<input type="text" id="as-last" required></label>
+      <label class="f" for="as-group">Demi-groupe<select id="as-group"><option value="">—</option><option>G1</option><option>G2</option></select></label>
+      <button class="btn" type="submit">Ajouter l'élève</button>
+    </form>
+    <section class="card">${rows ? `<ul class="stable">${rows}</ul>` : '<p class="muted" style="margin:0">Aucun élève pour l\'instant.</p>'}</section>
+  </div></div>`;
+}
+let IMP = null;
+function importPanel(c) {
+  const prev = IMP && IMP.rows.length ? `<div class="overflow"><table class="prev"><thead><tr><th>Nom</th><th>Prénom</th><th>Groupe</th></tr></thead><tbody>${IMP.rows.slice(0, 6).map(r => `<tr><td>${esc(r.last)}</td><td>${esc(r.first)}</td><td>${r.group || '—'}</td></tr>`).join('')}${IMP.rows.length > 6 ? `<tr><td colspan="3" class="muted">… et ${IMP.rows.length - 6} autres</td></tr>` : ''}</tbody></table></div>
+      <div class="row"><button class="btn primary" data-act="imp-go">Importer ${plural(IMP.rows.length, 'élève')}</button>${IMP.dup ? `<span class="small muted">${plural(IMP.dup, 'élève')} déjà dans la classe, ignoré${IMP.dup > 1 ? 's' : ''}</span>` : ''}</div>` : (IMP ? '<p class="err">Aucun élève reconnu. Vérifiez le format.</p>' : '');
+  return `<section class="card" style="display:flex;flex-direction:column;gap:12px">
+    <h3 style="font-size:17px">Importer une liste dans ${esc(c.name)}</h3>
+    <p class="small muted" style="margin:0">Collez les lignes copiées depuis un tableur, ou choisissez un fichier CSV. Colonnes attendues : Nom, Prénom, puis Groupe (G1/G2, facultatif). Une seule colonne « NOM Prénom » fonctionne aussi.</p>
+    <textarea id="imp-text" rows="6" placeholder="MARTIN;Léa;G1&#10;BERNARD;Hugo;G2">${esc(IMP?.text || '')}</textarea>
+    <div class="row"><button class="btn" data-act="imp-parse">Analyser</button><span class="btn filebtn">Choisir un fichier CSV<input type="file" accept=".csv,.txt,text/csv,text/plain" data-chg="imp-file" aria-label="Fichier CSV"></span><button class="btn ghost" data-act="imp-close">Fermer</button></div>
+    ${prev}</section>`;
+}
+function parseList(text, cid) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return {rows: [], dup: 0};
+  const sep = lines.some(l => l.includes('\t')) ? '\t' : lines.some(l => l.includes(';')) ? ';' : lines.some(l => l.includes(',')) ? ',' : null;
+  let rows = lines.map(l => (sep ? l.split(sep) : [l]).map(x => x.replace(/^"|"$/g, '').trim()));
+  if (/nom|pr[ée]nom|[ée]l[èe]ve/i.test(rows[0].join(' ')) && rows.length > 1) rows = rows.slice(1);
+  const normG = g => { g = String(g || '').toUpperCase(); return /1/.test(g) ? 'G1' : /2/.test(g) ? 'G2' : ''; };
+  const out = [];
+  rows.forEach(r => {
+    let last = '', first = '', group = '';
+    const cells = r.filter(x => x !== '');
+    if (!cells.length) return;
+    if (cells.length >= 2 && !/^g?\s*[12]$/i.test(cells[1])) { last = cells[0]; first = cells[1]; group = normG(cells[2]); }
+    else {
+      const words = cells[0].split(/\s+/);
+      const up = words.filter(w => w.length > 1 && w === w.toUpperCase() && /\p{L}/u.test(w));
+      if (up.length && up.length < words.length) { last = up.join(' '); first = words.filter(w => !up.includes(w)).join(' '); }
+      else { last = words.slice(-1).join(' '); first = words.slice(0, -1).join(' '); }
+      if (cells[1]) group = normG(cells[1]);
+    }
+    if (!first || !last) return;
+    out.push({last: titleCase(last), first: titleCase(first), group});
+  });
+  const have = new Set(DB.students.filter(s => s.cid === cid).map(s => norm(s.last + ' ' + s.first)));
+  const fresh = out.filter(r => !have.has(norm(r.last + ' ' + r.first)));
+  return {rows: fresh, dup: out.length - fresh.length};
+}
+function setEdt() {
+  const wt = weekType(todayStr());
+  const opts = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric:true})).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  const byDay = [1,2,3,4,5,6].map(d => {
+    const sl = DB.slots.filter(s => s.day === d && cls(s.cid)).sort((a, b) => a.start.localeCompare(b.start));
+    if (!sl.length) return '';
+    return `<div class="day"><h3>${DAYS[d]}</h3><ul class="stable">${sl.map(s => `<li><span style="width:130px;font-variant-numeric:tabular-nums">${fmtT(s.start)} – ${fmtT(s.end)}</span><span class="nm">${esc(cls(s.cid).name)}</span><span class="chip neu">${groupLabel(s.group)}</span><span class="chip ${s.week === 'all' ? 'neu' : 'dark'}">${s.week === 'all' ? 'Toutes les semaines' : 'Semaine ' + s.week}</span><button class="btn ghost" style="min-height:40px" data-act="del-slot" data-id="${s.id}">Retirer</button></li>`).join('')}</ul></div>`;
+  }).join('');
+  if (!DB.classes.length) return `<div class="empty"><p>Créez d'abord vos classes.</p><button class="btn" data-act="tab" data-tab="classes">Classes et élèves</button></div>`;
+  return `<section class="card" style="display:flex;flex-direction:column;gap:8px">
+      <label class="check"><input type="checkbox" data-chg="parity" ${DB.settings.evenIsA ? 'checked' : ''}> Les semaines paires sont des semaines A</label>
+      <p class="small muted" style="margin:0">Cette semaine : semaine ${wt} (semaine n° ${isoWeek(todayStr())}).</p></section>
+    <form class="card form-grid" data-form="add-slot" style="padding:14px">
+      <label class="f" for="sl-day">Jour<select id="sl-day">${[1,2,3,4,5,6].map(d => `<option value="${d}">${DAYS[d]}</option>`).join('')}</select></label>
+      <label class="f" for="sl-start">Début<input type="time" id="sl-start" value="08:00" required></label>
+      <label class="f" for="sl-end">Fin<input type="time" id="sl-end" value="09:00" required></label>
+      <label class="f" for="sl-cid">Classe<select id="sl-cid">${opts}</select></label>
+      <label class="f" for="sl-group">Groupe<select id="sl-group"><option value="all">Classe entière</option><option value="G1">Demi-groupe G1</option><option value="G2">Demi-groupe G2</option></select></label>
+      <label class="f" for="sl-week">Semaine<select id="sl-week"><option value="all">Toutes</option><option value="A">A</option><option value="B">B</option></select></label>
+      <button class="btn primary" type="submit">Ajouter le créneau</button>
+    </form>
+    <section class="card">${byDay || '<p class="muted" style="margin:0">Aucun créneau pour l\'instant.</p>'}</section>`;
+}
+function setPeriodes() {
+  const block = (k, title) => `<section class="card" style="display:flex;flex-direction:column;gap:10px"><h3 style="font-size:17px">${title}</h3>
+    ${DB.settings.periods[k].map((p, i) => `<div class="form-grid"><span style="font-weight:600;align-self:center">${esc(p.n)}</span>
+      <label class="f" for="p-${k}-${i}-s">Début<input type="date" id="p-${k}-${i}-s" value="${p.s}" data-chg="period-date" data-k="${k}" data-i="${i}" data-f="s"></label>
+      <label class="f" for="p-${k}-${i}-e">Fin<input type="date" id="p-${k}-${i}-e" value="${p.e}" data-chg="period-date" data-k="${k}" data-i="${i}" data-f="e"></label></div>`).join('')}</section>`;
+  return `<p class="muted" style="margin:0">Les fiches élèves et les exports utilisent ces dates. Vérifiez-les avec le calendrier de l'établissement.</p>`
+    + block('semestre', 'Semestres (collège, Première)') + block('trimestre', 'Trimestres (Seconde)');
+}
+function setBackup() {
+  const lb = DB.settings.lastBackup;
+  return `<section class="card" style="display:flex;flex-direction:column;gap:12px">
+      <h3 style="font-size:17px">Sauvegarde</h3>
+      <p style="margin:0">Dernière sauvegarde : <strong>${lb ? fmtLong(lb) : 'jamais'}</strong></p>
+      <p class="small muted" style="margin:0">Le fichier contient les listes, les photos, l'emploi du temps et toutes les observations. Rangez-le dans le OneDrive de l'établissement.</p>
+      <div class="row"><button class="btn ink" data-act="backup">${ICON.save}Sauvegarder maintenant</button>
+      <span class="btn filebtn">Restaurer une sauvegarde<input type="file" accept=".txt,.json,text/plain,application/json" data-chg="restore" aria-label="Restaurer une sauvegarde"></span></div>
+      <p class="small muted" style="margin:0" id="persist-status">Protection du stockage : vérification…</p>
+    </section>
+    <section class="card danger-zone" style="display:flex;flex-direction:column;gap:10px">
+      <h3 style="font-size:17px">Fin d'année</h3>
+      <p class="small muted" style="margin:0">Efface toutes les classes, photos et observations de cet appareil. Faites une sauvegarde avant.</p>
+      <div><button class="btn danger" data-act="wipe">Tout effacer…</button></div>
+    </section>`;
+}
+
+/* ---------- modales ---------- */
+function openModal(html) { $('#modal').innerHTML = `<div class="scrim m" data-act="m-close"></div><div class="modal" role="dialog" aria-modal="true">${html}</div>`; $('#modal .modal button, #modal .modal input')?.focus(); }
+function closeModal() { $('#modal').innerHTML = ''; }
+
+function otherModal(cid, group = 'all') {
+  const list = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric:true}));
+  cid = cid || list[0]?.id;
+  if (!cid) { go({name:'settings', tab:'classes'}); return; }
+  const g = hasGroups(cid);
+  openModal(`<h2>Ouvrir une classe</h2>
+    <div class="pick">${list.map(c => `<button class="btn" data-act="om-cls" data-cid="${c.id}" aria-pressed="${c.id === cid}">${esc(c.name)}</button>`).join('')}</div>
+    ${g ? `<div class="seg" role="group" aria-label="Groupe">${['all','G1','G2'].map(x => `<button data-act="om-grp" data-cid="${cid}" data-g="${x}" aria-pressed="${x === group}">${x === 'all' ? 'Classe entière' : x}</button>`).join('')}</div>` : ''}
+    <p class="small muted">La séance sera datée du ${fmtLong(V.name === 'today' ? V.date : todayStr()).toLowerCase()}, hors emploi du temps.</p>
+    <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn primary" data-act="om-go" data-cid="${cid}" data-g="${group}">Ouvrir</button></div>`);
+}
+
+function backupModal() {
+  const canShare = !!navigator.canShare;
+  openModal(`<h2>Sauvegarder</h2>
+    <p>Envoyez la sauvegarde dans le OneDrive de l'établissement : dans le menu Partager, choisissez <strong>OneDrive</strong>, puis le dossier « Suivi de classe ».</p>
+    <p class="small muted">Vous pouvez aussi garder une copie dans le dossier Téléchargements de la tablette.</p>
+    <div class="ft"><button class="btn" data-act="bk-dl">Enregistrer sur la tablette</button>${canShare ? `<button class="btn ink" data-act="bk-share">${ICON.save}Envoyer vers OneDrive</button>` : ''}</div>`);
+}
+function exportModal(cid) {
+  const c = cls(cid) || DB.classes[0]; if (!c) return;
+  const periods = periodsFor(c), pi = currentPeriodIndex(periods);
+  openModal(`<h2>Exporter en tableur</h2>
+    <label class="f" for="ex-cid">Classe<select id="ex-cid" data-chg="ex-cid">${DB.classes.map(x => `<option value="${x.id}" ${x.id === c.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+    <label class="f" for="ex-per">Période<select id="ex-per">${periods.map((p, i) => `<option value="${i}" ${i === pi ? 'selected' : ''}>${esc(p.n)}</option>`).join('')}</select></label>
+    <fieldset style="border:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px"><legend class="f" style="margin-bottom:6px;font-weight:500">Contenu</legend>
+      <label class="check"><input type="radio" name="ex-type" value="bilan" checked> Bilan par élève (pour les bulletins)</label>
+      <label class="check"><input type="radio" name="ex-type" value="detail"> Journal détaillé de toutes les observations</label></fieldset>
+    <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn" data-act="ex-go" data-mode="dl">Enregistrer</button>${navigator.canShare ? `<button class="btn ink" data-act="ex-go" data-mode="share">Partager</button>` : ''}</div>`);
+}
+const csv = rows => '﻿' + rows.map(r => r.map(v => { v = String(v ?? ''); return /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(';')).join('\r\n');
+const TYPE_L = {pos:'Positif', neg:'Négatif', neu:'Neutre', abs:'Absence'};
+function buildExport(cid, per, type, sid) {
+  const studs = sid ? [stu(sid)] : studentsOf(cid);
+  const ids = new Set(studs.map(s => s.id));
+  const obs = DB.obs.filter(o => ids.has(o.sid) && o.date >= per.s && o.date <= per.e);
+  if (type === 'detail') {
+    const rows = [['Date','Créneau','Nom','Prénom','Groupe','Type','Observation','Commentaire']];
+    obs.sort((a, b) => a.date.localeCompare(b.date) || a.t - b.t).forEach(o => { const s = stu(o.sid); rows.push([o.date.split('-').reverse().join('/'), o.lbl || '', s.last, s.first, s.group || '', TYPE_L[CAT[o.cat].t], CAT[o.cat].l, o.note || '']); });
+    return csv(rows);
+  }
+  const cats = CATS.filter(c => c.t === 'pos' || c.t === 'neg');
+  const rows = [['Nom','Prénom','Groupe','Positif','Négatif','RAS','Absences', ...cats.map(c => c.l), 'Commentaires']];
+  studs.forEach(s => {
+    const mine = obs.filter(o => o.sid === s.id); const n = k => mine.filter(o => o.cat === k).length;
+    rows.push([s.last, s.first, s.group || '', mine.filter(o => CAT[o.cat].t === 'pos').length, mine.filter(o => CAT[o.cat].t === 'neg').length, n('ras'), n('absent'), ...cats.map(c => n(c.k)), mine.filter(o => o.note).map(o => fmtShort(o.date) + ' : ' + o.note).join(' | ')]);
+  });
+  return csv(rows);
+}
+async function deliver(filename, text, mime, mode) {
+  if (IS_DEMO) { toast("Les fichiers ne s'enregistrent pas dans la version d'essai : cette fonction marche dans l'app installée."); return false; }
+  const blob = new Blob([text], {type: mime});
+  if (mode === 'share') {
+    const f = new File([blob], filename, {type: mime});
+    if (navigator.canShare && navigator.canShare({files: [f]})) {
+      try { await navigator.share({files: [f], title: filename}); return true; }
+      catch (e) { if (e.name === 'AbortError') return false; }
+    }
+    toast("Le partage n'est pas disponible ici : le fichier est enregistré sur l'appareil.");
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  return true;
+}
+const safeName = s => norm(s).replace(/ /g, '-') || 'classe';
+
+/* ---------- photos ---------- */
+function squareCrop(src, x, y, w, h) {
+  const S = 360, side = Math.min(w, h);
+  const sx = x + (w - side) / 2, sy = y + (h > w ? Math.max(0, (h - side) * 0.25) : 0);
+  const cv = document.createElement('canvas'); cv.width = cv.height = S;
+  cv.getContext('2d').drawImage(src, sx, sy, side, side, 0, 0, S, S);
+  return cv.toDataURL('image/jpeg', 0.82);
+}
+function resizePhoto(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => { const d = squareCrop(img, 0, 0, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(url); res(d); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('image')); };
+    img.src = url;
+  });
+}
+async function setPhoto(sid, file) {
+  try { const d = await resizePhoto(file); PHOTOS[sid] = d; if (STORAGE_OK) await Store.putPhoto(sid, d); return true; }
+  catch (e) { return false; }
+}
+
+
+/* ---------- trombinoscope (lu localement, rien n'est envoyé) ---------- */
+const PDFJS_BASE = IS_DEMO ? 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/' : './';
+let pdfjsReady = null;
+const loadScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('script')); document.head.appendChild(s); });
+function loadPdfJs() {
+  if (!pdfjsReady) pdfjsReady = loadScript(PDFJS_BASE + 'pdf.worker.min.js').then(() => loadScript(PDFJS_BASE + 'pdf.min.js')).then(() => {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + 'pdf.worker.min.js'; return window.pdfjsLib;
+  }).catch(e => { pdfjsReady = null; throw e; });
+  return pdfjsReady;
+}
+const PARTICLE = /^(de|du|des|d'|d’|van|von|der|den|di|da|del|della|dos|el|ben|le|la)$/i;
+function splitName(lines) {
+  const clean = lines.map(l => l.replace(/\(.*?\)/g, ' ').replace(/[^\p{L}\s'’\-]/gu, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  if (!clean.length) return {first: '', last: ''};
+  const words = clean.join(' ').split(' ');
+  const isUp = w => /\p{Lu}/u.test(w) && w === w.toUpperCase() && w.replace(/[^\p{L}]/gu, '').length > 1;
+  const isLast = words.map((w, i) => isUp(w));
+  for (let i = words.length - 2; i >= 0; i--) if (!isLast[i] && PARTICLE.test(words[i]) && isLast[i + 1]) isLast[i] = true;
+  const nl = isLast.filter(Boolean).length;
+  if (nl && nl < words.length) return {last: titleCase(words.filter((w, i) => isLast[i]).join(' ')), first: titleCase(words.filter((w, i) => !isLast[i]).join(' '))};
+  if (clean.length >= 2) return {last: titleCase(clean[0]), first: titleCase(clean.slice(1).join(' '))};
+  // Tout en majuscules sur une ligne (« NOM PRÉNOM ») : le nom est en premier ; une particule (DE, LA, VAN…) reste avec le nom.
+  let k = 0; while (k < words.length - 2 && PARTICLE.test(words[k])) k++;
+  return {last: titleCase(words.slice(0, k + 1).join(' ')), first: titleCase(words.slice(k + 1).join(' '))};
+}
+const toks = s => norm(s).split(' ').filter(Boolean);
+function matchStudents(items, cands) {
+  const pairs = [];
+  items.forEach((it, i) => {
+    const t = new Set(toks(it.first + ' ' + it.last)); if (!t.size) return;
+    cands.forEach(s => { const u = toks(s.first + ' ' + s.last); const inter = u.filter(x => t.has(x)).length; const sc = inter / Math.max(t.size, u.length); if (sc >= 0.5) pairs.push({i, s, sc}); });
+  });
+  pairs.sort((a, b) => b.sc - a.sc);
+  const usedI = new Set(), usedS = new Set();
+  pairs.forEach(p => { if (usedI.has(p.i) || usedS.has(p.s.id)) return; usedI.add(p.i); usedS.add(p.s.id); items[p.i].sid = p.s.id; items[p.i].group = p.s.group || ''; });
+}
+async function readTrombi(file, onProgress) {
+  const lib = await loadPdfJs();
+  const data = new Uint8Array(await file.arrayBuffer());
+  const pdf = await lib.getDocument({data, isEvalSupported: false, useSystemFonts: true}).promise;
+  const T = lib.Util.transform, OPS = lib.OPS, out = [];
+  for (let pn = 1; pn <= pdf.numPages; pn++) {
+    onProgress && onProgress(pn, pdf.numPages);
+    const page = await pdf.getPage(pn);
+    const vp1 = page.getViewport({scale: 1});
+    // 1. repérer les images et leur position
+    const ops = await page.getOperatorList();
+    let ctm = [1, 0, 0, 1, 0, 0]; const stack = []; const rects = [];
+    for (let k = 0; k < ops.fnArray.length; k++) {
+      const fn = ops.fnArray[k], a = ops.argsArray[k];
+      if (fn === OPS.save) stack.push(ctm);
+      else if (fn === OPS.restore) ctm = stack.pop() || [1, 0, 0, 1, 0, 0];
+      else if (fn === OPS.transform) ctm = T(ctm, a);
+      else if (fn === OPS.paintFormXObjectBegin) { stack.push(ctm); if (Array.isArray(a[0]) && a[0].length === 6) ctm = T(ctm, a[0]); }
+      else if (fn === OPS.paintFormXObjectEnd) ctm = stack.pop() || [1, 0, 0, 1, 0, 0];
+      else if (fn === OPS.beginGroup) { stack.push(ctm); if (a[0] && Array.isArray(a[0].matrix)) ctm = T(ctm, a[0].matrix); }
+      else if (fn === OPS.endGroup) ctm = stack.pop() || [1, 0, 0, 1, 0, 0];
+      else if (fn === OPS.paintImageXObject || fn === OPS.paintInlineImageXObject || fn === OPS.paintJpegXObject) {
+        const pts = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => vp1.convertToViewportPoint(ctm[0] * x + ctm[2] * y + ctm[4], ctm[1] * x + ctm[3] * y + ctm[5]));
+        const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+        const r = {x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys)};
+        r.w = r.x1 - r.x0; r.h = r.y1 - r.y0;
+        if (r.w > 15 && r.h > 15) rects.push(r);
+      }
+    }
+    if (!rects.length) continue;
+    const med = arr => { const b = arr.slice().sort((x, y) => x - y); return b[Math.floor(b.length / 2)]; };
+    const mh = med(rects.map(r => r.h)), mw = med(rects.map(r => r.w));
+    const photos = rects.filter(r => r.h > mh * 0.6 && r.h < mh * 1.6 && r.w > mw * 0.6 && r.w < mw * 1.6)
+      .filter((r, i, arr) => arr.findIndex(q => Math.abs(q.x0 - r.x0) < 2 && Math.abs(q.y0 - r.y0) < 2) === i);
+    // 2. rattacher le texte à la photo la plus proche
+    const tc = await page.getTextContent();
+    const texts = tc.items.filter(it => it.str && it.str.trim()).map(it => {
+      const [x, y] = vp1.convertToViewportPoint(it.transform[4], it.transform[5]);
+      const fh = it.height || Math.hypot(it.transform[2], it.transform[3]) || 8;
+      return {str: it.str.trim(), x0: x, x1: x + it.width, cy: y - fh / 2};
+    });
+    const assign = below => {
+      photos.forEach(p => { p.lines = []; });
+      let hit = 0;
+      texts.forEach(t => {
+        const cx = (t.x0 + t.x1) / 2; let best = null, bd = Infinity;
+        photos.forEach(p => {
+          if (cx < p.x0 - p.w * 0.3 || cx > p.x1 + p.w * 0.3) return;
+          const d = below ? t.cy - p.y1 : p.y0 - t.cy;
+          if (d > -2 && d < p.h * 0.9 && d < bd) { bd = d; best = p; }
+        });
+        if (best) best.lines.push(t);
+      });
+      photos.forEach(p => { if (p.lines.length) hit++; });
+      return hit;
+    };
+    if (assign(true) < photos.length / 2) { const hb = photos.filter(p => p.lines.length).length; if (assign(false) < hb) assign(true); }
+    // 3. rendre la page et découper chaque photo
+    const scale = Math.max(1.5, Math.min(4.5, 380 / mw, Math.sqrt(12e6 / (vp1.width * vp1.height))));
+    const vp = page.getViewport({scale});
+    const cv = document.createElement('canvas'); cv.width = Math.floor(vp.width); cv.height = Math.floor(vp.height);
+    await page.render({canvasContext: cv.getContext('2d'), viewport: vp}).promise;
+    photos.sort((a, b) => (Math.abs(a.y0 - b.y0) > a.h / 2 ? a.y0 - b.y0 : a.x0 - b.x0)).forEach(p => {
+      const lines = []; p.lines.sort((a, b) => a.cy - b.cy || a.x0 - b.x0).forEach(t => {
+        const L = lines.find(l => Math.abs(l.cy - t.cy) < 3); if (L) L.parts.push(t); else lines.push({cy: t.cy, parts: [t]});
+      });
+      const txt = lines.map(l => l.parts.sort((a, b) => a.x0 - b.x0).map(t => t.str).join(' '));
+      const nm = splitName(txt);
+      out.push({id: uid(), photo: squareCrop(cv, p.x0 * scale + 1, p.y0 * scale + 1, p.w * scale - 2, p.h * scale - 2), raw: txt.join(' '), first: nm.first, last: nm.last, sid: '', group: ''});
+    });
+    cv.width = cv.height = 0; page.cleanup();
+  }
+  await pdf.destroy();
+  return out;
+}
+let TR = null;
+async function startTrombi(file, cid) {
+  openModal(`<h2>Lecture du trombinoscope</h2><p id="tr-prog">Ouverture du fichier…</p>`);
+  let items;
+  try { items = await readTrombi(file, (i, n) => { const e = $('#tr-prog'); if (e) e.textContent = `Page ${i} sur ${n}…`; }); }
+  catch (e) {
+    openModal(`<h2>Lecture impossible</h2><p>Ce fichier n'a pas pu être ouvert comme un PDF. Vérifiez qu'il s'agit bien du trombinoscope exporté d'École Directe.</p><div class="ft"><button class="btn" data-act="m-close">Fermer</button></div>`); return;
+  }
+  if (!items.length) {
+    openModal(`<h2>Aucune photo trouvée</h2><p>Ce PDF ne contient pas de photos séparées (document scanné ?). Vous pouvez ajouter les photos une par une, ou en lot avec des fichiers nommés NOM_Prénom.jpg.</p><div class="ft"><button class="btn" data-act="m-close">Fermer</button></div>`); return;
+  }
+  const cands = studentsOf(cid);
+  matchStudents(items, cands);
+  items.forEach(it => { if (!it.sid) it.sid = (it.first && it.last) ? 'new' : ''; });
+  TR = {cid, items, file: file.name};
+  closeModal(); go({name:'trombi'});
+}
+function trStatus(it, dup) {
+  if (it.sid === 'skip') return '<span class="chip neu">Ignorée</span>';
+  if (dup.has(it.sid)) return '<span class="chip neg">En double</span>';
+  if (it.sid === '') return '<span class="chip neg">À choisir</span>';
+  if (it.sid === 'new') return (it.first && it.last) ? '<span class="chip neu">Nouvel élève</span>' : '<span class="chip neg">Nom à saisir</span>';
+  return '<span class="chip pos">Associée</span>';
+}
+function trDup() { const seen = {}, d = new Set(); TR.items.forEach(it => { if (it.sid && it.sid !== 'new' && it.sid !== 'skip') { if (seen[it.sid]) d.add(it.sid); seen[it.sid] = 1; } }); return d; }
+function viewTrombi() {
+  if (!TR || !cls(TR.cid)) { V = {name:'settings', tab:'classes'}; return viewSettings(); }
+  const c = cls(TR.cid), cands = studentsOf(TR.cid), dup = trDup();
+  const n = TR.items.length, ok = TR.items.filter(i => i.sid && i.sid !== 'new' && i.sid !== 'skip' && !dup.has(i.sid)).length;
+  const nw = TR.items.filter(i => i.sid === 'new').length, sk = TR.items.filter(i => i.sid === 'skip').length;
+  const bad = TR.items.filter(i => i.sid === '' || dup.has(i.sid) || (i.sid === 'new' && !(i.first && i.last))).length;
+  const used = new Set(TR.items.map(i => i.sid));
+  const missing = cands.filter(s => !used.has(s.id));
+  const cards = TR.items.map((it, i) => {
+    const sel = cands.length ? `<select id="tr-sel-${i}" data-chg="tr-sel" data-i="${i}" aria-label="Élève pour la photo ${i + 1}">
+        <option value="" ${it.sid === '' ? 'selected' : ''} disabled>Choisir l'élève…</option>
+        ${cands.map(s => `<option value="${s.id}" ${it.sid === s.id ? 'selected' : ''}>${esc(s.last.toUpperCase() + ' ' + s.first)}${used.has(s.id) && it.sid !== s.id ? ' ✓' : ''}</option>`).join('')}
+        <option value="new" ${it.sid === 'new' ? 'selected' : ''}>+ Nouvel élève</option>
+        <option value="skip" ${it.sid === 'skip' ? 'selected' : ''}>Ignorer cette photo</option></select>` : '';
+    const names = (it.sid === 'new' || !cands.length) ? `<div class="tr-names">
+        <input type="text" id="tr-f-${i}" value="${esc(it.first)}" placeholder="Prénom" aria-label="Prénom" data-chg="tr-name" data-i="${i}" data-k="first">
+        <input type="text" id="tr-l-${i}" value="${esc(it.last)}" placeholder="Nom" aria-label="Nom" data-chg="tr-name" data-i="${i}" data-k="last"></div>` : '';
+    const grp = it.sid === 'skip' ? '' : `<div class="seg" role="group" aria-label="Demi-groupe">${['', 'G1', 'G2'].map(g => `<button type="button" data-act="tr-grp" data-i="${i}" data-g="${g}" aria-pressed="${it.group === g}">${g || '—'}</button>`).join('')}</div>`;
+    return `<div class="tr-card ${it.sid === 'skip' ? 'is-skip' : ''}">
+      <div class="tr-ph"><img src="${it.photo}" alt=""></div>
+      <div class="tr-body">
+        <div class="row" style="justify-content:space-between;gap:6px">${trStatus(it, dup)}<span class="small muted">n° ${i + 1}</span></div>
+        <div class="small muted tr-raw">Lu : ${esc(it.raw || '(aucun nom)')}</div>
+        ${sel}${names}${grp}
+        ${!cands.length ? `<button type="button" class="btn ghost" style="min-height:36px;align-self:flex-start;padding:0 6px" data-act="tr-skip" data-i="${i}">${it.sid === 'skip' ? 'Reprendre cette photo' : 'Ignorer cette photo'}</button>` : ''}
+      </div></div>`;
+  }).join('');
+  return `
+  <header class="bar">
+    <button class="btn ghost" data-act="tr-cancel">${ICON.back}Annuler</button>
+    <div class="ttl"><h1>Trombinoscope · ${esc(c.name)}</h1><div class="sub">${plural(n, 'photo trouvée', 'photos trouvées')} · ${ok} associée${ok > 1 ? 's' : ''} · ${plural(nw, 'nouvel élève', 'nouveaux élèves')}${sk ? ' · ' + sk + ' ignorée' + (sk > 1 ? 's' : '') : ''}</div></div>
+    <span class="grow"></span>
+    <button class="btn primary" data-act="tr-go" ${bad ? 'disabled' : ''}>${ICON.check}Valider l'import</button>
+  </header>
+  <main class="main"><div class="wrap" style="max-width:1200px">
+    ${bad ? `<div class="banner"><p>${plural(bad, 'photo demande', 'photos demandent')} votre attention (repérées en rouge) avant de valider.</p></div>` : ''}
+    ${cands.length && nw ? `<div class="banner"><p>${plural(nw, 'photo ne correspond', 'photos ne correspondent')} à aucun élève de votre liste : elle${nw > 1 ? 's seront ajoutées' : ' sera ajoutée'} comme nouvel élève. Vérifiez qu'il ne s'agit pas d'une orthographe différente.</p></div>` : ''}
+    ${missing.length ? `<div class="banner"><p>Sans photo dans ce PDF : ${missing.map(s => esc(s.first + ' ' + s.last)).join(', ')}.</p></div>` : ''}
+    <p class="muted" style="margin:0">Vérifiez que chaque nom correspond à la bonne photo. Touchez G1 ou G2 pour le demi-groupe. Rien n'est enregistré avant de valider.</p>
+    <div class="tr-grid">${cards}</div>
+  </div></main>`;
+}
+function renderKeep() { const m = $('.main'), top = m ? m.scrollTop : 0; render(); const m2 = $('.main'); if (m2) m2.scrollTop = top; }
+async function commitTrombi() {
+  const cid = TR.cid; let added = 0, photos = 0;
+  for (const it of TR.items) {
+    if (it.sid === 'skip' || it.sid === '') continue;
+    let s;
+    if (it.sid === 'new') { s = {id: uid(), cid, first: it.first.trim(), last: it.last.trim(), group: it.group}; DB.students.push(s); added++; }
+    else { s = stu(it.sid); if (!s) continue; s.group = it.group; }
+    PHOTOS[s.id] = it.photo; photos++;
+    if (STORAGE_OK) { try { await Store.putPhoto(s.id, it.photo); } catch (e) {} }
+  }
+  save(); TR = null;
+  V = STACK.pop() || {name:'settings', tab:'classes', cid}; V.cid = cid; render();
+  toast(`${plural(photos, 'photo importée', 'photos importées')}` + (added ? ` · ${plural(added, 'nouvel élève', 'nouveaux élèves')}` : ''));
+}
+
+/* ---------- sauvegarde / restauration ---------- */
+const backupText = () => JSON.stringify({app:'suivi-classe', v:1, at: new Date().toISOString(), db: DB, photos: PHOTOS});
+async function doBackup(mode) {
+  const ok = await deliver(`suivi-classe-sauvegarde-${todayStr()}.txt`, backupText(), 'text/plain', mode);
+  if (ok) { DB.settings.lastBackup = todayStr(); save(); closeModal(); render(); toast('Sauvegarde créée.'); }
+}
+function restoreFrom(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    let data; try { data = JSON.parse(r.result); } catch (e) { data = null; }
+    if (!data || data.app !== 'suivi-classe' || !data.db) { toast("Ce fichier n'est pas une sauvegarde de Suivi de classe."); return; }
+    const d = data.db;
+    openModal(`<h2>Restaurer cette sauvegarde ?</h2>
+      <p>Sauvegarde du ${new Date(data.at).toLocaleString('fr-FR', {dateStyle:'long', timeStyle:'short'})} : ${plural((d.classes || []).length, 'classe')}, ${plural((d.students || []).length, 'élève')}, ${plural((d.obs || []).length, 'observation')}.</p>
+      <p class="err">Les données actuelles de cet appareil seront remplacées.</p>
+      <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn danger" data-act="rs-go">Restaurer</button></div>`);
+    PENDING_RESTORE = data;
+  };
+  r.readAsText(file);
+}
+let PENDING_RESTORE = null;
+
+/* ---------- données fictives ---------- */
+function loadDemo() {
+  let seed = 7; const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const F = ['Léa','Hugo','Inès','Nathan','Chloé','Yanis','Emma','Lucas','Manon','Adam','Jade','Louis','Sarah','Enzo','Camille','Noah','Zoé','Rayan','Lina','Tom','Alice','Mathis','Clara','Théo','Maël','Anna','Gabriel','Louise','Sacha','Rose','Ethan','Ambre','Paul','Nina','Jules','Lou','Arthur','Mila','Victor','Agathe'];
+  const L = ['Martin','Bernard','Petit','Durand','Leroy','Moreau','Simon','Laurent','Michel','Garcia','David','Bertrand','Roux','Vincent','Fournier','Morel','Girard','André','Lefèvre','Mercier','Dupont','Lambert','Bonnet','François','Rousseau','Blanc','Guérin','Muller','Henry','Roussel','Nicolas','Perrin','Morin','Mathieu','Clément','Gauthier','Dumont','Lopez','Fontaine','Chevalier'];
+  DB = freshDB(); PHOTOS = {};
+  const mk = (name, pt, n, off) => { const c = {id: uid(), name, pt}; DB.classes.push(c); for (let i = 0; i < n; i++) DB.students.push({id: uid(), cid: c.id, first: F[(i + off) % F.length], last: L[(i * 7 + off) % L.length], group: i % 2 ? 'G2' : 'G1'}); return c; };
+  const c3 = mk('3e 4', 'semestre', 34, 0), c5 = mk('5e 5', 'semestre', 28, 5), c2 = mk('2de 5', 'trimestre', 34, 11), c4 = mk('4e 2', 'semestre', 30, 17);
+  const sl = (day, start, end, c, group, week) => DB.slots.push({id: uid(), day, start, end, cid: c.id, group, week});
+  [1,2,3,4,5].forEach(d => { sl(d, '08:00', '09:00', c5, 'G1', 'A'); sl(d, '09:00', '10:00', c5, 'G2', 'A'); sl(d, '08:00', '09:00', c5, 'all', 'B'); sl(d, '10:00', '11:00', c3, 'all', 'all'); sl(d, '14:30', '15:30', c2, 'all', 'all'); sl(d, '15:30', '16:30', c4, d % 2 ? 'G1' : 'G2', 'all'); });
+  const today = todayStr();
+  for (let k = 21; k >= 0; k--) {
+    const date = addDays(today, -k); const wd = parseD(date).getDay(); if (!wd || wd === 6) continue;
+    slotsOn(date).forEach(s => {
+      if (date === today && nowMin() < tMin(s.end)) return;
+      const ses = sesFromSlot(date, s);
+      studentsOf(s.cid, s.group).forEach(st => {
+        const r = rnd(); const base = {sid: st.id, cid: s.cid, date, ses: ses.key, lbl: ses.label, t: Date.now() - k * 864e5};
+        if (r < 0.04) DB.obs.push({...base, id: uid(), cat: 'absent', note: ''});
+        else if (r < 0.34) DB.obs.push({...base, id: uid(), cat: CATS[Math.floor(rnd() * 7)].k, note: ''});
+        else if (r < 0.52) DB.obs.push({...base, id: uid(), cat: CATS[7 + Math.floor(rnd() * 7)].k, note: rnd() < 0.3 ? 'Rappel à l\'ordre en début d\'activité.' : ''});
+        else DB.obs.push({...base, id: uid(), cat: 'ras', note: ''});
+      });
+    });
+  }
+  DB.settings.lastBackup = IS_DEMO ? today : null;
+}
+
+/* ---------- actions ---------- */
+let longTimer = null, suppressClick = false;
+const ACT = {
+  day: el => { const n = +el.dataset.n; V.date = n === 0 ? todayStr() : addDays(V.date, n); render(); },
+  home: () => { STACK = []; V = {name:'today', date: todayStr()}; render(); },
+  back: () => back(),
+  settings: el => go({name:'settings', tab: el.dataset.tab || 'classes', cid: el.dataset.cid}),
+  tab: el => { V.tab = el.dataset.tab; render(); if (V.tab === 'sauvegarde') showPersist(); },
+  'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); if (s) go({name:'grid', ses: sesFromSlot(V.date, s)}); },
+  other: () => otherModal(),
+  'om-cls': el => otherModal(el.dataset.cid),
+  'om-grp': el => otherModal(el.dataset.cid, el.dataset.g),
+  'om-go': el => { const d = V.name === 'today' ? V.date : todayStr(); closeModal(); go({name:'grid', ses: sesOther(d, el.dataset.cid, el.dataset.g)}); },
+  'm-close': () => closeModal(),
+  demo: () => { loadDemo(); STORAGE_OK && Store.replaceAll(); render(); toast('Élèves fictifs chargés. Réglages › Sauvegarde › Tout effacer pour repartir de zéro.'); },
+  tile: el => openPanel(el.dataset.sid),
+  'p-close': () => closeLayer(),
+  'p-fiche': () => { const sid = P.sid; closeLayer(); go({name:'fiche', sid}); },
+  'p-tog': el => {
+    const k = el.dataset.cat; P.sel.has(k) ? P.sel.delete(k) : P.sel.add(k);
+    el.setAttribute('aria-pressed', P.sel.has(k)); $('#p-save').disabled = !P.sel.size; $('#p-err').hidden = true;
+  },
+  'p-save': () => {
+    if (!P.sel.size) return;
+    const note = $('#p-note').value.trim();
+    if (P.sel.has('comportement') && !note) { const e = $('#p-err'); e.textContent = 'Ajoutez un commentaire pour « Comportement ».'; e.hidden = false; $('#p-note').focus(); return; }
+    const key = V.ses.key, sid = P.sid;
+    removeObs(o => o.ses === key && o.sid === sid && (o.cat === 'ras' || o.cat === 'absent'));
+    const cats = CATS.filter(c => P.sel.has(c.k)).map(c => c.k);
+    const target = P.sel.has('comportement') ? 'comportement' : cats[0]; const t = Date.now();
+    cats.forEach(c => addObs(sid, c, c === target ? note : '', t));
+    save(); closeLayer(); render(); toast(cats.length > 1 ? cats.length + ' observations enregistrées' : 'Observation enregistrée');
+  },
+  'p-ras': () => {
+    const key = V.ses.key, sid = P.sid;
+    if (DB.obs.some(o => o.ses === key && o.sid === sid && ['pos','neg'].includes(CAT[o.cat].t))) { toast('Des observations sont déjà notées pour cette séance.'); return; }
+    removeObs(o => o.ses === key && o.sid === sid && (o.cat === 'absent' || o.cat === 'ras'));
+    addObs(sid, 'ras'); save(); closeLayer(); render();
+  },
+  'p-abs': () => {
+    const key = V.ses.key, sid = P.sid;
+    const isAbs = DB.obs.some(o => o.ses === key && o.sid === sid && o.cat === 'absent');
+    if (isAbs) removeObs(o => o.ses === key && o.sid === sid && o.cat === 'absent');
+    else { removeObs(o => o.ses === key && o.sid === sid && o.cat === 'ras'); addObs(sid, 'absent'); }
+    save(); closeLayer(); render();
+  },
+  'p-del': el => { removeObs(o => o.id === el.dataset.oid); save(); renderPanel(); render(); },
+  rasrest: () => {
+    const ses = V.ses, sum = sesSummary(ses.key);
+    const todo = studentsOf(ses.cid, ses.group).filter(s => !sum[s.id]);
+    if (!todo.length) { toast('Tous les élèves ont déjà une observation.'); return; }
+    const t = Date.now(); const ids = todo.map(s => addObs(s.id, 'ras', '', t).id);
+    save(); render();
+    toast(plural(todo.length, 'élève') + ' en RAS', {label:'Annuler', fn: () => { const set = new Set(ids); removeObs(o => set.has(o.id)); save(); render(); }});
+  },
+  period: el => { V.p = +el.dataset.i; render(); },
+  'o-del': el => {
+    if (!el.classList.contains('confirm')) { el.classList.add('confirm'); el.textContent = 'Confirmer'; setTimeout(() => { if (el.isConnected) { el.classList.remove('confirm'); el.textContent = 'Supprimer'; } }, 4000); return; }
+    removeObs(o => o.id === el.dataset.oid); save(); render();
+  },
+  export: el => exportModal(el.dataset.cid),
+  'export-stu': () => { const s = stu(V.sid), c = cls(s.cid), per = periodsFor(c)[V.p]; deliver(`suivi-${safeName(s.last + ' ' + s.first)}-${safeName(per.n)}.csv`, buildExport(c.id, per, 'detail', s.id), 'text/csv', navigator.canShare ? 'share' : 'dl'); },
+  'ex-go': el => {
+    const cid = $('#ex-cid').value, c = cls(cid), per = periodsFor(c)[+$('#ex-per').value];
+    const type = $('input[name="ex-type"]:checked').value;
+    deliver(`suivi-${safeName(c.name)}-${type}-${safeName(per.n)}.csv`, buildExport(cid, per, type), 'text/csv', el.dataset.mode === 'share' ? 'share' : 'dl').then(ok => { if (ok) closeModal(); });
+  },
+  backup: () => backupModal(),
+  'bk-share': () => doBackup('share'),
+  'bk-dl': () => doBackup('dl'),
+  'rs-go': async () => {
+    const data = PENDING_RESTORE; if (!data) return;
+    DB = migrate(data.db); PHOTOS = data.photos || {}; PENDING_RESTORE = null;
+    try { if (STORAGE_OK) await Store.replaceAll(); } catch (e) { toast('La restauration a échoué sur cet appareil.'); return; }
+    closeModal(); STACK = []; V = {name:'today', date: todayStr()}; render(); toast('Sauvegarde restaurée.');
+  },
+  wipe: () => openModal(`<h2>Tout effacer ?</h2><p>Classes, élèves, photos, emploi du temps et observations seront supprimés de cet appareil. Cette action est définitive.</p>
+    <label class="f" for="wipe-conf">Tapez EFFACER pour confirmer<input type="text" id="wipe-conf" autocomplete="off"></label>
+    <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn danger" data-act="wipe-go">Tout effacer</button></div>`),
+  'wipe-go': async () => {
+    if ($('#wipe-conf').value.trim().toUpperCase() !== 'EFFACER') { $('#wipe-conf').focus(); toast('Tapez EFFACER pour confirmer.'); return; }
+    DB = freshDB(); PHOTOS = {}; if (STORAGE_OK) await Store.replaceAll();
+    closeModal(); STACK = []; V = {name:'today', date: todayStr()}; render(); toast('Toutes les données ont été effacées.');
+  },
+  'sel-class': el => { V.cid = el.dataset.cid; V.imp = false; IMP = null; render(); },
+  'imp-open': () => { V.imp = true; IMP = null; render(); $('#imp-text')?.focus(); },
+  'imp-close': () => { V.imp = false; IMP = null; render(); },
+  'imp-parse': () => { const text = $('#imp-text').value; IMP = {text, ...parseList(text, V.cid)}; render(); },
+  'imp-go': () => {
+    if (!IMP) return;
+    IMP.rows.forEach(r => DB.students.push({id: uid(), cid: V.cid, first: r.first, last: r.last, group: r.group}));
+    const n = IMP.rows.length; save(); V.imp = false; IMP = null; render(); toast(plural(n, 'élève') + ' importé' + (n > 1 ? 's' : ''));
+  },
+  'del-stu': el => {
+    const s = stu(el.dataset.sid);
+    openModal(`<h2>Retirer ${esc(s.first + ' ' + s.last)} ?</h2><p>Sa photo et ses observations seront supprimées.</p><div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn danger" data-act="del-stu-go" data-sid="${s.id}">Retirer</button></div>`);
+  },
+  'del-stu-go': el => { const id = el.dataset.sid; DB.students = DB.students.filter(s => s.id !== id); removeObs(o => o.sid === id); delete PHOTOS[id]; STORAGE_OK && Store.delPhoto(id); save(); closeModal(); render(); },
+  'del-class': el => {
+    const c = cls(el.dataset.cid);
+    openModal(`<h2>Supprimer ${esc(c.name)} ?</h2><p>Les élèves, leurs photos, leurs observations et les créneaux de cette classe seront supprimés.</p><div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn danger" data-act="del-class-go" data-cid="${c.id}">Supprimer</button></div>`);
+  },
+  'del-class-go': el => {
+    const id = el.dataset.cid; const sids = DB.students.filter(s => s.cid === id).map(s => s.id);
+    DB.classes = DB.classes.filter(c => c.id !== id); DB.students = DB.students.filter(s => s.cid !== id); DB.slots = DB.slots.filter(s => s.cid !== id); removeObs(o => o.cid === id);
+    sids.forEach(s => { delete PHOTOS[s]; STORAGE_OK && Store.delPhoto(s); });
+    V.cid = null; save(); closeModal(); render();
+  },
+  'tr-grp': el => { TR.items[+el.dataset.i].group = el.dataset.g; renderKeep(); },
+  'tr-skip': el => { const it = TR.items[+el.dataset.i]; it.sid = it.sid === 'skip' ? 'new' : 'skip'; renderKeep(); },
+  'tr-cancel': () => { TR = null; back(); },
+  'tr-go': () => commitTrombi(),
+  'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
+};
+const CHG = {
+  photo: async el => { const f = el.files[0]; if (!f) return; const ok = await setPhoto(el.dataset.sid, f); render(); toast(ok ? 'Photo enregistrée' : "Cette image n'a pas pu être lue."); },
+  'bulk-photos': async el => {
+    const files = [...el.files]; const list = studentsOf(el.dataset.cid); let ok = 0; const miss = [];
+    const key = s => norm(s).split(' ').sort().join(' ');
+    const idx = new Map(list.map(s => [key(s.last + ' ' + s.first), s]));
+    for (const f of files) { const s = idx.get(key(f.name.replace(/\.[^.]+$/, ''))); if (s && await setPhoto(s.id, f)) ok++; else miss.push(f.name); }
+    render(); toast(`${plural(ok, 'photo')} associée${ok > 1 ? 's' : ''}` + (miss.length ? ` · ${miss.length} non reconnue${miss.length > 1 ? 's' : ''}` : ''));
+  },
+  group: el => { const s = stu(el.dataset.sid); s.group = el.value; save(); render(); },
+  'class-pt': el => { cls(el.dataset.cid).pt = el.value; save(); },
+  parity: el => { DB.settings.evenIsA = el.checked; save(); render(); },
+  'period-date': el => { const p = DB.settings.periods[el.dataset.k][+el.dataset.i]; if (el.value) { p[el.dataset.f] = el.value; save(); } },
+  restore: el => { const f = el.files[0]; if (f) restoreFrom(f); el.value = ''; },
+  'imp-file': el => { const f = el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { let t = r.result; if (/\uFFFD/.test(t)) { const r2 = new FileReader(); r2.onload = () => { IMP = {text: r2.result, ...parseList(r2.result, V.cid)}; render(); }; r2.readAsText(f, 'windows-1252'); return; } IMP = {text: t, ...parseList(t, V.cid)}; render(); }; r.readAsText(f, 'utf-8'); },
+  'ex-cid': el => exportModal(el.value),
+  trombi: el => { const f = el.files[0]; el.value = ''; if (f) startTrombi(f, el.dataset.cid); },
+  'tr-sel': el => { const it = TR.items[+el.dataset.i]; it.sid = el.value; if (el.value && el.value !== 'new' && el.value !== 'skip') it.group = stu(el.value)?.group || it.group; renderKeep(); },
+  'tr-name': el => { const it = TR.items[+el.dataset.i]; it[el.dataset.k] = titleCase(el.value.trim()); renderKeep(); }
+};
+const FORMS = {
+  'new-class': () => { const name = $('#nc-name').value.trim(); if (!name) return; const c = {id: uid(), name, pt: $('#nc-pt').value}; DB.classes.push(c); V.cid = c.id; V.imp = true; IMP = null; save(); render(); toast('Classe créée. Importez maintenant la liste des élèves.'); },
+  'add-stu': f => { const first = titleCase($('#as-first').value.trim()), last = titleCase($('#as-last').value.trim()); if (!first || !last) return; DB.students.push({id: uid(), cid: f.dataset.cid, first, last, group: $('#as-group').value}); save(); render(); $('#as-first')?.focus(); },
+  'add-slot': () => {
+    const s = {id: uid(), day: +$('#sl-day').value, start: $('#sl-start').value, end: $('#sl-end').value, cid: $('#sl-cid').value, group: $('#sl-group').value, week: $('#sl-week').value};
+    if (!s.start || !s.end || s.end <= s.start) { toast("L'heure de fin doit suivre l'heure de début."); return; }
+    DB.slots.push(s); save(); const keep = {day: s.day, end: s.end}; render(); $('#sl-day').value = keep.day; $('#sl-start').value = keep.end; toast('Créneau ajouté');
+  }
+};
+
+document.addEventListener('click', e => {
+  if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopPropagation(); return; }
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = ACT[el.dataset.act]; if (fn) fn(el, e);
+});
+document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
+document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form]?.(f); });
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P) closeLayer(); });
+document.addEventListener('pointerdown', e => {
+  const t = e.target.closest('.tile'); if (!t) return; suppressClick = false;
+  clearTimeout(longTimer); longTimer = setTimeout(() => { suppressClick = true; if (navigator.vibrate) navigator.vibrate(20); go({name:'fiche', sid: t.dataset.sid}); }, 550);
+});
+['pointerup','pointercancel','pointerleave'].forEach(ev => document.addEventListener(ev, () => { clearTimeout(longTimer); if (suppressClick) setTimeout(() => { suppressClick = false; }, 150); }, true));
+document.addEventListener('contextmenu', e => { if (e.target.closest('.tile')) e.preventDefault(); });
+
+async function showPersist() {
+  const el = $('#persist-status'); if (!el) return;
+  try { const p = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : false; el.textContent = p ? 'Protection du stockage : active (le navigateur ne purgera pas les données de lui-même).' : "Protection du stockage : non accordée. Installez l'app sur l'écran d'accueil pour l'obtenir."; }
+  catch (e) { el.textContent = ''; }
+}
+
+/* ---------- démarrage ---------- */
+async function init() {
+  STORAGE_OK = await Store.open();
+  if (STORAGE_OK) { try { const {core, photos} = await Store.load(); if (core) DB = migrate(core); PHOTOS = photos || {}; } catch (e) { STORAGE_OK = false; } }
+  if (IS_DEMO && !DB.classes.length) { loadDemo(); if (STORAGE_OK) Store.replaceAll().catch(() => {}); }
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+  if (!IS_DEMO && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  render();
+  setInterval(() => { if (V.name === 'today' && !$('#modal').innerHTML && document.visibilityState === 'visible') render(); }, 60000);
+}
+init();
+</script>
+
+</body>
+</html>

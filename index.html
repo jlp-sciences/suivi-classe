@@ -106,7 +106,29 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .h2s{font-size:17px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .pgblk{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
 .pgblk:first-of-type{border-top:none}
-.pgblk.cur{background:var(--pos-soft);margin:0 -12px;padding:10px 12px;border-radius:10px;border-top:none}
+.pgblk.cur{margin:6px 0;padding:0;border-radius:12px;border:2px solid var(--pos);overflow:hidden;gap:0}
+button.pgblk{width:100%;text-align:left;background:transparent;border-left:none;border-right:none;border-bottom:none;font:inherit;color:inherit;cursor:pointer}
+button.pgblk:not(.cur){border-radius:10px;margin:0 -8px;padding:10px 8px;width:calc(100% + 16px)}
+button.pgblk:not(.cur):hover{background:var(--surface-2)}
+button.pgblk.sel:not(.cur){background:var(--surface-2);box-shadow:inset 4px 0 0 var(--ink)}
+button.pgblk.cur{border:2px solid var(--pos)}
+button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,transparent)}
+.curband{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:9px 12px;background:var(--pos);color:var(--on-pos)}
+.curband .cb1{font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.curband .cb2{font-family:var(--serif);font-size:19px;font-weight:600}
+.curbody{padding:10px 12px;display:flex;flex-direction:column;gap:4px;background:var(--pos-soft)}
+.pgmore{align-self:flex-end;font-size:13px;font-weight:600;color:var(--pos);margin-top:2px}
+.pgnote{margin:6px 0 0;padding:6px 10px;border-left:3px solid var(--warn-line);background:var(--warn-soft);color:var(--warn-ink);border-radius:0 8px 8px 0;font-size:14px;white-space:pre-wrap}
+.pgnote.big{font-size:16px;margin:0}
+.hubcol{display:flex;flex-direction:column;gap:16px;min-width:0}
+.pgdetail{display:flex;flex-direction:column;gap:8px}
+.pgdetail .lbl{margin-top:6px}
+.pgdh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.pgdt{display:flex;flex-direction:column;min-width:0}
+.pgdt strong{font-family:var(--serif);font-size:20px}
+.pglist.big{font-size:16px;gap:8px}
+.st-done{color:var(--pos)}
+.pnote{display:block;width:100%;font-size:13px;color:var(--warn-ink);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pglist{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
 .pgrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 12px;border-radius:10px;background:var(--surface-2)}
 .pgrow .pgblk{border-top:none;padding:0}
@@ -303,8 +325,13 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .tt{display:grid;grid-template-columns:48px repeat(var(--n),minmax(130px,1fr));column-gap:8px;row-gap:8px}
 .tt-dh{padding:6px 8px;border-radius:10px;text-align:center;font-size:14px;color:var(--muted)}
 .tt-dh b{font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
-.tt-dh.today{background:var(--ink);color:var(--surface)}
-.tt-dh.today b{color:var(--surface)}
+.tt-dh.today{background:var(--pos);color:var(--on-pos)}
+.tt-dh.today b{color:var(--on-pos)}
+.tt-tag{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.85}
+.tt-col.hi{background-color:color-mix(in srgb,var(--pos) 9%,var(--surface));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--pos) 45%,transparent)}
+.tt-past{position:absolute;left:0;right:0;top:0;border-radius:9px 9px 0 0;background:color-mix(in srgb,var(--ink) 5%,transparent);pointer-events:none}
+.tt-now{position:absolute;left:-4px;right:0;height:0;border-top:2px solid #D93025;z-index:3;pointer-events:none}
+.tt-now::before{content:"";position:absolute;left:-6px;top:-7px;width:12px;height:12px;border-radius:50%;background:#D93025}
 .tt-times{position:relative}
 .tt-times span{position:absolute;right:2px;transform:translateY(-50%);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tt-times span:first-child{transform:none}
@@ -482,7 +509,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.0', d: '2026-09-27'};
+const APP_VERSION = {n: '2.1', d: '2026-09-27'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -647,7 +674,15 @@ function stateChip(st) {
 }
 const isNarrow = () => window.innerWidth < 720;
 let HOME_MODE = 'week';
-const homeV = () => ({name:'today', tab:'edt', mode: HOME_MODE, date: todayStr()});
+/* jour mis en avant : aujourd'hui, ou le lundi suivant le week-end */
+function focusDay() {
+  const t = todayStr(), wd = parseD(t).getDay();
+  const satOk = wd === 6 && DB.slots.some(x => x.day === 6 && (x.week === 'all' || x.week === weekType(t)) && cls(x.cid));
+  if (wd === 0) return addDays(t, 1);
+  if (wd === 6 && !satOk) return addDays(t, 2);
+  return t;
+}
+const homeV = () => ({name:'today', tab:'edt', mode: HOME_MODE, date: focusDay()});
 function slotsOn(date) {
   if (holidayOn(date)) return [];
   const wd = parseD(date).getDay(), wt = weekType(date);
@@ -769,7 +804,7 @@ function viewToday() {
   return `${tabBar('edt')}
   <header class="bar">
     <button class="btn icon-btn" data-act="day" data-n="-1" aria-label="Jour précédent">${ICON.back}</button>
-    <div class="ttl"><h1>${fmtLong(d)}</h1><div class="sub">${d === t ? "Aujourd'hui" : `<button class="btn ghost" style="min-height:28px;padding:0;color:var(--pos)" data-act="day" data-n="0">Revenir à aujourd'hui</button>`}</div></div>
+    <div class="ttl"><h1>${fmtLong(d)}</h1><div class="sub">${d === t ? "Aujourd'hui" : d === focusDay() ? 'Prochain jour de cours' : `<button class="btn ghost" style="min-height:28px;padding:0;color:var(--pos)" data-act="day" data-n="0">${focusDay() === t ? "Revenir à aujourd'hui" : 'Revenir au prochain jour de cours'}</button>`}</div></div>
     <button class="btn icon-btn" data-act="day" data-n="1" aria-label="Jour suivant">${ICON.next}</button>
     <span class="chip dark" style="font-size:14px;padding:5px 12px">Semaine ${wt}</span>
     <span class="grow"></span>
@@ -793,7 +828,7 @@ function slotCard(d, s, FM) {
 
 /* ---------- vue : semaine ---------- */
 function viewWeek() {
-  const t = todayStr(), mon = mondayOf(V.date), FM = fillMap();
+  const t = todayStr(), mon = mondayOf(V.date), FM = fillMap(), fd = focusDay();
   const wt = weekType(mon);
   const days = [0, 1, 2, 3, 4, 5].map(i => addDays(mon, i));
   const sat = DB.slots.some(x => x.day === 6 && (x.week === 'all' || x.week === wt) && cls(x.cid));
@@ -809,8 +844,12 @@ function viewWeek() {
   const cols = shown.map(d => {
     const hol = holidayOn(d), sl = slotsOn(d);
     const wd = parseD(d);
-    const head = `<div class="tt-dh ${d === t ? 'today' : ''}">${DAYS[wd.getDay()].slice(0, 3)}. <b>${wd.getDate()}</b></div>`;
-    if (hol) return {head, body: `<div class="tt-col" style="height:${H}px"><div class="tt-hol">${esc(hol.n)}</div></div>`};
+    const hi = d === fd;
+    const head = `<div class="tt-dh ${hi ? 'today' : ''}">${DAYS[wd.getDay()].slice(0, 3)}. <b>${wd.getDate()}</b>${hi ? `<span class="tt-tag">${d === t ? "Aujourd'hui" : 'Prochain jour'}</span>` : ''}</div>`;
+    /* ligne « maintenant », comme dans un agenda */
+    const nm = nowMin(), nowLine = d === t && nm >= t0 && nm <= t1 ? `<div class="tt-now" style="top:${(nm - t0) * PPM}px" aria-hidden="true"></div>` : '';
+    const pastShade = d === t && nm > t0 ? `<div class="tt-past" style="height:${Math.min(nm - t0, t1 - t0) * PPM}px" aria-hidden="true"></div>` : '';
+    if (hol) return {head, body: `<div class="tt-col ${hi ? 'hi' : ''}" style="height:${H}px"><div class="tt-hol">${esc(hol.n)}</div>${nowLine}</div>`};
     // chevauchements : répartir côte à côte
     const lanes = []; sl.forEach(x => { let i = lanes.findIndex(end => end <= x.start); if (i < 0) { i = lanes.length; lanes.push(x.end); } else lanes[i] = x.end; x._lane = i; });
     const nl = Math.max(1, lanes.length);
@@ -825,10 +864,10 @@ function viewWeek() {
       return `<button class="blk ${hasEval(DB.content[d + '|' + x.id]) ? 'has-eval' : ''} ${d < t ? 'past' : ''} ${isNow ? 'now' : ''} ${st.k === 'cancel' ? 'cancel' : ''} ${h < 58 ? 'short' : ''}" style="top:${top}px;height:${h}px;left:calc(${x._lane * w}% + 2px);width:calc(${w}% - 4px);--cc:${ccol(c)}" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + g + ', ' + fmtT(x.start))}">
         <span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}</span><span class="bg">${(() => { const ct = DB.content[d + '|' + x.id]; const sm = contentSummary(ct, levelOf(c), true); return sm ? esc(sm) : fmtT(x.start) + ' – ' + fmtT(x.end); })()}</span>${hasEval(DB.content[d + '|' + x.id]) ? '<span class="evb">Évaluation</span>' : ''}${stateChip(st)}</button>`;
     }).join('');
-    return {head, body: `<div class="tt-col" style="height:${H}px">${blocks}</div>`};
+    return {head, body: `<div class="tt-col ${hi ? 'hi' : ''}" style="height:${H}px">${pastShade}${blocks}${nowLine}</div>`};
   });
   const hours = []; for (let m = t0; m <= t1; m += 60) hours.push(`<span style="top:${(m - t0) * PPM}px">${m / 60} h</span>`);
-  const isCur = mon === mondayOf(t);
+  const isCur = mon === mondayOf(fd);
   const sub = `Semaine ${wt} · ` + (todo ? `<strong class="todo">${plural(todo, 'séance')} à compléter</strong>` : started ? 'Tout est à jour' : 'Aucune séance commencée');
   const endD = parseD(shown[shown.length - 1]);
   const title = `Du ${parseD(mon).getDate()} ${parseD(mon).getMonth() === endD.getMonth() ? '' : parseD(mon).toLocaleDateString('fr-FR', {month:'short'}) + ' '}au ${endD.toLocaleDateString('fr-FR', {day:'numeric', month:'long'})}`;
@@ -2076,6 +2115,8 @@ function renderContent() {
           <select id="hw-due" data-chg="hw-due" aria-label="Pour quand" style="width:auto"><option value="next" ${CT.hw.due === 'next' ? 'selected' : ''}>Pour la séance suivante${nextAny ? ' (' + fmtShort(nextAny.date) + ')' : ''}</option><option value="date" ${CT.hw.due === 'date' ? 'selected' : ''}>Pour une autre date…</option></select>
           ${CT.hw.due === 'date' ? `<input type="date" id="hw-date" style="width:auto" value="${nextAny ? nextAny.date : s.date}">` : ''}
           <button type="button" class="btn" data-act="hw-add">Ajouter le devoir</button></div></div>
+      <div><label class="lbl" for="ct-note" style="display:block">Commentaire <span style="text-transform:none;letter-spacing:0;font-weight:400">· visible par vous seul</span></label>
+        <textarea id="ct-note" rows="3" data-inp="ct-note" placeholder="ex. Manqué de temps, bilan à reprendre · groupe agité après la récréation" style="margin-top:6px">${esc(d.note || '')}</textarea></div>
       ${other ? `<label class="check other"><input type="checkbox" id="ct-other" ${CT.other ? 'checked' : ''} data-act="ct-other"> Même contenu pour le ${other.group} (${fmtShort(other.date)}, ${fmtT(other.start)})</label>` : ''}
       <p class="err" id="ct-err" hidden></p>
     </div>
@@ -2097,11 +2138,12 @@ function readHwForm() {
 function syncInputs() {
   document.querySelectorAll('#layer [data-inp="ct-label"]').forEach(el => { const it = CT.data.items[+el.dataset.i]; if (it) it.label = el.value.trim(); });
   const t = $('#ct-title'); if (t && CT.data.ch != null) CT.titles[CT.data.ch] = t.value.trim();
+  const n = $('#ct-note'); if (n) { const v = n.value.trim(); if (v) CT.data.note = v; else delete CT.data.note; }
 }
 function saveContent(fromCT) {
   const s = CT.ses, d = CT.data, lvl = levelOf(cls(s.cid));
   Object.entries(CT.titles).forEach(([n, t]) => { const ch = chaptersOf(lvl).find(x => x.n === +n); if (ch) ch.t = t; });
-  const empty = !d.items.length && !d.hw.length && d.ch == null;
+  const empty = !d.items.length && !d.hw.length && d.ch == null && !d.note;
   if (empty) delete DB.content[s.key]; else DB.content[s.key] = d;
   const other = otherGroupSession(s);
   if (other && CT.other && !empty) {
@@ -2154,12 +2196,13 @@ function viewProg() {
     else { const sts = ct.items.map(i => i.st); status = sts.every(x => x === 'done') ? 'Fait' : sts.some(x => x === 'not' || x === 'part') ? (sts.every(x => x === 'not') ? 'Pas fait' : 'En partie') : 'À renseigner'; cl = status === 'Fait' ? 'pos' : status === 'À renseigner' ? 'muted' : 'warn'; }
     const items = ct ? ct.items.map(it => `${ityChip(it.type)}${it.label ? ' <span>' + esc(it.label) + '</span>' : ''}${st && it.st && it.st !== 'done' && it.st !== 'prev' ? ` <span class="small st-${it.st}">(${it.st === 'part' ? 'en partie' : 'pas fait'})</span>` : ''}`).join(' ') : '';
     const hw = ct && ct.hw.length ? 'À faire : ' + ct.hw.map(hwText).map(esc).join(' · ') : '';
+    const note = ct && ct.note ? `<span class="pnote">${esc(ct.note)}</span>` : '';
     const now = hi && s.key === hi.key;
     return `<button class="prow ${s.cancelled ? 'is-cancel' : ''} ${now ? 'is-now' : ''}" data-act="prog-open" data-key="${s.key}">
       <span class="pd">${now ? `<span class="nowtag">${ongoing ? 'En cours' : s.date === t ? "Aujourd'hui" : 'Prochaine'}</span>` : ''}${cap(parseD(s.date).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'}))}${s.start !== '99:99' ? '<br><span class="small muted">' + fmtT(s.start) + '</span>' : ''}</span>
       <span class="pg">${s.group === 'all' ? '<span class="chip neu">Entière</span>' : `<span class="chip neu">${s.group}</span>`}</span>
       <span class="pc small">${ct && ct.ch != null ? 'Ch. ' + ct.ch : '—'}</span>
-      <span class="pi">${items || '<span class="small muted">—</span>'}</span>
+      <span class="pi">${items || (note ? '' : '<span class="small muted">—</span>')}${note}</span>
       <span class="ph small muted">${hw}</span>
       <span class="ps small ${cl}">${status}${DB.appr[s.key] ? '<br>' + apprChip(s.key) : ''}</span></button>`;
   };
@@ -2239,20 +2282,60 @@ function checkListHTML(ses, ck) {
   h += sec(`Oubli de matériel le ${prevD}`, ck.mat.map(o => line(stu(o.sid), o.note ? esc(o.note) : 'À vérifier aujourd\'hui', `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
   return h || '<p class="muted" style="margin:0">Rien à vérifier pour cette séance.</p>';
 }
+const sesByKey = (cid, key) => classSessions(cid).find(x => x.key === key) || null;
+const fmtDay = d => parseD(d).toLocaleDateString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long'});
+function itemsHTML(ct, showState) {
+  return ct && ct.items.length ? ct.items.map(it => `<li>${ityChip(it.type)} ${esc(it.label || '')}${showState && it.st === 'part' ? ' <span class="small st-part">(en partie)</span>' : ''}${showState && it.st === 'not' ? ' <span class="small st-not">(pas fait)</span>' : ''}${showState && it.st === 'done' ? ' <span class="small st-done">(fait)</span>' : ''}${it.rep ? ` <span class="small muted">→ reporté au ${fmtShort(it.rep)}</span>` : ''}</li>`).join('') : '';
+}
+const noteHTML = ct => ct && ct.note ? `<p class="pgnote">${esc(ct.note)}</p>` : '';
 function progressHTML(ses, compact) {
   const c = cls(ses.cid), lvl = levelOf(c);
   const prev = prevSession(ses), nxt = nextSession(ses.cid, ses.key, ses.group, false);
+  const click = !compact;
   const block = (title, s, ct, showState, extra) => {
     if (!s) return '';
-    const items = ct && ct.items.length ? ct.items.map(it => `<li>${ityChip(it.type)} ${esc(it.label || '')}${showState && it.st === 'part' ? ' <span class="small st-part">(en partie)</span>' : ''}${showState && it.st === 'not' ? ' <span class="small st-not">(pas fait)</span>' : ''}${it.rep ? ` <span class="small muted">→ reporté au ${fmtShort(it.rep)}</span>` : ''}</li>`).join('') : '';
-    return `<div class="pgblk ${extra || ''}"><div class="lbl">${title} · ${fmtShort(s.date)}${s.group !== 'all' ? ' · ' + s.group : ''}${showState && s.key ? ' ' + apprChip(s.key) : ''}</div>
+    const items = itemsHTML(ct, showState);
+    const inner = `<div class="lbl">${title} · ${fmtShort(s.date)}${s.group !== 'all' ? ' · ' + s.group : ''}${showState && s.key ? ' ' + apprChip(s.key) : ''}</div>
       ${ct && ct.ch != null ? `<div class="small">${esc(chapterLabel(lvl, ct.ch))}</div>` : ''}
-      ${items ? `<ul class="pglist">${items}</ul>` : '<p class="small muted" style="margin:4px 0 0">Rien de renseigné.</p>'}</div>`;
+      ${items ? `<ul class="pglist">${items}</ul>` : '<p class="small muted" style="margin:4px 0 0">Rien de renseigné.</p>'}${noteHTML(ct)}`;
+    return click ? `<button type="button" class="pgblk ${extra || ''} ${V.pgSel === s.key ? 'sel' : ''}" data-act="pg-sel" data-key="${s.key}">${inner}<span class="pgmore">Voir en détail ›</span></button>` : `<div class="pgblk ${extra || ''}">${inner}</div>`;
   };
   if (compact) return `<div class="pgrow">${block('Séance précédente', prev, prev && DB.content[prev.key], true)}${block('Séance suivante', nxt, nxt && DB.content[nxt.key], false)}</div>`;
-  return block('Séance précédente', prev, prev && DB.content[prev.key], true)
-    + block("Aujourd'hui", {date: ses.date, group: ses.group}, DB.content[ses.key], false, 'cur')
-    + block('Séance suivante', nxt, nxt && DB.content[nxt.key], false);
+  /* cette séance : bandeau bien visible avec la date complète */
+  const ct = DB.content[ses.key], isToday = ses.date === todayStr();
+  const curItems = itemsHTML(ct, sesStarted(sesByKey(ses.cid, ses.key) || {date: ses.date, start: '99:99'}));
+  const cur = `<button type="button" class="pgblk cur ${V.pgSel === ses.key ? 'sel' : ''}" data-act="pg-sel" data-key="${ses.key}">
+      <div class="curband"><span class="cb1">${isToday ? "Aujourd'hui" : 'Cette séance'}</span><span class="cb2">${cap(fmtDay(ses.date))} · ${esc(ses.label)}${ses.group !== 'all' ? ' · ' + ses.group : ''}</span></div>
+      <div class="curbody">${ct && ct.ch != null ? `<div class="small">${esc(chapterLabel(lvl, ct.ch))}</div>` : ''}
+      ${curItems ? `<ul class="pglist">${curItems}</ul>` : '<p class="small muted" style="margin:4px 0 0">Rien de renseigné.</p>'}${noteHTML(ct)}<span class="pgmore">Voir en détail ›</span></div></button>`;
+  return block('Séance précédente', prev, prev && DB.content[prev.key], true) + cur + block('Séance suivante', nxt, nxt && DB.content[nxt.key], false);
+}
+/* détail en grand d'une séance, sous « À vérifier » */
+function detailHTML(ses) {
+  const key = V.pgSel; if (!key) return '';
+  const c = cls(ses.cid), lvl = levelOf(c);
+  const s = key === ses.key ? (sesByKey(ses.cid, key) || {...ses, start: '99:99'}) : sesByKey(ses.cid, key);
+  if (!s) return '';
+  const list = classSessions(ses.cid).filter(x => !x.cancelled && compat(x.group, ses.group));
+  if (!list.some(x => x.key === s.key)) list.push(s);
+  list.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+  const i = list.findIndex(x => x.key === s.key), pv = list[i - 1], nx = list[i + 1];
+  const ct = DB.content[s.key], st = sesStarted(s), items = itemsHTML(ct, st);
+  const j = list.findIndex(x => x.key === ses.key);
+  const rel = s.key === ses.key ? (s.date === todayStr() ? "Aujourd'hui" : 'Cette séance') : i === j - 1 ? 'Séance précédente' : i === j + 1 ? 'Séance suivante' : i < j ? 'Plus tôt' : 'Plus tard';
+  const hw = ct && ct.hw.length ? `<ul class="hwlist">${ct.hw.map(h => `<li class="hwitem"><span>${esc(hwText(h))}</span><span class="small muted">${h.due ? 'pour le ' + fmtShort(h.due) : 'pour la séance suivante'}</span></li>`).join('')}</ul>` : '<p class="small muted" style="margin:0">Aucun travail donné.</p>';
+  return `<section class="card pgdetail">
+    <div class="pgdh"><button class="btn icon-btn" data-act="pg-step" data-key="${pv ? pv.key : ''}" ${pv ? '' : 'disabled'} aria-label="Séance précédente">${ICON.back}</button>
+      <div class="pgdt"><span class="small muted">${rel}${s.group !== 'all' ? ' · ' + s.group : ''}</span><strong>${cap(fmtDay(s.date))}</strong><span class="small muted">${esc(s.label || '')}${s.cancelled ? ' · annulée' : ''}</span></div>
+      <button class="btn icon-btn" data-act="pg-step" data-key="${nx ? nx.key : ''}" ${nx ? '' : 'disabled'} aria-label="Séance suivante">${ICON.next}</button>
+      <span class="grow"></span>${apprChip(s.key)}
+      <button class="btn" data-act="pg-edit" data-key="${s.key}">Modifier</button>
+      <button class="btn icon-btn ghost" data-act="pg-close" aria-label="Fermer">${ICON.close}</button></div>
+    <div class="lbl">Chapitre</div><p style="margin:0">${ct && ct.ch != null ? esc(chapterLabel(lvl, ct.ch)) : '<span class="muted">—</span>'}</p>
+    <div class="lbl">Déroulé</div>${items ? `<ul class="pglist big">${items}</ul>` : '<p class="small muted" style="margin:0">Rien de renseigné.</p>'}
+    <div class="lbl">Travail donné</div>${hw}
+    <div class="lbl">Commentaire</div>${ct && ct.note ? `<p class="pgnote big">${esc(ct.note)}</p>` : '<p class="small muted" style="margin:0">Aucun commentaire.</p>'}
+  </section>`;
 }
 /* ---------- écran de séance : Contenu · Devoirs · Plan · Bilan ---------- */
 const sesHasPlan = ses => ses.group !== 'all' && DB.rooms.length > 0;
@@ -2293,7 +2376,8 @@ function viewHub() {
   return `${sesHeader(ses, `<button class="btn primary" data-act="hub-content">Modifier le contenu</button>`)}
   <main class="main"><div class="wrap hub" style="max-width:1300px">
     <section class="card"><h2 class="h2s">Progression</h2>${progressHTML(ses)}</section>
-    <section class="card"><h2 class="h2s">À vérifier${ck.n ? ` <span class="chip warn">${ck.n}</span>` : ''}</h2>${checkListHTML(ses, ck)}</section>
+    <div class="hubcol"><section class="card"><h2 class="h2s">À vérifier${ck.n ? ` <span class="chip warn">${ck.n}</span>` : ''}</h2>${checkListHTML(ses, ck)}</section>
+    ${detailHTML(ses)}</div>
   </div></main>`;
 }
 /* onglet Devoirs : un toucher = non fait, un 2e toucher = annuler, appui long = incomplet / bâclé */
@@ -2395,11 +2479,11 @@ function catchModal(sid) {
 /* ---------- actions ---------- */
 let longTimer = null, suppressClick = false;
 const ACT = {
-  day: el => { const n = +el.dataset.n; V.date = n === 0 ? todayStr() : addDays(V.date, n); render(); },
-  week: el => { const n = +el.dataset.n; V.date = n === 0 ? todayStr() : addDays(mondayOf(V.date), n); render(); },
+  day: el => { const n = +el.dataset.n; V.date = n === 0 ? focusDay() : addDays(V.date, n); render(); },
+  week: el => { const n = +el.dataset.n; V.date = n === 0 ? focusDay() : addDays(mondayOf(V.date), n); render(); },
   mode: el => {
     const m = el.dataset.m; if (m === V.mode) return;
-    if (m === 'day') { const mon = mondayOf(V.date); V.date = mon === mondayOf(todayStr()) ? todayStr() : mon; }
+    if (m === 'day') { const mon = mondayOf(V.date), f = focusDay(); V.date = mon === mondayOf(f) ? f : mon; }
     HOME_MODE = V.mode = m; render();
   },
   'slot-cancel': el => { const key = el.dataset.date + '|' + el.dataset.slot; if (DB.cancelled[key]) delete DB.cancelled[key]; else DB.cancelled[key] = true; save(); closeModal(); render(); toast(DB.cancelled[key] ? 'Séance marquée comme annulée' : 'Séance rétablie'); },
@@ -2692,12 +2776,12 @@ const ACT = {
   },
   'prog-export': () => {
     const c = cls(V.pcid), lvl = levelOf(c);
-    const rows = [['Date', 'Horaire', 'Groupe', 'Chapitre', 'Déroulé', 'Travail à faire', 'État', 'Appréciation de la classe']];
+    const rows = [['Date', 'Horaire', 'Groupe', 'Chapitre', 'Déroulé', 'Travail à faire', 'État', 'Appréciation de la classe', 'Commentaire']];
     classSessions(c.id).forEach(s => {
       const ct = DB.content[s.key];
       rows.push([s.date.split('-').reverse().join('/'), s.start === '99:99' ? '' : fmtT(s.start), s.group === 'all' ? 'Classe entière' : s.group, ct && ct.ch != null ? chapterLabel(lvl, ct.ch) : '',
         ct ? ct.items.map(i => (ITYPE[i.type] || ITYPE.autre).l + (i.label ? ' : ' + i.label : '') + (i.st === 'part' ? ' (en partie)' : i.st === 'not' ? ' (pas fait)' : '')).join(' | ') : '',
-        ct ? ct.hw.map(hwText).join(' | ') : '', s.cancelled ? 'Annulé' : '', APPR_L[DB.appr[s.key]] || '']);
+        ct ? ct.hw.map(hwText).join(' | ') : '', s.cancelled ? 'Annulé' : '', APPR_L[DB.appr[s.key]] || '', ct && ct.note ? ct.note : '']);
     });
     deliver(`progression-${safeName(c.name)}.csv`, csv(rows), 'text/csv', navigator.canShare ? 'share' : 'dl');
   },
@@ -2713,6 +2797,10 @@ const ACT = {
   'dv-set': el => { setDv(el.dataset.sid, el.dataset.cat); closeModal(); renderKeep(); },
   'room-in': el => { const ses = V.ses, rid = el.dataset.rid; DB.sesRoom[ses.key] = rid; DB.lastRoom[ses.cid + '|' + ses.group] = rid; save(); V.ses = {...ses, room: rid}; V.edit = false; V.selSid = null; V.hideFlags = false; render(); },
   appr: el => { const k = V.ses.key, v = el.dataset.v; if (DB.appr[k] === v) delete DB.appr[k]; else DB.appr[k] = v; save(); renderKeep(); },
+  'pg-sel': el => { V.pgSel = V.pgSel === el.dataset.key ? null : el.dataset.key; renderKeep(); if (V.pgSel) $('.pgdetail')?.scrollIntoView({block: 'nearest', behavior: 'smooth'}); },
+  'pg-step': el => { if (el.dataset.key) { V.pgSel = el.dataset.key; renderKeep(); } },
+  'pg-close': () => { V.pgSel = null; renderKeep(); },
+  'pg-edit': el => { const s = el.dataset.key === V.ses.key ? V.ses : sesByKey(V.ses.cid, el.dataset.key); if (s) openContent({...s, cid: V.ses.cid}); },
   'p-step': el => { const nx = bilanStep(P.sid, +el.dataset.d); if (nx) openPanel(nx); },
   'hub-content': () => openContent(V.ses),
   'chk-open': () => { CHK = true; renderCheckSheet(); },

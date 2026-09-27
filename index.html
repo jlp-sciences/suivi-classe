@@ -40,6 +40,11 @@
   --ph:#2E3237; --ph-ink:#8E939A; --scrim:rgba(0,0,0,.6); --shadow:0 12px 32px rgba(0,0,0,.5);
   --warn-soft:#3A3018; --warn-ink:#F0D597; --warn-line:#5E4E24;
 }
+[hidden]{display:none !important}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+img{-webkit-user-drag:none;user-drag:none}
+button img,.thumb img,.bigph img,.avatar img{pointer-events:none}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.4;-webkit-tap-highlight-color:transparent}
 *{box-sizing:border-box}
@@ -95,6 +100,108 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .welcome h2{font-family:var(--serif);font-size:24px;margin-bottom:8px}
 .welcome ol{margin:0 0 16px;padding-left:20px;color:var(--ink-2)}
 
+/* Onglets */
+.appbar{display:flex;align-items:stretch;gap:2px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--line);flex:none;min-height:56px;flex-wrap:wrap}
+.appbar .brand{display:flex;align-items:center;font-family:var(--serif);font-size:19px;font-weight:600;margin-right:14px}
+.appbar .tb{display:flex;align-items:center;padding:0 14px;border:none;border-bottom:3px solid transparent;background:transparent;color:var(--muted);font-weight:500;font-size:15px;min-height:56px}
+.appbar .tb[aria-current="page"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
+.appbar .grow{flex:1}
+.eye{align-self:center}
+.eye[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gchip{min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--line);background:var(--surface);font-size:15px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.gchip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+/* Suivi */
+.stable-card{padding:0;overflow:hidden}
+.srow{width:100%;display:grid;grid-template-columns:48px minmax(0,2fr) 44px 64px 64px 52px 52px minmax(0,2.4fr) 170px;align-items:center;gap:0 12px;padding:6px 16px;border:none;border-top:1px solid var(--line);background:transparent;text-align:left;font-size:15px;min-height:56px}
+.srow.head{min-height:40px;border-top:none;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.srow .thumb{width:44px;height:44px}
+.srow .thumb .ini{font-size:15px}
+.srow .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .num{text-align:right;font-variant-numeric:tabular-nums}
+.srow .num.pos{color:var(--pos);font-weight:600}.srow .num.neg{color:var(--neg);font-weight:600}
+.srow .last{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2)}
+.srow .bdg{display:flex;gap:4px;justify-content:flex-end}
+@media (max-width:900px){.srow{grid-template-columns:44px minmax(0,1fr) 36px 50px 50px 40px 40px 110px}.srow .last{display:none}}
+/* Salles et plans */
+.plan-wrap{display:flex;gap:16px;align-items:flex-start}
+@media (max-width:820px){.plan-wrap{flex-direction:column;align-items:stretch}.plan-wrap > .unplaced{width:auto !important}.plan-wrap > .unplaced > .seat{display:inline-flex}}
+.plan-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-items:center;gap:10px}
+.room{position:relative;aspect-ratio:1000/620;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-width:100%;flex:none}
+.room.grid-bg{background-image:radial-gradient(var(--line-2) 1.2px,transparent 1.2px);background-size:2% 3.2258%}
+.board{position:absolute;background:var(--ink);color:var(--surface);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;border-radius:5px}
+.board.top{left:30%;right:30%;top:.8%;height:4.2%}.board.bottom{left:30%;right:30%;bottom:.8%;height:4.2%}
+.board.left{top:25%;bottom:25%;left:.6%;width:2.6%;writing-mode:vertical-rl}.board.right{top:25%;bottom:25%;right:.6%;width:2.6%;writing-mode:vertical-rl}
+.desk{position:absolute;background:var(--surface-2);border:1px solid var(--line-2);border-radius:6px;font-size:11px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;justify-content:center}
+.it{position:absolute;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);display:flex;flex-direction:column;gap:3px;padding:3px}
+.it.double{background:var(--surface-2)}
+.it.rot.double{flex-direction:row}
+.it .glass{flex:none;height:5px;border-radius:3px;background:linear-gradient(90deg,#BFD9E6,#E3F0F6,#BFD9E6);border:1px solid #9EC3D6}
+.it.rot .glass{height:auto;width:5px}
+.un{flex:1 1 0;display:flex;flex-direction:column;gap:2px;min-height:0;min-width:0;border-radius:8px;padding:1px;background:var(--surface)}
+.un.flag{box-shadow:0 0 0 2px #D9A52B;background:var(--warn-soft)}
+.un.conf{box-shadow:0 0 0 2px var(--neg)}
+.uh{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--ink-2);min-height:16px;padding:0 2px;white-space:nowrap;overflow:hidden;-webkit-touch-callout:none;user-select:none}
+.uh .fl{padding:0 5px;border-radius:5px;background:var(--warn-soft);color:var(--warn-ink);border:1px solid var(--warn-line);font-weight:600}
+.uh .fl.neg{background:var(--neg-soft);color:var(--neg-ink);border-color:var(--neg-line)}
+.uh .note{margin-left:auto;border:none;background:transparent;color:var(--pos);font-weight:600;font-size:11px;padding:0 2px;min-height:18px}
+.seats{flex:1 1 auto;display:grid;grid-template-columns:1fr 1fr;gap:3px;min-height:0;position:relative}
+.it.ilot .seats{grid-template-rows:1fr 1fr;row-gap:7px}
+.it.ilot .seats::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--line-2);pointer-events:none}
+.it.rot.ilot .seats{grid-auto-flow:column;row-gap:3px;column-gap:7px}
+.it.rot.ilot .seats::after{left:50%;right:auto;top:0;bottom:0;width:2px;height:auto;margin:0 0 0 -1px}
+.it.simple .seats{grid-template-rows:1fr}
+.it.rot.simple .seats,.it.rot.double .seats{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+.seat{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:0;display:flex;align-items:center;gap:4px;overflow:hidden;text-align:left;min-width:0;min-height:0;color:var(--ink);-webkit-touch-callout:none;user-select:none}
+.seat .sp{width:30px;align-self:stretch;flex:none;background:var(--ph);display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:28px}
+.seat .sp img{width:100%;height:100%;object-fit:cover}
+.seat .sp .ini{font-size:12px}
+.seat .st{display:flex;flex-direction:column;gap:1px;min-width:0;padding-right:3px}
+.seat .sn{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat .sc{display:flex;gap:2px;flex-wrap:nowrap}
+.seat .sc .chip{font-size:10px;padding:0 4px;border-radius:4px}
+.seat.empty{border-style:dashed;background:transparent;justify-content:center;color:var(--muted);font-size:11px}
+.seat.ghost{background:var(--surface-2);border-color:var(--line)}
+.seat.drop{background:var(--pos-soft);border-color:var(--pos-line);color:var(--pos-ink);font-weight:600}
+.seat.is-absent{opacity:.45}
+.seat.sel{outline:3px solid var(--ink);outline-offset:1px;z-index:1}
+.unplaced{width:190px;flex:none;display:flex;flex-direction:column;gap:6px}
+.unplaced > .seat{min-height:46px}
+.unplaced .btn,.unplaced .card .btn{white-space:normal;text-align:left;height:auto;padding-block:8px;line-height:1.25}
+.room.names .seat .sp{display:none}
+.plan-page{gap:8px}
+.plan-page > .banner{padding:6px 12px;margin:0;font-size:14px;gap:8px}
+.plan-page > .banner .btn{min-height:36px;padding:0 12px;font-size:14px}
+.seat{container-type:inline-size}
+@container (max-width: 88px){.seat .sp{display:none}.seat .st{padding-left:4px}}
+.room.names .seat{justify-content:center;padding:0 3px}
+.room.names .seat .sn{font-size:12px}
+.unplaced > .seat .sp{width:44px}
+.ptools{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+.banner.bad{background:var(--neg-soft);color:var(--neg-ink);border-color:var(--neg-line)}
+.banner.ok{background:var(--pos-soft);color:var(--pos-ink);border-color:var(--pos-line)}
+.it.edit{cursor:grab;touch-action:none}
+.it.edit.selected{box-shadow:0 0 0 3px #2F6DB5;z-index:2}
+.desk.edit{cursor:grab;touch-action:none}
+.roomcard{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:var(--surface);text-align:left;min-height:56px}
+.roomcard[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.rc-t{display:flex;flex-direction:column;gap:1px;font-size:13px;color:var(--muted)}.rc-t b{font-size:16px;color:var(--ink)}
+.mini{position:relative;width:84px;aspect-ratio:1000/620;background:var(--surface-2);border-radius:5px;overflow:hidden;flex:none;border:1px solid var(--line)}
+.mini i{position:absolute;background:var(--line-2);border-radius:2px}
+.roomb{min-height:60px;flex-direction:column;gap:0;font-size:17px;font-weight:600}
+.roomb .small{font-weight:400;opacity:.8}
+/* Projection (toujours claire pour le vidéoprojecteur) */
+.proj{position:fixed;inset:0;background:#FFFFFF;color:#1B1E23;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 24px;z-index:50;color-scheme:light}
+.proj-h{align-self:stretch;display:flex;align-items:baseline;gap:16px}
+.proj-h h1{font-family:var(--serif);font-size:clamp(24px,3.4vw,44px);font-weight:600}
+.proj-h > span{font-size:clamp(16px,1.8vw,24px);color:#5B6068}
+.proj-h .grow{flex:1}
+.proj-x{align-self:center;min-height:40px;border-color:#ECEAE5;background:#FFFFFF;color:#8A8F96;font-size:13px}
+.proj .room{--surface:#FFFFFF;--surface-2:#F3F1EC;--line:#DDD9D1;--line-2:#A9A499;--ink:#1B1E23;--ink-2:#3F444C;--muted:#8A8F96}
+.proj .seat{justify-content:center;background:#F3F1EC;border-color:#DDD9D1}
+.proj .seat.empty{background:transparent}
+.proj .seat .sn{font-size:clamp(11px,1.45vw,21px)}
+.proj .uh{font-size:clamp(10px,1.1vw,15px)}
+.proj .board{font-size:clamp(10px,1.1vw,15px)}
 /* Semaine */
 .chip.warn{background:var(--warn-soft);color:var(--warn-ink)}
 .todo{color:var(--neg);font-weight:600}
@@ -290,6 +397,9 @@ const ICON = {
   gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.4 3.3"/><path d="M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>',
+  proj:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
   save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.5-9.97A6 6 0 0 1 18 7a4.5 4.5 0 0 1-.5 9H16"/><path d="M12 12v9"/><path d="M9 15l3-3 3 3"/></svg>'
 };
 
@@ -321,7 +431,7 @@ const CLASS_COLORS = [['#2F6DB5','Bleu'],['#D9822B','Orange'],['#7B4FB3','Violet
 function nextColor(list) { const used = (list || DB.classes).map(c => c.color); return (CLASS_COLORS.find(([h]) => !used.includes(h)) || CLASS_COLORS[(list || DB.classes).length % CLASS_COLORS.length])[0]; }
 function defaultSettings() {
   return {
-    evenIsA: true, lastBackup: null,
+    evenIsA: true, lastBackup: null, hidePhotos: false,
     holidays: DEFAULT_HOLIDAYS.map(h => ({...h})),
     periods: {
       semestre: [{n:'Semestre 1', s:'2026-09-01', e:'2027-01-08'}, {n:'Semestre 2', s:'2027-01-09', e:'2027-06-19'}],
@@ -329,7 +439,7 @@ function defaultSettings() {
     }
   };
 }
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 let STORAGE_OK = false;
@@ -339,6 +449,8 @@ function migrate(core) {
   d.settings = Object.assign(defaultSettings(), d.settings || {});
   ['classes','students','slots','obs'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
   if (!d.cancelled || typeof d.cancelled !== 'object') d.cancelled = {};
+  if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
+  ['place', 'sep', 'sesRoom', 'lastRoom'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
   return d;
@@ -393,7 +505,7 @@ const studentsOf = (cid, group = 'all') => DB.students.filter(s => s.cid === cid
 const hasGroups = cid => DB.students.some(s => s.cid === cid && (s.group === 'G1' || s.group === 'G2'));
 const groupLabel = g => g === 'all' ? 'Classe entière' : 'Demi-groupe ' + g;
 const initials = s => ((s.first || '')[0] || '') + ((s.last || '')[0] || '');
-const photoHTML = s => PHOTOS[s.id] ? `<img src="${PHOTOS[s.id]}" alt="" draggable="false">` : `<span class="ini">${esc(initials(s))}</span>`;
+const photoHTML = s => PHOTOS[s.id] && !DB.settings.hidePhotos ? `<img src="${PHOTOS[s.id]}" alt="" draggable="false">` : `<span class="ini">${esc(initials(s))}</span>`;
 
 const ccol = c => (c && c.color) || '#5A6B7D';
 const dot = c => `<span class="cdot" style="background:${ccol(c)}" aria-hidden="true"></span>`;
@@ -419,7 +531,7 @@ function stateChip(st) {
 }
 const isNarrow = () => window.innerWidth < 720;
 let HOME_MODE = 'week';
-const homeV = () => ({name:'today', mode: HOME_MODE, date: todayStr()});
+const homeV = () => ({name:'today', tab:'edt', mode: HOME_MODE, date: todayStr()});
 function slotsOn(date) {
   if (holidayOn(date)) return [];
   const wd = parseD(date).getDay(), wt = weekType(date);
@@ -447,8 +559,11 @@ function back() { V = STACK.pop() || homeV(); closeLayer(); render(); }
 
 function render() {
   const app = $('#app');
-  if (V.name === 'today') app.innerHTML = (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
-  else if (V.name === 'grid') app.innerHTML = viewGrid();
+  if (V.name === 'today') app.innerHTML = V.tab === 'suivi' ? viewSuivi() : V.tab === 'salles' ? viewSalles() : (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
+  else if (V.name === 'grid') app.innerHTML = (V.ses.room && V.layout !== 'grid') ? viewPlan() : viewGrid();
+  else if (V.name === 'plan') app.innerHTML = viewPlan();
+  else if (V.name === 'proj') app.innerHTML = viewProj();
+  else if (V.name === 'roomedit') app.innerHTML = viewRoomEdit();
   else if (V.name === 'fiche') app.innerHTML = viewFiche();
   else if (V.name === 'settings') app.innerHTML = viewSettings();
   else if (V.name === 'trombi') app.innerHTML = viewTrombi();
@@ -457,11 +572,26 @@ function render() {
 /* ---------- toast ---------- */
 let toastTimer;
 function toast(msg, action) {
+  if (UNDO && !action && JSON.stringify(DB) !== UNDO.cp) { UNDO.shown = true; showUndo(msg, UNDO); return; }
+  toastRaw(msg, action);
+}
+let UNDO = null;
+function showUndo(msg, u) {
+  toastRaw(msg, {label: 'Annuler', fn: async () => {
+    DB = migrate(JSON.parse(u.cp));
+    const changed = Object.keys(u.ph).length !== Object.keys(PHOTOS).length || Object.keys(u.ph).some(k => u.ph[k] !== PHOTOS[k]);
+    PHOTOS = u.ph;
+    try { if (changed && STORAGE_OK) await Store.replaceAll(); else save(); } catch (e) {}
+    closeModal(); closeLayer(); renderKeep(); toastRaw('Annulé');
+  }});
+}
+function toastRaw(msg, action) {
   const t = $('#toast');
   t.innerHTML = `<span>${esc(msg)}</span>` + (action ? `<button type="button" id="toast-act">${esc(action.label)}</button>` : '');
   t.hidden = false;
   if (action) $('#toast-act').onclick = () => { action.fn(); t.hidden = true; };
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, action ? 7000 : 3500);
+  t.onclick = e => { if (!e.target.closest('#toast-act')) t.hidden = true; };
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, action ? 8000 : 3500);
 }
 
 /* ---------- bannières ---------- */
@@ -495,7 +625,7 @@ function viewToday() {
   else if (hol) body += `<div class="empty"><p><strong>${esc(hol.n)}</strong> : pas de cours ce jour-là.</p></div>`;
   else if (!slots.length) body += `<div class="empty"><p>Aucun cours prévu ${d === t ? "aujourd'hui" : 'ce jour-là'} (semaine ${wt}).</p><div class="row"><button class="btn" data-act="other">Ouvrir une classe</button><button class="btn" data-act="settings" data-tab="edt">${ICON.cal}Emploi du temps</button></div></div>`;
   else body += '<ol class="slots">' + slots.map(s => slotCard(d, s, FM)).join('') + '</ol><p class="small muted" style="margin:4px 0 0">Appui long sur un créneau : le marquer comme annulé.</p>';
-  return `
+  return `${tabBar('edt')}
   <header class="bar">
     <button class="btn icon-btn" data-act="day" data-n="-1" aria-label="Jour précédent">${ICON.back}</button>
     <div class="ttl"><h1>${fmtLong(d)}</h1><div class="sub">${d === t ? "Aujourd'hui" : `<button class="btn ghost" style="min-height:28px;padding:0;color:var(--pos)" data-act="day" data-n="0">Revenir à aujourd'hui</button>`}</div></div>
@@ -504,7 +634,6 @@ function viewToday() {
     <span class="grow"></span>
     ${modeSeg('day')}
     <button class="btn" data-act="other">Autre classe</button>
-    <button class="btn" data-act="settings" data-tab="classes">${ICON.gear}Réglages</button>
   </header>
   <main class="main"><div class="wrap">${body}</div></main>`;
 }
@@ -532,8 +661,8 @@ function viewWeek() {
   const t0 = valid.length ? Math.floor(Math.min(...valid.map(x => tMin(x.start))) / 60) * 60 : 480;
   const t1 = valid.length ? Math.ceil(Math.max(...valid.map(x => tMin(x.end))) / 60) * 60 : 1020;
   const nb = (IS_DEMO ? 1 : 0) + (backupDue() && !IS_DEMO ? 1 : 0) + (!STORAGE_OK && !IS_DEMO ? 1 : 0);
-  const avail = window.innerHeight - 80 - 40 - 64 - 34 - nb * 84;
-  const PPM = Math.max(0.9, Math.min(1.6, avail / Math.max(60, t1 - t0)));
+  const avail = window.innerHeight - 57 - 80 - 40 - 64 - 34 - nb * 84;
+  const PPM = Math.max(0.8, Math.min(1.6, avail / Math.max(60, t1 - t0)));
   const H = (t1 - t0) * PPM;
   let todo = 0, started = 0;
   const cols = shown.map(d => {
@@ -570,7 +699,7 @@ function viewWeek() {
       <div class="tt-times" style="height:${H}px">${hours.join('')}</div>${cols.map(c => c.body).join('')}
     </div></div>
     <p class="small muted" style="margin:0">Toucher un créneau : ouvrir la séance · Appui long : le marquer comme annulé.</p>`;
-  return `
+  return `${tabBar('edt')}
   <header class="bar">
     <button class="btn icon-btn" data-act="week" data-n="-7" aria-label="Semaine précédente">${ICON.back}</button>
     <div class="ttl"><h1>${title}</h1><div class="sub">${sub}</div></div>
@@ -579,7 +708,6 @@ function viewWeek() {
     <span class="grow"></span>
     ${modeSeg('week')}
     <button class="btn" data-act="other">Autre classe</button>
-    <button class="btn" data-act="settings" data-tab="classes">${ICON.gear}Réglages</button>
   </header>
   <main class="main"><div class="wrap" style="max-width:1280px">${body}</div></main>`;
 }
@@ -628,6 +756,9 @@ function viewGrid() {
     <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
     <div class="ttl"><h1 class="row" style="gap:10px">${dot(c)}${esc(c.name)}</h1><div class="sub">${esc(sub)}</div></div>
     <span class="grow"></span>
+    ${ses.room && roomById(ses.room) ? '<div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="layout" data-l="plan" aria-pressed="false">Plan</button><button type="button" aria-pressed="true">Grille</button></div>' : ''}
+    ${ses.group !== 'all' && DB.rooms.length ? `<button class="btn" data-act="room-change">${ses.room && roomById(ses.room) ? 'Changer de labo' : 'Choisir un labo'}</button>` : ''}
+    ${eyeBtn(true)}
     <button class="btn" data-act="export" data-cid="${c.id}">${ICON.down}Export</button>
     <button class="btn primary" data-act="rasrest">${ICON.check}Reste de la classe : RAS</button>
   </header>
@@ -639,7 +770,9 @@ function viewGrid() {
 let P = null;
 function closeLayer() { $('#layer').innerHTML = ''; P = null; }
 function openPanel(sid) { P = {sid, sel: new Set()}; renderPanel(); }
+function openGroupPanel(sids, label) { P = {sids, label, sel: new Set()}; renderPanel(); }
 function renderPanel() {
+  if (P.sids) return renderGroupPanel();
   const s = stu(P.sid), ses = V.ses, c = cls(s.cid);
   const list = DB.obs.filter(o => o.ses === ses.key && o.sid === s.id);
   const isAbs = list.some(o => o.cat === 'absent');
@@ -658,6 +791,25 @@ function renderPanel() {
       </div>
       <div class="row"><button class="btn" data-act="p-ras">RAS</button><button class="btn" data-act="p-abs">${isAbs ? "Retirer l'absence" : 'Absent'}</button></div>
       ${done}
+      <div><div class="sec-t pos">+ Positif</div><div class="cats">${catBtns('pos')}</div></div>
+      <div><div class="sec-t neg">− Négatif</div><div class="cats">${catBtns('neg')}</div></div>
+      <label class="f" for="p-note" style="display:block">Commentaire <span class="muted" style="font-weight:400">(facultatif, obligatoire pour « Comportement »)</span></label>
+      <textarea id="p-note" rows="3" placeholder="Ce qui s'est passé…"></textarea>
+      <p class="err" id="p-err" hidden></p>
+    </div>
+    <div class="ft"><button class="btn" data-act="p-close">Annuler</button><button class="btn ink" data-act="p-save" id="p-save" ${P.sel.size ? '' : 'disabled'}>Enregistrer</button></div>
+  </aside>`;
+}
+function renderGroupPanel() {
+  const ses = V.ses, studs = P.sids.map(stu).filter(Boolean);
+  const catBtns = t => CATS.filter(x => x.t === t).map(x => `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
+  $('#layer').innerHTML = `<div class="scrim" data-act="p-close"></div>
+  <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="p-name">
+    <div class="scroll">
+      <div class="hd"><div style="flex:1 1 140px;min-width:0"><h2 id="p-name">${esc(P.label)}</h2><div class="small muted">${studs.map(s => esc(s.first + ' ' + s.last)).join(', ')}</div></div>
+        <button class="btn icon-btn ghost" data-act="p-close" aria-label="Fermer">${ICON.close}</button></div>
+      <div class="row">${studs.map(s => `<span class="avatar" style="width:56px;height:56px">${photoHTML(s)}</span>`).join('')}</div>
+      <p class="small muted" style="margin:0">L'observation est enregistrée pour chacun (sauf les absents).</p>
       <div><div class="sec-t pos">+ Positif</div><div class="cats">${catBtns('pos')}</div></div>
       <div><div class="sec-t neg">− Négatif</div><div class="cats">${catBtns('neg')}</div></div>
       <label class="f" for="p-note" style="display:block">Commentaire <span class="muted" style="font-weight:400">(facultatif, obligatoire pour « Comportement »)</span></label>
@@ -740,7 +892,7 @@ function setClasses() {
   if (!c) return `<div class="split"><div>${left}</div><div class="empty"><p>Créez votre première classe pour y importer vos élèves.</p></div></div>`;
   const list = studentsOf(c.id);
   const g1 = list.filter(s => s.group === 'G1').length, g2 = list.filter(s => s.group === 'G2').length;
-  const rows = list.map(s => `<li><span class="thumb">${PHOTOS[s.id] ? `<img src="${PHOTOS[s.id]}" alt="">` : esc(initials(s))}</span>
+  const rows = list.map(s => `<li><span class="thumb">${photoHTML(s)}</span>
       <span class="nm">${esc(s.last.toUpperCase())} ${esc(s.first)}</span>
       <select data-chg="group" data-sid="${s.id}" aria-label="Demi-groupe de ${esc(s.first)}"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select>
       <span class="btn filebtn" style="min-height:40px">Photo<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de ${esc(s.first)}"></span>
@@ -1201,7 +1353,421 @@ function loadDemo() {
       });
     });
   }
+  // plans d'exemple
+  const il = DB.rooms.find(r => r.kind === 'ilots'), pc5 = DB.rooms.find(r => r.name === 'PC 5');
+  const p1 = getPlace(c5.id, 'G2', il, true); const r1 = randomPlacement(c5.id, 'G2', il); p1.g = r1.g; p1.upd = addDays(today, -7);
+  p1.flags['3'] = {r: 'Bavardages', d: addDays(today, -5)};
+  const s5 = studentsOf(c5.id, 'G2'); if (s5.length > 3) DB.sep[c5.id] = [[s5[1].id, s5[3].id]];
+  const p2 = getPlace(c4.id, 'G1', pc5, true); const r2 = randomPlacement(c4.id, 'G1', pc5); p2.g = r2.g; p2.upd = addDays(today, -7);
   DB.settings.lastBackup = IS_DEMO ? today : null;
+}
+
+
+/* ---------- salles, plans, projection ---------- */
+const ROOM_W = 1000, ROOM_H = 620;
+const ITEM_DIM = {ilot: [190, 130], double: [240, 170], simple: [190, 78]};
+const ITEM_LABEL = {ilot: 'Îlot de 4', double: 'Paillasses face à face (vitre)', simple: 'Paillasse face au tableau'};
+function defaultRooms() {
+  let n;
+  const mk = (name, kind, items) => ({id: uid(), name, kind, board: 'top', desk: {x: 840, y: 36}, items});
+  const it = (type, x, y) => ({id: uid(), type, x, y, rot: 0, nums: type === 'double' ? [++n, ++n] : [++n]});
+  const ilots = () => { n = 0; const a = []; [80, 265, 450].forEach(y => [70, 405, 740].forEach(x => a.push(it('ilot', x, y)))); return a; };
+  const doubles = () => { n = 0; const a = []; [80, 350].forEach(y => [60, 380, 700].forEach(x => a.push(it('double', x, y)))); return a; };
+  const simples = () => { n = 0; const a = []; [80, 230, 380].forEach(y => [30, 270, 510, 750].forEach(x => a.push(it('simple', x, y)))); return a; };
+  return [mk('PC 1', 'ilots', ilots()), mk('PC 2', 'ilots', ilots()), mk('PC 3', 'ilots', ilots()), mk('PC 4', 'ilots', ilots()),
+          mk('PC 5', 'paillasses', doubles()), mk('PC 6', 'paillasses', simples())];
+}
+const roomById = id => DB.rooms.find(r => r.id === id);
+const itemDims = it => { const [w, h] = ITEM_DIM[it.type]; return it.rot ? [h, w] : [w, h]; };
+const unitSize = it => it.type === 'ilot' ? 4 : 2;
+const unitWord = it => it.type === 'ilot' ? 'Îlot' : 'Paillasse';
+const kindLabel = r => r.kind === 'ilots' ? 'Îlots' : 'Paillasses';
+function roomUnits(room) { const u = []; room.items.forEach(it => it.nums.forEach(n => u.push({num: String(n), size: unitSize(it), it}))); return u.sort((a, b) => a.num - b.num); }
+const roomNums = room => new Set(roomUnits(room).map(u => u.num));
+const pkey = (cid, group, room) => `${cid}|${group}|${room.kind === 'ilots' ? 'ilots' : room.id}`;
+function getPlace(cid, group, room, create) {
+  const k = pkey(cid, group, room); let p = DB.place[k];
+  if (!p && create) p = DB.place[k] = {g: {}, flags: {}, upd: null};
+  if (p) { p.g = p.g || {}; p.flags = p.flags || {}; }
+  return p;
+}
+const validSid = (sid, cid, group) => { const s = sid && stu(sid); return s && s.cid === cid && (group === 'all' || s.group === group) ? s : null; };
+function placedSet(pl, room, cid, group) {
+  const nums = roomNums(room), out = new Set();
+  if (pl) Object.entries(pl.g).forEach(([n, arr]) => { if (nums.has(n)) (arr || []).forEach(sid => { if (validSid(sid, cid, group)) out.add(sid); }); });
+  return out;
+}
+function seatOf(pl, sid) { for (const [n, arr] of Object.entries(pl.g)) { const i = (arr || []).indexOf(sid); if (i >= 0) return {num: n, i}; } return null; }
+function touchNums(pl, nums) { nums.forEach(n => { if (n != null && pl.flags[n]) delete pl.flags[n]; }); pl.upd = todayStr(); }
+function moveTo(pl, sid, num, i) {
+  num = String(num); const from = seatOf(pl, sid); const g = pl.g[num] || (pl.g[num] = []);
+  const other = g[i] || null;
+  if (from) pl.g[from.num][from.i] = (other && other !== sid) ? other : null;
+  g[i] = sid; touchNums(pl, [num, from && from.num]);
+}
+function removeFrom(pl, sid) { const f = seatOf(pl, sid); if (f) { pl.g[f.num][f.i] = null; touchNums(pl, [f.num]); } }
+const sepPairs = cid => (DB.sep[cid] || []).filter(p => stu(p[0]) && stu(p[1]));
+function conflictNums(pl, cid, room) {
+  const out = new Set(); if (!pl) return out; const pairs = sepPairs(cid); if (!pairs.length) return out;
+  roomNums(room).forEach(n => { const m = new Set(pl.g[n] || []); if (pairs.some(([a, b]) => m.has(a) && m.has(b))) out.add(n); });
+  return out;
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function randomPlacement(cid, group, room) {
+  const ids = studentsOf(cid, group).map(s => s.id), units = roomUnits(room);
+  if (!units.length) return null;
+  const size = room.kind === 'ilots' ? 4 : 2;
+  let k = Math.min(units.length, Math.max(1, Math.ceil(ids.length / size)));
+  while (k < units.length && units.slice(0, k).reduce((a, u) => a + u.size, 0) < ids.length) k++;
+  const use = units.slice(0, k), cap = use.reduce((a, u) => a + u.size, 0), n = Math.min(ids.length, cap);
+  const sizes = use.map(() => 0); let left = n, i = 0;
+  while (left > 0 && i < 100000) { const j = i % k; if (sizes[j] < use[j].size) { sizes[j]++; left--; } i++; }
+  const pairs = sepPairs(cid); let best = null, bestC = Infinity;
+  for (let tr = 0; tr < 500 && bestC > 0; tr++) {
+    const sh = shuffle(ids), g = {}; let p = 0;
+    use.forEach((u, j) => { const arr = sh.slice(p, p + sizes[j]); p += sizes[j]; while (arr.length < u.size) arr.push(null); g[u.num] = arr; });
+    let c = 0; Object.values(g).forEach(arr => { const m = new Set(arr); pairs.forEach(([a, b]) => { if (m.has(a) && m.has(b)) c++; }); });
+    if (c < bestC) { best = g; bestC = c; }
+  }
+  return {g: best, conflicts: bestC, unplaced: ids.length - n};
+}
+
+/* rendu d'une salle (plan, projection, édition, miniature) */
+const pct = (v, tot) => (v / tot * 100).toFixed(3) + '%';
+const shortName = s => esc(s.first) + ' ' + esc((s.last || '')[0] || '') + '.';
+function seatHTML(s, num, i, o) {
+  if (o.mode === 'proj') return s ? `<span class="seat"><span class="st"><span class="sn">${shortName(s)}</span></span></span>` : '<span class="seat empty"></span>';
+  if (!s) {
+    if (o.ro) return '<span class="seat empty"></span>';
+    return `<button type="button" class="seat empty ${o.selSid ? 'drop' : ''}" data-act="seat" data-num="${num}" data-i="${i}" aria-label="Place libre">${o.selSid ? 'Placer ici' : ''}</button>`;
+  }
+  const r = (o.sum && o.sum[s.id]) || {};
+  const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.ras ? '<span class="chip neu">RAS</span>' : '') + (r.abs ? '<span class="chip dark">Abs.</span>' : '');
+  const inner = `<span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}</span><span class="sc">${chips}</span></span>`;
+  if (o.ro) return `<span class="seat">${inner}</span>`;
+  return `<button type="button" class="seat ${r.abs ? 'is-absent' : ''} ${o.selSid === s.id ? 'sel' : ''}" data-act="seat" data-num="${num}" data-i="${i}" data-sid="${s.id}" ${o.ses && !o.edit ? 'data-long="fiche"' : ''} aria-label="${esc(s.first + ' ' + s.last)}">${inner}</button>`;
+}
+function unitHTML(room, it, num, o) {
+  num = String(num); const size = unitSize(it), word = unitWord(it);
+  if (o.mode === 'edit') return `<div class="un"><div class="uh">${word} ${num}</div><div class="seats">${'<span class="seat ghost"></span>'.repeat(size)}</div></div>`;
+  const members = (o.pl && o.pl.g[num]) || [];
+  const flag = o.mode === 'plan' && o.pl && o.pl.flags[num];
+  const conf = o.mode === 'plan' && o.conflicts && o.conflicts.has(num);
+  const seats = []; let filled = 0;
+  for (let i = 0; i < size; i++) { const s = validSid(members[i], o.cid, o.group); if (s) filled++; seats.push(seatHTML(s, num, i, o)); }
+  const noteBtn = o.mode === 'plan' && o.ses && !o.edit && filled > 1 ? `<button type="button" class="note" data-act="unit-note" data-num="${num}" aria-label="Noter ${it.type === 'ilot' ? "l'îlot" : 'le binôme'} ${num}">Noter</button>` : '';
+  const head = o.mode === 'proj' ? `<div class="uh">${word} ${num}</div>`
+    : `<div class="uh" ${o.mode === 'plan' && !o.ro ? `data-long="unit" data-num="${num}"` : ''}>${word} ${num}${flag ? '<span class="fl">À modifier</span>' : ''}${conf ? '<span class="fl neg">À séparer</span>' : ''}${noteBtn}</div>`;
+  return `<div class="un ${flag ? 'flag' : ''} ${conf ? 'conf' : ''}">${head}<div class="seats">${seats.join('')}</div></div>`;
+}
+function renderRoom(room, o) {
+  const out = [];
+  if (o.mode !== 'mini') {
+    out.push(`<div class="board ${room.board}">Tableau</div>`);
+    const d = room.desk;
+    out.push(`<div class="desk ${o.mode === 'edit' ? 'edit' : ''}" ${o.mode === 'edit' ? 'data-drag="desk"' : ''} style="left:${pct(d.x, ROOM_W)};top:${pct(d.y, ROOM_H)};width:${pct(120, ROOM_W)};height:${pct(36, ROOM_H)}">Bureau</div>`);
+  }
+  room.items.forEach(it => {
+    const [w, h] = itemDims(it);
+    const style = `left:${pct(it.x, ROOM_W)};top:${pct(it.y, ROOM_H)};width:${pct(w, ROOM_W)};height:${pct(h, ROOM_H)}`;
+    if (o.mode === 'mini') { out.push(`<i style="${style}"></i>`); return; }
+    const u = it.nums.map(n => unitHTML(room, it, n, o));
+    const body = it.type === 'double' ? u[0] + '<span class="glass" aria-hidden="true"></span>' + u[1] : u[0];
+    out.push(`<div class="it ${it.type} ${it.rot ? 'rot' : ''} ${o.mode === 'edit' ? 'edit' : ''} ${o.selItem === it.id ? 'selected' : ''}" style="${style}" ${o.mode === 'edit' ? `data-drag="item" data-id="${it.id}"` : ''}>${body}</div>`);
+  });
+  return out.join('');
+}
+const roomBox = (reserved, extra = '') => `class="room ${extra}" style="width:min(100%, calc((100vh - ${reserved}px) * ${(ROOM_W / ROOM_H).toFixed(4)}))"`;
+
+/* choix du labo à l'ouverture d'une séance en demi-groupe */
+let PEND_SES = null;
+function openSession(ses) {
+  if (ses.group !== 'all' && DB.rooms.length) {
+    const r = DB.sesRoom[ses.key];
+    if (r) { go({name: 'grid', ses: {...ses, room: r === 'none' || !roomById(r) ? null : r}}); return; }
+    chooseRoom(ses, false); return;
+  }
+  go({name: 'grid', ses});
+}
+function chooseRoom(ses, inPlace) {
+  PEND_SES = {ses, inPlace};
+  const c = cls(ses.cid), last = inPlace ? (ses.room || 'none') : (DB.lastRoom[ses.cid + '|' + ses.group] || '');
+  const btn = r => `<button class="btn roomb" data-act="room-pick" data-rid="${r.id}" aria-pressed="${r.id === last}">${esc(r.name)}${r.id === last && !inPlace ? '<span class="small">dernier utilisé</span>' : ''}</button>`;
+  const pa = DB.rooms.filter(r => r.kind !== 'ilots'), il = DB.rooms.filter(r => r.kind === 'ilots');
+  openModal(`<h2>Dans quel labo ?</h2>
+    <p class="row small muted" style="gap:8px">${dot(c)}${esc(c.name)} · ${groupLabel(ses.group)} · ${fmtLong(ses.date).toLowerCase()}${ses.label ? ', ' + esc(ses.label) : ''}</p>
+    ${pa.length ? `<div class="lbl">Paillasses · binômes</div><div class="pick">${pa.map(btn).join('')}</div>` : ''}
+    ${il.length ? `<div class="lbl">Îlots</div><div class="pick">${il.map(btn).join('')}</div>` : ''}
+    <div class="ft"><button class="btn ghost" data-act="room-pick" data-rid="none" style="margin-right:auto" aria-pressed="${last === 'none'}">Sans plan (grille)</button><button class="btn" data-act="m-close">Annuler</button></div>`);
+}
+
+/* vue plan : en séance (grid + salle) ou depuis l'onglet Salles */
+function planCtx() {
+  if (V.name === 'grid') return {cid: V.ses.cid, group: V.ses.group, rid: V.ses.room, ses: V.ses};
+  return {cid: V.cid, group: V.group, rid: V.rid, ses: null};
+}
+function flagsBanner(pl, room, withLater) {
+  if (!pl) return '';
+  const nums = roomNums(room), list = Object.entries(pl.flags).filter(([n]) => nums.has(n));
+  if (!list.length) return '';
+  const word = room.kind === 'ilots' ? 'Îlot' : 'Paillasse';
+  const txt = list.map(([n, f]) => `<strong>${word} ${n} à modifier</strong>${f.r ? ' — ' + esc(f.r) : ''} <span class="small">(noté le ${fmtShort(f.d)})</span>`).join(' · ');
+  return `<div class="banner"><p>${txt}</p>${withLater ? '<button class="btn" data-act="plan-edit">Modifier le placement</button><button class="btn ghost" data-act="flags-later">Plus tard</button>' : ''}</div>`;
+}
+function viewPlan() {
+  const ctx = planCtx(), c = cls(ctx.cid), room = roomById(ctx.rid);
+  if (!c || !room) { if (V.name === 'grid') { V.layout = 'grid'; return viewGrid(); } setTimeout(back, 0); return ''; }
+  const pl = getPlace(ctx.cid, ctx.group, room, false);
+  const edit = !ctx.ses || !!V.edit;
+  const sum = ctx.ses ? sesSummary(ctx.ses.key) : null;
+  const conflicts = conflictNums(pl, ctx.cid, room);
+  const studs = studentsOf(ctx.cid, ctx.group), placed = placedSet(pl, room, ctx.cid, ctx.group);
+  const unpl = studs.filter(s => !placed.has(s.id));
+  let ban = '', nb = 0;
+  if (!V.hideFlags) { const b = flagsBanner(pl, room, !!ctx.ses); if (b) { ban += b; nb++; } }
+  if (conflicts.size) { ban += `<div class="banner bad"><p>Élèves à séparer placés ensemble : ${[...conflicts].map(n => (room.kind === 'ilots' ? 'îlot ' : 'paillasse ') + n).join(', ')}.</p></div>`; nb++; }
+  if (ctx.ses && room.kind !== 'ilots' && pl && pl.upd && pl.upd < ctx.ses.date && placed.size && !V.hideReuse) {
+    ban += `<div class="banner ok"><p>Placement de la dernière séance repris (${fmtShort(pl.upd)}). Touchez « Placer » pour corriger.</p><button class="btn" data-act="plan-clear">Tout vider</button><button class="btn ghost" data-act="reuse-ok">OK</button></div>`; nb++;
+  }
+  if (!placed.size && studs.length && !edit) {
+    ban += `<div class="banner ok"><p>Aucun élève n'est encore placé dans ce labo pour ce demi-groupe.</p><button class="btn primary" data-act="plan-random-edit">Répartir au hasard</button><button class="btn" data-act="plan-edit">Placer à la main</button></div>`; nb++;
+  }
+  const o = {mode: 'plan', pl, sum, conflicts, cid: ctx.cid, group: ctx.group, ses: ctx.ses, edit, selSid: V.selSid};
+  const word = room.kind === 'ilots' ? 'îlots' : 'binômes';
+  const unplHTML = unpl.map(s => `<button type="button" class="seat ${V.selSid === s.id ? 'sel' : ''}" data-act="unpl" data-sid="${s.id}"><span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}</span></span></button>`).join('');
+  const selPlaced = V.selSid && placed.has(V.selSid);
+  const tools = edit ? `<div class="ptools">
+      <button class="btn primary" data-act="plan-random">Aléatoire</button>
+      <button class="btn" data-act="plan-clear">Tout vider</button>
+      <button class="btn" data-act="sep-open">À séparer${sepPairs(ctx.cid).length ? ' (' + sepPairs(ctx.cid).length + ')' : ''}</button>
+      ${ctx.ses ? '<button class="btn ink" data-act="plan-edit-done">Terminé</button>' : ''}</div>` : '';
+  const help = edit ? 'Touchez un élève, puis une place : il s\'y installe (échange si la place est prise).' : 'Toucher un élève : noter une observation · Appui long sur « Îlot » ou « Paillasse » : marquer « à modifier ».';
+  const side = `<aside class="unplaced">${tools}
+      <div class="lbl">Non placés (${unpl.length})</div>
+      ${unplHTML || '<p class="small muted" style="margin:0">Tout le monde est placé.</p>'}
+      ${selPlaced ? '<button class="btn ghost" data-act="unpl-drop">Retirer du plan</button>' : ''}
+      <p class="small muted" style="margin:4px 0 0">${help}</p></aside>`;
+  const title = `${dot(c)}${esc(c.name)} · ${ctx.group} · ${esc(room.name)}`;
+  let head;
+  if (ctx.ses) {
+    const ses = ctx.ses;
+    head = `<header class="bar">
+      <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
+      <div class="ttl"><h1 class="row" style="gap:10px">${title}</h1><div class="sub">${esc(ses.label)}${ses.date !== todayStr() ? ' · ' + fmtLong(ses.date) : ''} · ${word}</div></div>
+      <span class="grow"></span>
+      <div class="seg" role="group" aria-label="Affichage"><button type="button" aria-pressed="true">Plan</button><button type="button" data-act="layout" data-l="grid" aria-pressed="false">Grille</button></div>
+      <button class="btn" data-act="room-change">Labo</button>
+      ${eyeBtn(true)}
+      <button class="btn" data-act="plan-edit" aria-pressed="${edit}">Placer</button>
+      <button class="btn" data-act="proj-open">${ICON.proj}Projeter</button>
+      <button class="btn primary" data-act="rasrest">Reste : RAS</button>
+    </header>`;
+  } else {
+    head = `<header class="bar">
+      <button class="btn ghost" data-act="back">${ICON.back}Salles</button>
+      <div class="ttl"><h1 class="row" style="gap:10px">${title}</h1><div class="sub">Placer les élèves · ${room.kind === 'ilots' ? 'composition commune à tous les labos à îlots' : 'placement propre à ce labo'}</div></div>
+      <span class="grow"></span>${eyeBtn(true)}
+      <button class="btn" data-act="proj-open">${ICON.proj}Projeter</button>
+      <button class="btn ink" data-act="back">Terminé</button>
+    </header>`;
+  }
+  const reserved = 74 + 36 + nb * 50;
+  return `${head}
+  <main class="main"><div class="wrap plan-page" style="max-width:1400px">${ban}
+    <div class="plan-wrap"><div class="plan-main"><div ${roomBox(reserved)}>${renderRoom(room, o)}</div></div>${side}</div>
+  </div></main>`;
+}
+
+/* mode projection : uniquement le plan, sans photos ni remarques */
+function viewProj() {
+  const c = cls(V.cid), room = roomById(V.rid);
+  if (!c || !room) { back(); return ''; }
+  const pl = getPlace(V.cid, V.group, room, false);
+  return `<div class="proj">
+    <div class="proj-h"><h1>${esc(c.name)} · Groupe ${V.group.slice(1)}</h1><span>Salle ${esc(room.name)}</span><span class="grow"></span><button class="btn proj-x" data-act="proj-exit">${ICON.close}Quitter</button></div>
+    <div ${roomBox(100, 'proj-room')}>${renderRoom(room, {mode: 'proj', pl, cid: V.cid, group: V.group})}</div></div>`;
+}
+
+/* éditeur de salle */
+function viewRoomEdit() {
+  const room = roomById(V.rid); if (!room) { back(); return ''; }
+  const sel = room.items.find(x => x.id === V.selItem);
+  const b = (v, l) => `<button type="button" data-act="room-board" data-b="${v}" aria-pressed="${room.board === v}">${l}</button>`;
+  return `<header class="bar">
+    <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
+    <div class="ttl"><h1>Disposer la salle</h1><div class="sub">${kindLabel(room)} · ${plural(room.items.length, 'élément')} · faites glisser pour déplacer</div></div>
+    <label class="f" for="room-name" style="flex-direction:row;align-items:center;gap:8px;margin-left:12px">Nom <input type="text" id="room-name" value="${esc(room.name)}" data-chg="room-name" style="width:140px"></label>
+    <span class="grow"></span>
+    <button class="btn ink" data-act="back">Terminé</button>
+  </header>
+  <main class="main"><div class="wrap" style="max-width:1400px"><div class="plan-wrap">
+    <aside class="unplaced" style="width:230px">
+      <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:8px"><div class="lbl">Ajouter</div>
+        ${['ilot', 'double', 'simple'].map(t => `<button class="btn" style="justify-content:flex-start" data-act="room-add" data-type="${t}">+ ${ITEM_LABEL[t]}</button>`).join('')}</div>
+      ${sel ? `<div class="card" style="padding:12px;display:flex;flex-direction:column;gap:8px"><div class="lbl">${unitWord(sel)} ${sel.nums.join(' et ')} sélectionné${sel.nums.length > 1 ? 'es' : ''}</div>
+        <button class="btn" data-act="room-rot">Tourner de 90°</button><button class="btn danger" data-act="room-del-item">Supprimer</button></div>`
+        : '<p class="small muted" style="margin:0">Touchez un élément pour le sélectionner.</p>'}
+      <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:8px"><div class="lbl">Tableau</div>
+        <div class="seg" role="group" aria-label="Position du tableau" style="display:grid;grid-template-columns:1fr 1fr">${b('top', 'En haut')}${b('bottom', 'En bas')}${b('left', 'À gauche')}${b('right', 'À droite')}</div></div>
+      <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:8px"><div class="lbl">Type de labo</div>
+        <div class="seg" role="group" aria-label="Type de labo"><button type="button" data-act="room-kind" data-k="ilots" aria-pressed="${room.kind === 'ilots'}">Îlots</button><button type="button" data-act="room-kind" data-k="paillasses" aria-pressed="${room.kind !== 'ilots'}">Paillasses</button></div>
+        <p class="small muted" style="margin:0">${room.kind === 'ilots' ? 'Les îlots composés pour un demi-groupe servent dans tous les labos à îlots.' : 'Les binômes sont placés pour ce labo seulement.'}</p></div>
+      <button class="btn ghost" data-act="room-del" style="color:var(--neg)">Supprimer ce labo…</button>
+    </aside>
+    <div class="plan-main"><div id="room-canvas" ${roomBox(74 + 40, 'grid-bg')}>${renderRoom(room, {mode: 'edit', selItem: V.selItem})}</div></div>
+  </div></div></main>`;
+}
+function overlaps(room, x, y, w, h, skip) {
+  const hit = (a, b) => a.x < b.x + b.w + 10 && b.x < a.x + a.w + 10 && a.y < b.y + b.h + 10 && b.y < a.y + a.h + 10;
+  const me = {x, y, w, h};
+  if (hit(me, {x: room.desk.x, y: room.desk.y, w: 120, h: 36})) return true;
+  return room.items.some(it => { if (it.id === skip) return false; const [iw, ih] = itemDims(it); return hit(me, {x: it.x, y: it.y, w: iw, h: ih}); });
+}
+function findSpot(room, w, h) {
+  for (let y = 50; y <= ROOM_H - h; y += 20) for (let x = 20; x <= ROOM_W - w; x += 20) if (!overlaps(room, x, y, w, h)) return [x, y];
+  return [Math.round((ROOM_W - w) / 2), Math.round((ROOM_H - h) / 2)];
+}
+function nextNums(room, k) { const used = new Set(room.items.flatMap(it => it.nums.map(Number))); const out = []; for (let n = 1; out.length < k; n++) if (!used.has(n)) out.push(n); return out; }
+const clampItem = it => { const [w, h] = itemDims(it); it.x = Math.max(0, Math.min(ROOM_W - w, it.x)); it.y = Math.max(0, Math.min(ROOM_H - h, it.y)); };
+function occupiedIn(room, nums) {
+  nums = nums.map(String); let n = 0;
+  Object.entries(DB.place).forEach(([k, pl]) => {
+    const suffix = room.kind === 'ilots' ? '|ilots' : '|' + room.id;
+    if (!k.endsWith(suffix)) return;
+    nums.forEach(num => (pl.g[num] || []).forEach(sid => { if (sid && stu(sid)) n++; }));
+  });
+  return n;
+}
+let DRAG = null;
+
+/* onglet Salles */
+function groupChoices() {
+  const out = [];
+  DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true})).forEach(c => { if (hasGroups(c.id)) ['G1', 'G2'].forEach(g => out.push({c, g, k: c.id + '|' + g})); });
+  return out;
+}
+function viewSalles() {
+  if (!V.rid || !roomById(V.rid)) V.rid = DB.rooms[0] && DB.rooms[0].id;
+  const room = roomById(V.rid), groups = groupChoices();
+  if (!V.sg || !groups.find(x => x.k === V.sg)) V.sg = groups[0] ? groups[0].k : null;
+  const list = DB.rooms.map(r => `<button class="roomcard" data-act="sel-room" data-rid="${r.id}" aria-pressed="${r.id === V.rid}"><span class="mini">${renderRoom(r, {mode: 'mini'})}</span><span class="rc-t"><b>${esc(r.name)}</b><span>${kindLabel(r)} · ${plural(roomUnits(r).length, r.kind === 'ilots' ? 'îlot' : 'paillasse')}</span></span></button>`).join('');
+  let right = '<div class="empty"><p>Aucun labo. Ajoutez-en un.</p></div>';
+  if (room) {
+    const sg = groups.find(x => x.k === V.sg);
+    const chips = groups.map(x => `<button class="gchip" data-act="sel-sg" data-k="${x.k}" aria-pressed="${x.k === V.sg}">${dot(x.c)}${esc(x.c.name)} · ${x.g}</button>`).join('');
+    let plan = '', ban = '', info = '';
+    if (sg) {
+      const pl = getPlace(sg.c.id, sg.g, room, false);
+      const placed = placedSet(pl, room, sg.c.id, sg.g), n = studentsOf(sg.c.id, sg.g).length;
+      ban = flagsBanner(pl, room, false);
+      const conf = conflictNums(pl, sg.c.id, room);
+      plan = renderRoom(room, {mode: 'plan', pl, cid: sg.c.id, group: sg.g, ro: true, conflicts: conf});
+      info = `${placed.size} placé${placed.size > 1 ? 's' : ''} sur ${n}` + (room.kind === 'ilots' ? ' · composition commune aux labos à îlots' : '');
+    }
+    right = `<div class="row" style="gap:10px"><h2 style="font-family:var(--serif);font-size:24px;margin-right:6px">${esc(room.name)}</h2><span class="chip neu">${kindLabel(room)}</span><span class="grow" style="flex:1"></span>
+        <button class="btn" data-act="room-edit">Disposer la salle</button>
+        <button class="btn ink" data-act="plan-open" ${sg ? '' : 'disabled'}>Placer les élèves</button>
+        <button class="btn" data-act="proj-open-s" ${sg ? '' : 'disabled'}>${ICON.proj}Projeter</button></div>
+      ${groups.length ? `<div class="row" style="gap:6px">${chips}</div>` : '<p class="muted" style="margin:0">Attribuez des demi-groupes (G1/G2) à vos élèves dans Réglages pour placer des groupes.</p>'}
+      ${ban}
+      ${sg ? `<div ${roomBox(57 + 48 + 150 + (ban ? 60 : 0), 'names')}>${plan}</div><p class="small muted" style="margin:0">${info}</p>` : ''}`;
+  }
+  return `${tabBar('salles')}
+  <main class="main"><div class="wrap" style="max-width:1400px"><div class="plan-wrap">
+    <aside class="unplaced" style="width:240px"><div class="lbl">Labos</div>${list}<button class="btn" data-act="room-new">+ Ajouter un labo</button></aside>
+    <section class="plan-main" style="align-items:stretch">${right}</section>
+  </div></div></main>`;
+}
+
+/* onglet Suivi */
+function viewSuivi() {
+  const classes = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
+  if (!V.scid || !cls(V.scid)) V.scid = classes[0] && classes[0].id;
+  const c = cls(V.scid);
+  if (!c) return `${tabBar('suivi')}<main class="main"><div class="wrap"><div class="empty"><p>Aucune classe pour l'instant.</p><button class="btn" data-act="settings" data-tab="classes">Créer une classe</button></div></div></main>`;
+  const periods = periodsFor(c);
+  if (V.sp == null || V.sp >= periods.length) V.sp = currentPeriodIndex(periods);
+  const per = periods[V.sp], t = todayStr(), d14 = addDays(t, -13), d21 = addDays(t, -20);
+  const obsC = DB.obs.filter(o => o.cid === c.id && CAT[o.cat]);
+  const recent = obsC.some(o => o.date >= d21);
+  const isPN = o => CAT[o.cat].t === 'pos' || CAT[o.cat].t === 'neg';
+  let rows = studentsOf(c.id).map(s => {
+    const mine = obsC.filter(o => o.sid === s.id), inP = mine.filter(o => o.date >= per.s && o.date <= per.e);
+    const n = t2 => inP.filter(o => CAT[o.cat].t === t2).length;
+    const lastO = mine.filter(isPN).sort((a, b) => b.date.localeCompare(a.date) || b.t - a.t)[0];
+    const surv = mine.filter(o => CAT[o.cat].t === 'neg' && o.date >= d14).length >= 3;
+    const peu = recent && !mine.some(o => isPN(o) && o.date >= d21);
+    return {s, pos: n('pos'), neg: n('neg'), ras: inP.filter(o => o.cat === 'ras').length, abs: inP.filter(o => o.cat === 'absent').length,
+      last: lastO ? `${fmtShort(lastO.date)} · ${CAT[lastO.cat].l}${lastO.note ? ' — ' + lastO.note : ''}` : '—', surv, peu};
+  });
+  const nS = rows.filter(r => r.surv).length, nP = rows.filter(r => r.peu).length;
+  if (V.sf === 'surv') rows = rows.filter(r => r.surv); else if (V.sf === 'peu') rows = rows.filter(r => r.peu);
+  const ss = V.ss || 'alpha';
+  if (ss === 'neg') rows.sort((a, b) => b.neg - a.neg || a.pos - b.pos || byName(a.s, b.s));
+  if (ss === 'least') rows.sort((a, b) => (a.pos + a.neg) - (b.pos + b.neg) || byName(a.s, b.s));
+  const chips = classes.map(x => `<button class="gchip" data-act="sui-c" data-cid="${x.id}" aria-pressed="${x.id === c.id}">${dot(x)}${esc(x.name)}</button>`).join('');
+  const seg = (k, items, cur) => `<div class="seg" role="group">${items.map(([v, l]) => `<button type="button" data-act="${k}" data-v="${v}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join('')}</div>`;
+  const body = rows.map(r => `<button class="srow" data-act="fiche-open" data-sid="${r.s.id}">
+      <span class="thumb">${photoHTML(r.s)}</span>
+      <span class="nm">${esc(r.s.first)} <span class="muted">${esc(r.s.last)}</span></span>
+      <span class="muted small">${r.s.group || '—'}</span>
+      <span class="num pos">+${r.pos}</span><span class="num neg">−${r.neg}</span><span class="num">${r.ras}</span><span class="num">${r.abs}</span>
+      <span class="last small">${esc(r.last)}</span>
+      <span class="bdg">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}</span></button>`).join('');
+  return `${tabBar('suivi')}
+  <main class="main"><div class="wrap" style="max-width:1300px">
+    <div class="row" style="gap:6px">${chips}</div>
+    <div class="row">${seg('sui-p', periods.map((p, i) => [i, esc(p.n)]), V.sp)}${seg('sui-s', [['alpha', 'A → Z'], ['neg', 'Plus de négatifs'], ['least', 'Moins observés']], ss)}
+      <span class="grow" style="flex:1"></span>
+      <button class="gchip" data-act="sui-f" data-v="surv" aria-pressed="${V.sf === 'surv'}"><span class="chip neg">${nS}</span> à surveiller</button>
+      <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button></div>
+    <section class="card stable-card">
+      <div class="srow head"><span></span><span>Élève</span><span>Gr.</span><span class="num">Positif</span><span class="num">Négatif</span><span class="num">RAS</span><span class="num">Abs.</span><span class="last">Dernière remarque</span><span></span></div>
+      ${body || '<p class="muted" style="padding:14px;margin:0">Aucun élève dans ce filtre.</p>'}
+    </section>
+    <p class="small muted" style="margin:0">À surveiller : 3 remarques négatives ou plus sur les 14 derniers jours. Peu observé : aucune remarque positive ou négative depuis 3 semaines. Toucher un élève : sa fiche.</p>
+  </div></main>`;
+}
+
+/* barre d'onglets et œil */
+function eyeBtn(compact) {
+  const h = !!DB.settings.hidePhotos;
+  return `<button class="btn eye" data-act="eye" aria-pressed="${h}" aria-label="${h ? 'Afficher les photos' : 'Masquer les photos'}">${h ? ICON.eyeOff : ICON.eye}${compact ? '' : (h ? 'Photos masquées' : 'Photos')}</button>`;
+}
+function tabBar(active) {
+  const t = (k, l) => `<button class="tb" data-act="htab" data-t="${k}" ${active === k ? 'aria-current="page"' : ''}>${l}</button>`;
+  return `<nav class="appbar" aria-label="Onglets"><span class="brand">Suivi de classe</span>${t('edt', 'Emploi du temps')}${t('suivi', 'Suivi')}${t('salles', 'Salles')}<button class="tb" data-act="settings" data-tab="classes">Réglages</button><span class="grow"></span>${eyeBtn(false)}</nav>`;
+}
+
+/* panneau « à modifier » sur un îlot / une paillasse */
+function unitMenu(num) {
+  const ctx = planCtx(), room = roomById(ctx.rid); if (!room) return;
+  const pl = getPlace(ctx.cid, ctx.group, room, true), f = pl.flags[num];
+  const word = room.kind === 'ilots' ? 'Îlot' : 'Paillasse';
+  const mem = (pl.g[num] || []).map(sid => validSid(sid, ctx.cid, ctx.group)).filter(Boolean);
+  openModal(`<h2>${word} ${num}</h2>
+    <p class="small muted">${mem.map(s => esc(s.first + ' ' + s.last)).join(', ') || 'Personne à cette place.'}</p>
+    <label class="f" for="um-r">Pourquoi le modifier ? <span class="muted" style="font-weight:400">(facultatif)</span><input type="text" id="um-r" value="${esc(f ? f.r : '')}" placeholder="ex. bavardages"></label>
+    ${mem.length > 1 ? `<fieldset style="border:none;padding:0;margin:0"><legend class="f" style="margin-bottom:4px">Séparer à l'avenir <span class="muted" style="font-weight:400">(cochez au moins deux élèves)</span></legend>
+      ${mem.map(s => `<label class="check"><input type="checkbox" class="um-s" value="${s.id}"> ${esc(s.first + ' ' + s.last)}</label>`).join('')}</fieldset>` : ''}
+    <p class="small muted">Visible par vous seul : n'apparaît jamais en projection.</p>
+    <div class="ft">${f ? `<button class="btn" data-act="um-clear" data-num="${num}">Retirer « à modifier »</button>` : ''}<button class="btn" data-act="m-close">Annuler</button><button class="btn ink" data-act="um-save" data-num="${num}">${f ? 'Mettre à jour' : 'Marquer à modifier'}</button></div>`);
+}
+function sepModal() {
+  const ctx = planCtx(), c = cls(ctx.cid); const pairs = sepPairs(ctx.cid);
+  const opts = studentsOf(ctx.cid).map(s => `<option value="${s.id}">${esc(s.last.toUpperCase() + ' ' + s.first)}</option>`).join('');
+  openModal(`<h2>À séparer · ${esc(c.name)}</h2>
+    <p class="small muted">Ces élèves ne seront jamais mis ensemble par le tirage aléatoire. Visible par vous seul.</p>
+    ${pairs.length ? `<ul class="stable">${pairs.map((p, i) => `<li><span class="nm">${esc(stu(p[0]).first + ' ' + stu(p[0]).last)} et ${esc(stu(p[1]).first + ' ' + stu(p[1]).last)}</span><button class="btn ghost" data-act="sep-del" data-i="${i}">Retirer</button></li>`).join('')}</ul>` : '<p class="muted">Aucune paire pour l\'instant.</p>'}
+    <div class="form-grid"><label class="f" for="sep-a">Élève<select id="sep-a">${opts}</select></label><label class="f" for="sep-b">Et<select id="sep-b">${opts}</select></label><button class="btn" data-act="sep-add">Ajouter la paire</button></div>
+    <div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`);
+}
+function addPairs(cid, ids) {
+  const list = DB.sep[cid] || (DB.sep[cid] = []);
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+    const a = ids[i], b = ids[j];
+    if (a !== b && !list.some(p => (p[0] === a && p[1] === b) || (p[0] === b && p[1] === a))) list.push([a, b]);
+  }
 }
 
 /* ---------- actions ---------- */
@@ -1222,11 +1788,11 @@ const ACT = {
   back: () => back(),
   settings: el => go({name:'settings', tab: el.dataset.tab || 'classes', cid: el.dataset.cid}),
   tab: el => { V.tab = el.dataset.tab; render(); if (V.tab === 'sauvegarde') showPersist(); },
-  'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); closeModal(); if (s) go({name:'grid', ses: sesFromSlot(el.dataset.date || V.date, s)}); },
+  'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); closeModal(); if (s) openSession(sesFromSlot(el.dataset.date || V.date, s)); },
   other: () => otherModal(),
   'om-cls': el => otherModal(el.dataset.cid),
   'om-grp': el => otherModal(el.dataset.cid, el.dataset.g),
-  'om-go': el => { const d = otherDate(); closeModal(); go({name:'grid', ses: sesOther(d, el.dataset.cid, el.dataset.g)}); },
+  'om-go': el => { const d = otherDate(); closeModal(); openSession(sesOther(d, el.dataset.cid, el.dataset.g)); },
   'm-close': () => closeModal(),
   demo: () => { loadDemo(); STORAGE_OK && Store.replaceAll(); render(); toast('Élèves fictifs chargés. Réglages › Sauvegarde › Tout effacer pour repartir de zéro.'); },
   tile: el => openPanel(el.dataset.sid),
@@ -1240,12 +1806,18 @@ const ACT = {
     if (!P.sel.size) return;
     const note = $('#p-note').value.trim();
     if (P.sel.has('comportement') && !note) { const e = $('#p-err'); e.textContent = 'Ajoutez un commentaire pour « Comportement ».'; e.hidden = false; $('#p-note').focus(); return; }
-    const key = V.ses.key, sid = P.sid;
-    removeObs(o => o.ses === key && o.sid === sid && (o.cat === 'ras' || o.cat === 'absent'));
+    const key = V.ses.key;
     const cats = CATS.filter(c => P.sel.has(c.k)).map(c => c.k);
     const target = P.sel.has('comportement') ? 'comportement' : cats[0]; const t = Date.now();
-    cats.forEach(c => addObs(sid, c, c === target ? note : '', t));
-    save(); closeLayer(); render(); toast(cats.length > 1 ? cats.length + ' observations enregistrées' : 'Observation enregistrée');
+    const absent = sid => DB.obs.some(o => o.ses === key && o.sid === sid && o.cat === 'absent');
+    const sids = P.sids ? P.sids.filter(sid => !absent(sid)) : [P.sid];
+    sids.forEach(sid => {
+      removeObs(o => o.ses === key && o.sid === sid && (o.cat === 'ras' || o.cat === 'absent'));
+      cats.forEach(c => addObs(sid, c, c === target ? note : '', t));
+    });
+    const grp = !!P.sids;
+    save(); closeLayer(); renderKeep();
+    toast(grp ? `Enregistré pour ${plural(sids.length, 'élève')}` : (cats.length > 1 ? cats.length + ' observations enregistrées' : 'Observation enregistrée'));
   },
   'p-ras': () => {
     const key = V.ses.key, sid = P.sid;
@@ -1326,8 +1898,124 @@ const ACT = {
   'tr-skip': el => { const it = TR.items[+el.dataset.i]; it.sid = it.sid === 'skip' ? 'new' : 'skip'; renderKeep(); },
   'tr-cancel': () => { TR = null; back(); },
   'tr-go': () => commitTrombi(),
+  htab: el => { V.tab = el.dataset.t; V.sf = null; render(); $('.main')?.scrollTo(0, 0); },
+  eye: () => { DB.settings.hidePhotos = !DB.settings.hidePhotos; save(); renderKeep(); toast(DB.settings.hidePhotos ? 'Photos masquées' : 'Photos affichées'); },
+  'fiche-open': el => go({name:'fiche', sid: el.dataset.sid}),
+  'sui-c': el => { V.scid = el.dataset.cid; V.sp = null; V.sf = null; render(); },
+  'sui-p': el => { V.sp = +el.dataset.v; render(); },
+  'sui-s': el => { V.ss = el.dataset.v; render(); },
+  'sui-f': el => { V.sf = V.sf === el.dataset.v ? null : el.dataset.v; render(); },
+  'sel-room': el => { V.rid = el.dataset.rid; render(); },
+  'sel-sg': el => { V.sg = el.dataset.k; render(); },
+  'room-edit': () => go({name:'roomedit', rid: V.rid, selItem: null}),
+  'plan-open': () => { const [cid, g] = V.sg.split('|'); go({name:'plan', cid, group: g, rid: V.rid, selSid: null}); },
+  'proj-open-s': () => { const [cid, g] = V.sg.split('|'); openProj(cid, g, V.rid); },
+  'proj-open': () => { const c = planCtx(); openProj(c.cid, c.group, c.rid); },
+  'proj-exit': () => { try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {} back(); },
+  'room-pick': el => {
+    if (!PEND_SES) return; const {ses, inPlace} = PEND_SES, rid = el.dataset.rid; PEND_SES = null;
+    DB.sesRoom[ses.key] = rid; if (rid !== 'none') DB.lastRoom[ses.cid + '|' + ses.group] = rid; save(); closeModal();
+    const s2 = {...ses, room: rid === 'none' ? null : rid};
+    if (inPlace) { V.ses = s2; V.layout = null; V.edit = false; V.selSid = null; V.hideFlags = false; render(); } else go({name:'grid', ses: s2});
+  },
+  'room-change': () => chooseRoom(V.ses, true),
+  layout: el => { V.layout = el.dataset.l; V.selSid = null; render(); },
+  'plan-edit': () => { V.edit = !V.edit; V.selSid = null; V.hideFlags = true; renderKeep(); },
+  'plan-random-edit': () => { V.edit = true; V.hideFlags = true; ACT['plan-random'](); },
+  'plan-edit-done': () => { V.edit = false; V.selSid = null; renderKeep(); },
+  'flags-later': () => { V.hideFlags = true; renderKeep(); },
+  'reuse-ok': () => { V.hideReuse = true; renderKeep(); },
+  seat: el => {
+    const ctx = planCtx(), room = roomById(ctx.rid); if (!room) return;
+    const sid = el.dataset.sid, num = el.dataset.num, i = +el.dataset.i;
+    if (V.selSid) {
+      if (sid === V.selSid) { V.selSid = null; renderKeep(); return; }
+      moveTo(getPlace(ctx.cid, ctx.group, room, true), V.selSid, num, i); V.selSid = null; save(); renderKeep(); return;
+    }
+    if (!sid) return;
+    if (ctx.ses && !V.edit) { openPanel(sid); return; }
+    V.selSid = sid; renderKeep();
+  },
+  unpl: el => { V.selSid = V.selSid === el.dataset.sid ? null : el.dataset.sid; renderKeep(); },
+  'unpl-drop': () => { const ctx = planCtx(), room = roomById(ctx.rid); if (V.selSid && room) { removeFrom(getPlace(ctx.cid, ctx.group, room, true), V.selSid); V.selSid = null; save(); renderKeep(); } },
+  'unit-note': el => {
+    const ctx = planCtx(), room = roomById(ctx.rid), pl = getPlace(ctx.cid, ctx.group, room, false); if (!pl) return;
+    const sids = (pl.g[el.dataset.num] || []).filter(sid => validSid(sid, ctx.cid, ctx.group));
+    openGroupPanel(sids, (room.kind === 'ilots' ? 'Îlot ' : 'Paillasse ') + el.dataset.num);
+  },
+  'plan-random': () => {
+    const ctx = planCtx(), room = roomById(ctx.rid); if (!room) return;
+    const pl = getPlace(ctx.cid, ctx.group, room, true), prev = JSON.parse(JSON.stringify(pl));
+    const r = randomPlacement(ctx.cid, ctx.group, room); if (!r) { toast('Ce labo n\'a encore aucun îlot ni paillasse.'); return; }
+    pl.g = r.g; pl.flags = {}; pl.upd = todayStr(); V.selSid = null; save(); renderKeep();
+    const msg = r.conflicts ? 'Impossible de séparer toutes les paires : vérifiez les groupes en rouge.' : r.unplaced ? `Pas assez de places : ${r.unplaced} élève(s) non placé(s).` : 'Nouvelle répartition. Touchez « Aléatoire » pour une autre.';
+    toast(msg, {label: 'Annuler', fn: () => { Object.assign(pl, prev); save(); renderKeep(); }});
+  },
+  'plan-clear': () => {
+    const ctx = planCtx(), room = roomById(ctx.rid); if (!room) return;
+    const pl = getPlace(ctx.cid, ctx.group, room, true), prev = JSON.parse(JSON.stringify(pl));
+    const nums = roomNums(room); nums.forEach(n => { delete pl.g[n]; delete pl.flags[n]; }); pl.upd = todayStr(); V.selSid = null; V.hideReuse = true; save(); renderKeep();
+    toast('Placement vidé', {label: 'Annuler', fn: () => { Object.assign(pl, prev); save(); renderKeep(); }});
+  },
+  'sep-open': () => sepModal(),
+  'sep-add': () => { const a = $('#sep-a').value, b = $('#sep-b').value; if (!a || !b || a === b) { toast('Choisissez deux élèves différents.'); return; } addPairs(planCtx().cid, [a, b]); save(); sepModal(); renderKeep(); },
+  'sep-del': el => { const cid = planCtx().cid; const pairs = sepPairs(cid); const p = pairs[+el.dataset.i]; DB.sep[cid] = (DB.sep[cid] || []).filter(x => x !== p); save(); sepModal(); renderKeep(); },
+  'um-save': el => {
+    const ctx = planCtx(), room = roomById(ctx.rid), pl = getPlace(ctx.cid, ctx.group, room, true);
+    pl.flags[el.dataset.num] = {r: $('#um-r').value.trim(), d: todayStr()};
+    const ids = [...document.querySelectorAll('.um-s:checked')].map(x => x.value); if (ids.length > 1) addPairs(ctx.cid, ids);
+    save(); closeModal(); renderKeep(); toast(ids.length > 1 ? 'Marqué à modifier · paire à séparer ajoutée' : 'Marqué à modifier');
+  },
+  'um-clear': el => { const ctx = planCtx(), room = roomById(ctx.rid), pl = getPlace(ctx.cid, ctx.group, room, true); delete pl.flags[el.dataset.num]; save(); closeModal(); renderKeep(); },
+  'room-new': () => openModal(`<h2>Nouveau labo</h2><label class="f" for="rn-name">Nom<input type="text" id="rn-name" placeholder="ex. PC 7"></label>
+    <div class="seg" role="group" aria-label="Type"><button type="button" data-act="rn-kind" data-k="ilots" aria-pressed="true">Îlots</button><button type="button" data-act="rn-kind" data-k="paillasses" aria-pressed="false">Paillasses</button></div>
+    <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn ink" data-act="rn-go">Créer et disposer</button></div>`),
+  'rn-kind': el => { document.querySelectorAll('[data-act="rn-kind"]').forEach(b => b.setAttribute('aria-pressed', b === el)); },
+  'rn-go': () => {
+    const name = $('#rn-name').value.trim() || 'Nouveau labo'; const kind = $('[data-act="rn-kind"][aria-pressed="true"]').dataset.k;
+    const r = {id: uid(), name, kind, board: 'top', desk: {x: 840, y: 36}, items: []}; DB.rooms.push(r); save(); closeModal(); V.rid = r.id; go({name:'roomedit', rid: r.id, selItem: null});
+  },
+  'room-add': el => {
+    const room = roomById(V.rid), type = el.dataset.type, [w, h] = ITEM_DIM[type], [x, y] = findSpot(room, w, h);
+    const it = {id: uid(), type, x, y, rot: 0, nums: nextNums(room, type === 'double' ? 2 : 1)}; room.items.push(it); V.selItem = it.id; save(); render();
+  },
+  'room-rot': () => { const room = roomById(V.rid), it = room.items.find(x => x.id === V.selItem); if (!it) return; it.rot = it.rot ? 0 : 1; clampItem(it); save(); render(); },
+  'room-del-item': () => {
+    const room = roomById(V.rid), it = room.items.find(x => x.id === V.selItem); if (!it) return;
+    const n = occupiedIn(room, it.nums);
+    if (!n) { room.items = room.items.filter(x => x !== it); V.selItem = null; save(); render(); return; }
+    openModal(`<h2>Supprimer ${unitWord(it).toLowerCase()} ${it.nums.join(' et ')} ?</h2><p>${plural(n, 'élève y est placé', 'élèves y sont placés')}. ${room.kind === 'ilots' ? 'Dans ce labo, ils apparaîtront « non placés ».' : 'Ils passeront dans « non placés ».'}</p>
+      <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn danger" data-act="room-del-item-go">Supprimer</button></div>`);
+  },
+  'room-del-item-go': () => {
+    const room = roomById(V.rid), it = room.items.find(x => x.id === V.selItem); if (!it) return;
+    if (room.kind !== 'ilots') Object.entries(DB.place).forEach(([k, pl]) => { if (k.endsWith('|' + room.id)) it.nums.forEach(n => { delete pl.g[String(n)]; delete pl.flags[String(n)]; }); });
+    room.items = room.items.filter(x => x !== it); V.selItem = null; save(); closeModal(); render();
+  },
+  'room-board': el => { roomById(V.rid).board = el.dataset.b; save(); render(); },
+  'room-kind': el => { roomById(V.rid).kind = el.dataset.k; save(); render(); },
+  'room-del': () => { const room = roomById(V.rid); openModal(`<h2>Supprimer ${esc(room.name)} ?</h2><p>La disposition et les placements propres à ce labo seront effacés. Les compositions d'îlots communes sont conservées.</p><div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn danger" data-act="room-del-go">Supprimer</button></div>`); },
+  'room-del-go': () => {
+    const id = V.rid; DB.rooms = DB.rooms.filter(r => r.id !== id);
+    Object.keys(DB.place).forEach(k => { if (k.endsWith('|' + id)) delete DB.place[k]; });
+    Object.keys(DB.lastRoom).forEach(k => { if (DB.lastRoom[k] === id) delete DB.lastRoom[k]; });
+    save(); closeModal(); back(); V.rid = null; render();
+  },
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
+/* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
+const UNDO_MSG = {'p-save': 'Observation enregistrée', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+  'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
+  'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
+  'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'sep-del': 'Paire retirée'};
+Object.keys(UNDO_MSG).forEach(name => {
+  const fn = ACT[name]; if (!fn) return;
+  ACT[name] = (el, e) => {
+    const u = {cp: JSON.stringify(DB), ph: Object.assign({}, PHOTOS), shown: false};
+    UNDO = u;
+    try { fn(el, e); } finally { UNDO = null; if (!u.shown && JSON.stringify(DB) !== u.cp) showUndo(UNDO_MSG[name], u); }
+  };
+});
 const CHG = {
   photo: async el => { const f = el.files[0]; if (!f) return; const ok = await setPhoto(el.dataset.sid, f); render(); toast(ok ? 'Photo enregistrée' : "Cette image n'a pas pu être lue."); },
   'bulk-photos': async el => {
@@ -1345,6 +2033,7 @@ const CHG = {
   restore: el => { const f = el.files[0]; if (f) restoreFrom(f); el.value = ''; },
   'imp-file': el => { const f = el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { let t = r.result; if (/\uFFFD/.test(t)) { const r2 = new FileReader(); r2.onload = () => { IMP = {text: r2.result, ...parseList(r2.result, V.cid)}; render(); }; r2.readAsText(f, 'windows-1252'); return; } IMP = {text: t, ...parseList(t, V.cid)}; render(); }; r.readAsText(f, 'utf-8'); },
   'ex-cid': el => exportModal(el.value),
+  'room-name': el => { const r = roomById(V.rid); const v = el.value.trim(); if (r && v) { r.name = v; save(); } },
   trombi: el => { const f = el.files[0]; el.value = ''; if (f) startTrombi(f, el.dataset.cid); },
   'tr-sel': el => { const it = TR.items[+el.dataset.i]; it.sid = el.value; if (el.value && el.value !== 'new' && el.value !== 'skip') it.group = stu(el.value)?.group || it.group; renderKeep(); },
   'tr-name': el => { const it = TR.items[+el.dataset.i]; it[el.dataset.k] = titleCase(el.value.trim()); renderKeep(); }
@@ -1366,7 +2055,31 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form]?.(f); });
-document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P) closeLayer(); });
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P) closeLayer(); else if (V.name === 'proj') ACT['proj-exit'](); });
+function openProj(cid, group, rid) { go({name:'proj', cid, group, rid}); try { const r = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) {} }
+document.addEventListener('pointerdown', e => {
+  const d = e.target.closest('[data-drag]'); if (!d || V.name !== 'roomedit') return;
+  const cv = $('#room-canvas'), room = roomById(V.rid); if (!cv || !room) return;
+  const r = cv.getBoundingClientRect(); const isDesk = d.dataset.drag === 'desk';
+  const obj = isDesk ? room.desk : room.items.find(x => x.id === d.dataset.id); if (!obj) return;
+  if (!isDesk) V.selItem = obj.id;
+  const [w, h] = isDesk ? [120, 36] : itemDims(obj);
+  DRAG = {cp: JSON.stringify(DB), el: d, obj, sx: e.clientX, sy: e.clientY, ox: obj.x, oy: obj.y, k: ROOM_W / r.width, w, h, nx: obj.x, ny: obj.y, moved: false};
+  try { d.setPointerCapture(e.pointerId); } catch (er) {}
+  e.preventDefault();
+});
+document.addEventListener('pointermove', e => {
+  if (!DRAG) return;
+  const snap = v => Math.round(v / 10) * 10;
+  const nx = Math.max(0, Math.min(ROOM_W - DRAG.w, snap(DRAG.ox + (e.clientX - DRAG.sx) * DRAG.k)));
+  const ny = Math.max(0, Math.min(ROOM_H - DRAG.h, snap(DRAG.oy + (e.clientY - DRAG.sy) * DRAG.k)));
+  if (nx !== DRAG.nx || ny !== DRAG.ny) { DRAG.nx = nx; DRAG.ny = ny; DRAG.moved = true; DRAG.el.style.left = pct(nx, ROOM_W); DRAG.el.style.top = pct(ny, ROOM_H); }
+});
+['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, () => {
+  if (!DRAG) return; const d = DRAG; DRAG = null;
+  if (d.moved) { d.obj.x = d.nx; d.obj.y = d.ny; save(); render(); showUndo('Élément déplacé', {cp: d.cp, ph: Object.assign({}, PHOTOS)}); return; }
+  render();
+}));
 let pressXY = null;
 document.addEventListener('pointerdown', e => {
   const t = e.target.closest('[data-long]'); if (!t) return; suppressClick = false; pressXY = [e.clientX, e.clientY];
@@ -1374,12 +2087,13 @@ document.addEventListener('pointerdown', e => {
     suppressClick = true; pressXY = null; if (navigator.vibrate) navigator.vibrate(20);
     if (t.dataset.long === 'fiche') go({name:'fiche', sid: t.dataset.sid});
     else if (t.dataset.long === 'slot') slotMenu(t.dataset.slot, t.dataset.date);
+    else if (t.dataset.long === 'unit') unitMenu(t.dataset.num);
   }, 550);
 });
 document.addEventListener('pointermove', e => { if (pressXY && Math.hypot(e.clientX - pressXY[0], e.clientY - pressXY[1]) > 10) { clearTimeout(longTimer); pressXY = null; } }, true);
 ['pointerup','pointercancel'].forEach(ev => document.addEventListener(ev, () => { clearTimeout(longTimer); pressXY = null; if (suppressClick) setTimeout(() => { suppressClick = false; }, 150); }, true));
-document.addEventListener('contextmenu', e => { if (e.target.closest('[data-long]')) e.preventDefault(); });
-let resizeT; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (V.name === 'today') render(); }, 200); });
+document.addEventListener('contextmenu', e => { if (!e.target.closest('input, textarea')) e.preventDefault(); });
+let resizeT; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (!DRAG && ['today', 'grid', 'plan', 'proj', 'roomedit'].includes(V.name)) renderKeep(); }, 200); });
 
 async function showPersist() {
   const el = $('#persist-status'); if (!el) return;

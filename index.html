@@ -83,7 +83,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .slots{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
 .slot{width:100%;display:flex;align-items:center;gap:20px;padding:16px 22px;border-radius:14px;background:var(--surface);border:1px solid var(--line);text-align:left}
 .slot.now{border:2px solid var(--pos);box-shadow:0 4px 16px rgba(30,107,92,.14)}
-.slot .time{width:124px;flex:none;font-weight:600;font-variant-numeric:tabular-nums}
+.slot .time{width:150px;flex:none;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .slot .mid{flex:1 1 auto;display:flex;flex-direction:column;gap:3px;min-width:0}
 .slot .cls{font-family:var(--serif);font-size:22px;font-weight:600}
 .slot.now .cls{font-size:25px}
@@ -95,6 +95,37 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .welcome h2{font-family:var(--serif);font-size:24px;margin-bottom:8px}
 .welcome ol{margin:0 0 16px;padding-left:20px;color:var(--ink-2)}
 
+/* Semaine */
+.chip.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.todo{color:var(--neg);font-weight:600}
+.cdot{display:inline-block;width:12px;height:12px;border-radius:4px;flex:none}
+.slot.past{background:var(--surface-2)}
+.slot.past .cls,.slot.past .time{color:var(--muted)}
+.tt-wrap{overflow-x:auto;padding-bottom:4px}
+.tt{display:grid;grid-template-columns:48px repeat(var(--n),minmax(130px,1fr));column-gap:8px;row-gap:8px}
+.tt-dh{padding:6px 8px;border-radius:10px;text-align:center;font-size:14px;color:var(--muted)}
+.tt-dh b{font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
+.tt-dh.today{background:var(--ink);color:var(--surface)}
+.tt-dh.today b{color:var(--surface)}
+.tt-times{position:relative}
+.tt-times span{position:absolute;right:2px;transform:translateY(-50%);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tt-times span:first-child{transform:none}
+.tt-col{position:relative;border-radius:10px;background-color:var(--surface);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px var(--hour));border:1px solid var(--line)}
+.tt-hol{position:absolute;inset:0;border-radius:10px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:14px;font-weight:500;color:var(--muted)}
+.blk{position:absolute;padding:8px 8px 6px;border-radius:9px;border:1px solid color-mix(in srgb,var(--cc) 40%,transparent);background:color-mix(in srgb,var(--cc) 17%,var(--surface));box-shadow:inset 0 4px 0 var(--cc);text-align:left;display:flex;flex-direction:column;gap:2px;overflow:hidden;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.blk .bc{font-weight:700;font-size:15px;line-height:1.15;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blk .bg{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blk .chip{align-self:flex-start;font-size:12px;padding:1px 7px;margin-top:auto}
+.blk.short .bg{display:none}
+.bgrp{font-weight:600;font-size:12px;padding:0 5px;border-radius:5px;background:color-mix(in srgb,var(--cc) 30%,var(--surface));color:var(--ink);vertical-align:1px}
+.blk.past{background:color-mix(in srgb,var(--cc) 8%,var(--surface-2));border-color:var(--line);box-shadow:inset 0 4px 0 color-mix(in srgb,var(--cc) 75%,var(--surface-2))}
+.blk.past .bc,.blk.past .bg{color:var(--muted)}
+.blk.now{outline:3px solid var(--ink);outline-offset:1px;z-index:1}
+.blk.cancel{background:repeating-linear-gradient(135deg,var(--surface-2) 0 8px,var(--surface) 8px 16px);border-style:dashed;box-shadow:none}
+.blk.cancel .bc{text-decoration:line-through;color:var(--muted)}
+.swatches{display:flex;gap:6px;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:50%;border:3px solid var(--surface);background:var(--sw);box-shadow:0 0 0 1px var(--line);padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
 /* Grille */
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;align-content:start}
 .tiles.compact{grid-template-columns:repeat(auto-fill,minmax(116px,1fr));gap:10px}
@@ -274,16 +305,31 @@ const CAT = Object.fromEntries(CATS.map(c => [c.k, c]));
 const catChip = k => { const c = CAT[k]; if (!c) return ''; const sign = c.t === 'pos' ? '+ ' : c.t === 'neg' ? '− ' : ''; return `<span class="chip ${c.t}">${sign}${esc(c.l)}</span>`; };
 
 /* ---------- données ---------- */
+// Calendrier zone A 2026-2027 (source : calendrier scolaire officiel) + fin des cours de l'établissement, modifiables dans Réglages.
+const DEFAULT_HOLIDAYS = [
+  {n:'Vacances de la Toussaint', s:'2026-10-17', e:'2026-11-01'},
+  {n:'Armistice', s:'2026-11-11', e:'2026-11-11'},
+  {n:'Vacances de Noël', s:'2026-12-19', e:'2027-01-03'},
+  {n:"Vacances d'hiver", s:'2027-02-13', e:'2027-02-28'},
+  {n:'Lundi de Pâques', s:'2027-03-29', e:'2027-03-29'},
+  {n:'Vacances de printemps', s:'2027-04-10', e:'2027-04-25'},
+  {n:"Pont de l'Ascension", s:'2027-05-06', e:'2027-05-07'},
+  {n:'Lundi de Pentecôte', s:'2027-05-17', e:'2027-05-17'},
+  {n:'Fin des cours', s:'2027-06-20', e:'2027-08-31'}
+];
+const CLASS_COLORS = [['#2F6DB5','Bleu'],['#D9822B','Orange'],['#7B4FB3','Violet'],['#1E8C8C','Turquoise'],['#C2477A','Framboise'],['#6E8B2E','Olive'],['#B5472F','Brique'],['#3B4BA8','Indigo'],['#B8901C','Moutarde'],['#5A6B7D','Ardoise']];
+function nextColor(list) { const used = (list || DB.classes).map(c => c.color); return (CLASS_COLORS.find(([h]) => !used.includes(h)) || CLASS_COLORS[(list || DB.classes).length % CLASS_COLORS.length])[0]; }
 function defaultSettings() {
   return {
     evenIsA: true, lastBackup: null,
+    holidays: DEFAULT_HOLIDAYS.map(h => ({...h})),
     periods: {
       semestre: [{n:'Semestre 1', s:'2026-09-01', e:'2027-01-08'}, {n:'Semestre 2', s:'2027-01-09', e:'2027-06-19'}],
       trimestre: [{n:'Trimestre 1', s:'2026-09-01', e:'2026-11-27'}, {n:'Trimestre 2', s:'2026-11-28', e:'2027-03-05'}, {n:'Trimestre 3', s:'2027-03-06', e:'2027-06-19'}]
     }
   };
 }
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 let STORAGE_OK = false;
@@ -292,6 +338,9 @@ function migrate(core) {
   const d = Object.assign(freshDB(), core || {});
   d.settings = Object.assign(defaultSettings(), d.settings || {});
   ['classes','students','slots','obs'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
+  if (!d.cancelled || typeof d.cancelled !== 'object') d.cancelled = {};
+  if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
+  d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
   return d;
 }
 
@@ -346,7 +395,33 @@ const groupLabel = g => g === 'all' ? 'Classe entière' : 'Demi-groupe ' + g;
 const initials = s => ((s.first || '')[0] || '') + ((s.last || '')[0] || '');
 const photoHTML = s => PHOTOS[s.id] ? `<img src="${PHOTOS[s.id]}" alt="" draggable="false">` : `<span class="ini">${esc(initials(s))}</span>`;
 
+const ccol = c => (c && c.color) || '#5A6B7D';
+const dot = c => `<span class="cdot" style="background:${ccol(c)}" aria-hidden="true"></span>`;
+const holidayOn = date => DB.settings.holidays.find(h => h.s && h.e && date >= h.s && date <= h.e);
+const mondayOf = d => { const x = parseD(d); const wd = x.getDay() || 7; x.setDate(x.getDate() - wd + 1); return dstr(x); };
+function fillMap() { const m = new Map(); DB.obs.forEach(o => { let st = m.get(o.ses); if (!st) m.set(o.ses, st = new Set()); st.add(o.sid); }); return m; }
+function sesState(date, s, FM) {
+  const t = todayStr(), key = date + '|' + s.id;
+  if (DB.cancelled[key]) return {k:'cancel'};
+  if (date > t || (date === t && nowMin() < tMin(s.start))) return {k:'future'};
+  const list = studentsOf(s.cid, s.group); if (!list.length) return {k:'empty'};
+  const got = FM.get(key); const filled = got ? list.filter(x => got.has(x.id)).length : 0;
+  if (!filled) return {k:'none'};
+  if (filled < list.length) return {k:'part', n: list.length - filled};
+  return {k:'done'};
+}
+function stateChip(st) {
+  if (st.k === 'none') return '<span class="chip neg">Aucune info</span>';
+  if (st.k === 'part') return `<span class="chip warn">${st.n} restant${st.n > 1 ? 's' : ''}</span>`;
+  if (st.k === 'done') return '<span class="chip pos">✓ Complet</span>';
+  if (st.k === 'cancel') return '<span class="chip neu">Annulé</span>';
+  return '';
+}
+const isNarrow = () => window.innerWidth < 720;
+let HOME_MODE = 'week';
+const homeV = () => ({name:'today', mode: HOME_MODE, date: todayStr()});
 function slotsOn(date) {
+  if (holidayOn(date)) return [];
   const wd = parseD(date).getDay(), wt = weekType(date);
   return DB.slots.filter(s => s.day === wd && (s.week === 'all' || s.week === wt) && cls(s.cid)).sort((a, b) => a.start.localeCompare(b.start));
 }
@@ -365,14 +440,14 @@ function periodsFor(c) {
 function currentPeriodIndex(list) { const t = todayStr(); const i = list.findIndex((p, j) => j < list.length - 1 && t >= p.s && t <= p.e); return i >= 0 ? i : list.length - 1; }
 
 /* ---------- navigation ---------- */
-let V = {name:'today', date: todayStr()};
+let V = homeV();
 let STACK = [];
 function go(v) { STACK.push(V); V = v; closeLayer(); render(); $('.main')?.scrollTo(0, 0); }
-function back() { V = STACK.pop() || {name:'today', date: todayStr()}; closeLayer(); render(); }
+function back() { V = STACK.pop() || homeV(); closeLayer(); render(); }
 
 function render() {
   const app = $('#app');
-  if (V.name === 'today') app.innerHTML = viewToday();
+  if (V.name === 'today') app.innerHTML = (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
   else if (V.name === 'grid') app.innerHTML = viewGrid();
   else if (V.name === 'fiche') app.innerHTML = viewFiche();
   else if (V.name === 'settings') app.innerHTML = viewSettings();
@@ -414,11 +489,12 @@ function banners() {
 /* ---------- vue : Aujourd'hui ---------- */
 function viewToday() {
   const d = V.date, t = todayStr(), wt = weekType(d);
-  const slots = slotsOn(d);
+  const slots = slotsOn(d), hol = holidayOn(d), FM = fillMap();
   let body = banners();
   if (!DB.classes.length) body += welcomeCard();
+  else if (hol) body += `<div class="empty"><p><strong>${esc(hol.n)}</strong> : pas de cours ce jour-là.</p></div>`;
   else if (!slots.length) body += `<div class="empty"><p>Aucun cours prévu ${d === t ? "aujourd'hui" : 'ce jour-là'} (semaine ${wt}).</p><div class="row"><button class="btn" data-act="other">Ouvrir une classe</button><button class="btn" data-act="settings" data-tab="edt">${ICON.cal}Emploi du temps</button></div></div>`;
-  else body += '<ol class="slots">' + slots.map(s => slotCard(d, s)).join('') + '</ol>';
+  else body += '<ol class="slots">' + slots.map(s => slotCard(d, s, FM)).join('') + '</ol><p class="small muted" style="margin:4px 0 0">Appui long sur un créneau : le marquer comme annulé.</p>';
   return `
   <header class="bar">
     <button class="btn icon-btn" data-act="day" data-n="-1" aria-label="Jour précédent">${ICON.back}</button>
@@ -426,24 +502,96 @@ function viewToday() {
     <button class="btn icon-btn" data-act="day" data-n="1" aria-label="Jour suivant">${ICON.next}</button>
     <span class="chip dark" style="font-size:14px;padding:5px 12px">Semaine ${wt}</span>
     <span class="grow"></span>
+    ${modeSeg('day')}
     <button class="btn" data-act="other">Autre classe</button>
     <button class="btn" data-act="settings" data-tab="classes">${ICON.gear}Réglages</button>
   </header>
   <main class="main"><div class="wrap">${body}</div></main>`;
 }
-function slotCard(d, s) {
-  const t = todayStr(), c = cls(s.cid), ses = sesFromSlot(d, s);
-  let st;
-  if (d < t) st = 'done'; else if (d > t) st = 'next';
-  else { const n = nowMin(); st = n < tMin(s.start) ? 'next' : n < tMin(s.end) ? 'now' : 'done'; }
+const modeSeg = m => isNarrow() ? '' : `<div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="mode" data-m="day" aria-pressed="${m === 'day'}">Jour</button><button type="button" data-act="mode" data-m="week" aria-pressed="${m === 'week'}">Semaine</button></div>`;
+function slotCard(d, s, FM) {
+  const t = todayStr(), c = cls(s.cid), st = sesState(d, s, FM);
+  const isNow = d === t && nowMin() >= tMin(s.start) && nowMin() < tMin(s.end);
   const n = studentsOf(s.cid, s.group).length;
-  const k = DB.obs.filter(o => o.ses === ses.key && o.cat !== 'absent').length;
-  const info = plural(n, 'élève') + (k ? ' · ' + plural(k, 'observation') : '');
-  const right = st === 'now' ? `<span class="status now">En cours</span><span class="open">Ouvrir</span>` : `<span class="status">${st === 'done' ? 'Terminé' : 'À venir'}</span>`;
-  return `<li><button class="slot ${st === 'now' ? 'now' : ''}" data-act="open-slot" data-slot="${s.id}">
+  const chip = stateChip(st) || `<span class="status">${st.k === 'empty' ? 'Aucun élève' : 'À venir'}</span>`;
+  const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
+  return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px"><span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span></span><span class="small muted">${info}</span></span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span></span><span class="small muted">${plural(n, 'élève')}</span></span>
     ${right}</button></li>`;
+}
+
+/* ---------- vue : semaine ---------- */
+function viewWeek() {
+  const t = todayStr(), mon = mondayOf(V.date), FM = fillMap();
+  const wt = weekType(mon);
+  const days = [0, 1, 2, 3, 4, 5].map(i => addDays(mon, i));
+  const sat = DB.slots.some(x => x.day === 6 && (x.week === 'all' || x.week === wt) && cls(x.cid));
+  const shown = sat ? days : days.slice(0, 5);
+  const valid = DB.slots.filter(x => cls(x.cid));
+  const t0 = valid.length ? Math.floor(Math.min(...valid.map(x => tMin(x.start))) / 60) * 60 : 480;
+  const t1 = valid.length ? Math.ceil(Math.max(...valid.map(x => tMin(x.end))) / 60) * 60 : 1020;
+  const nb = (IS_DEMO ? 1 : 0) + (backupDue() && !IS_DEMO ? 1 : 0) + (!STORAGE_OK && !IS_DEMO ? 1 : 0);
+  const avail = window.innerHeight - 80 - 40 - 64 - 34 - nb * 84;
+  const PPM = Math.max(0.9, Math.min(1.6, avail / Math.max(60, t1 - t0)));
+  const H = (t1 - t0) * PPM;
+  let todo = 0, started = 0;
+  const cols = shown.map(d => {
+    const hol = holidayOn(d), sl = slotsOn(d);
+    const wd = parseD(d);
+    const head = `<div class="tt-dh ${d === t ? 'today' : ''}">${DAYS[wd.getDay()].slice(0, 3)}. <b>${wd.getDate()}</b></div>`;
+    if (hol) return {head, body: `<div class="tt-col" style="height:${H}px"><div class="tt-hol">${esc(hol.n)}</div></div>`};
+    // chevauchements : répartir côte à côte
+    const lanes = []; sl.forEach(x => { let i = lanes.findIndex(end => end <= x.start); if (i < 0) { i = lanes.length; lanes.push(x.end); } else lanes[i] = x.end; x._lane = i; });
+    const nl = Math.max(1, lanes.length);
+    const blocks = sl.map(x => {
+      const c = cls(x.cid), st = sesState(d, x, FM);
+      if (st.k === 'none' || st.k === 'part') todo++;
+      if (st.k !== 'future' && st.k !== 'cancel') started++;
+      const isNow = d === t && nowMin() >= tMin(x.start) && nowMin() < tMin(x.end);
+      const top = (tMin(x.start) - t0) * PPM, h = (tMin(x.end) - tMin(x.start)) * PPM - 4;
+      const w = 100 / nl;
+      const g = x.group === 'all' ? 'Classe entière' : 'Demi-groupe ' + x.group;
+      return `<button class="blk ${d < t ? 'past' : ''} ${isNow ? 'now' : ''} ${st.k === 'cancel' ? 'cancel' : ''} ${h < 58 ? 'short' : ''}" style="top:${top}px;height:${h}px;left:calc(${x._lane * w}% + 2px);width:calc(${w}% - 4px);--cc:${ccol(c)}" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + g + ', ' + fmtT(x.start))}">
+        <span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}</span><span class="bg">${fmtT(x.start)} – ${fmtT(x.end)}</span>${stateChip(st)}</button>`;
+    }).join('');
+    return {head, body: `<div class="tt-col" style="height:${H}px">${blocks}</div>`};
+  });
+  const hours = []; for (let m = t0; m <= t1; m += 60) hours.push(`<span style="top:${(m - t0) * PPM}px">${m / 60} h</span>`);
+  const isCur = mon === mondayOf(t);
+  const sub = `Semaine ${wt} · ` + (todo ? `<strong class="todo">${plural(todo, 'séance')} à compléter</strong>` : started ? 'Tout est à jour' : 'Aucune séance commencée');
+  const endD = parseD(shown[shown.length - 1]);
+  const title = `Du ${parseD(mon).getDate()} ${parseD(mon).getMonth() === endD.getMonth() ? '' : parseD(mon).toLocaleDateString('fr-FR', {month:'short'}) + ' '}au ${endD.toLocaleDateString('fr-FR', {day:'numeric', month:'long'})}`;
+  let body = banners();
+  if (!DB.classes.length) body += welcomeCard();
+  else if (!valid.length) body += `<div class="empty"><p>Aucun créneau dans l'emploi du temps.</p><button class="btn" data-act="settings" data-tab="edt">${ICON.cal}Saisir l'emploi du temps</button></div>`;
+  else body += `<div class="tt-wrap"><div class="tt" style="--n:${shown.length};--hour:${60 * PPM}px">
+      <div></div>${cols.map(c => c.head).join('')}
+      <div class="tt-times" style="height:${H}px">${hours.join('')}</div>${cols.map(c => c.body).join('')}
+    </div></div>
+    <p class="small muted" style="margin:0">Toucher un créneau : ouvrir la séance · Appui long : le marquer comme annulé.</p>`;
+  return `
+  <header class="bar">
+    <button class="btn icon-btn" data-act="week" data-n="-7" aria-label="Semaine précédente">${ICON.back}</button>
+    <div class="ttl"><h1>${title}</h1><div class="sub">${sub}</div></div>
+    <button class="btn icon-btn" data-act="week" data-n="7" aria-label="Semaine suivante">${ICON.next}</button>
+    ${isCur ? '' : '<button class="btn ghost" data-act="week" data-n="0">Cette semaine</button>'}
+    <span class="grow"></span>
+    ${modeSeg('week')}
+    <button class="btn" data-act="other">Autre classe</button>
+    <button class="btn" data-act="settings" data-tab="classes">${ICON.gear}Réglages</button>
+  </header>
+  <main class="main"><div class="wrap" style="max-width:1280px">${body}</div></main>`;
+}
+function slotMenu(slotId, date) {
+  const x = DB.slots.find(y => y.id === slotId); if (!x) return;
+  const c = cls(x.cid), key = date + '|' + x.id, canc = !!DB.cancelled[key];
+  openModal(`<h2 class="row" style="gap:10px">${dot(c)}${esc(c.name)} · ${groupLabel(x.group)}</h2>
+    <p>${fmtLong(date)}, ${fmtT(x.start)} – ${fmtT(x.end)}${canc ? ' · <strong>séance annulée</strong>' : ''}</p>
+    <p class="small muted">${canc ? 'Rétablir la séance la fera de nouveau apparaître comme à compléter.' : 'Une séance annulée (sortie, stage, absence…) ne compte plus comme à compléter.'}</p>
+    <div class="ft"><button class="btn" data-act="m-close">Fermer</button>
+    <button class="btn" data-act="slot-cancel" data-slot="${x.id}" data-date="${date}">${canc ? 'Rétablir la séance' : 'Marquer comme annulée'}</button>
+    <button class="btn primary" data-act="open-slot" data-slot="${x.id}" data-date="${date}">Ouvrir la séance</button></div>`);
 }
 function welcomeCard() {
   return `<section class="card welcome">
@@ -459,7 +607,7 @@ function welcomeCard() {
 /* ---------- vue : grille ---------- */
 function viewGrid() {
   const ses = V.ses, c = cls(ses.cid);
-  if (!c) { V = {name:'today', date: todayStr()}; return viewToday(); }
+  if (!c) { V = homeV(); return viewToday(); }
   const list = studentsOf(ses.cid, ses.group), sum = sesSummary(ses.key);
   const compact = list.length > 24;
   let abs = 0, seen = 0;
@@ -467,7 +615,7 @@ function viewGrid() {
     const r = sum[s.id] || {}; if (r.abs) abs++; else if (r.pos || r.neg || r.ras) seen++;
     const name = compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`;
     const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '');
-    return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}">
+    return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-long="fiche" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}">
       <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent</span>' : ''}</span>
       <span class="nm">${name}</span><span class="cnt">${chips}</span></button>`;
   }).join('');
@@ -478,7 +626,7 @@ function viewGrid() {
   return `
   <header class="bar">
     <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
-    <div class="ttl"><h1>${esc(c.name)}</h1><div class="sub">${esc(sub)}</div></div>
+    <div class="ttl"><h1 class="row" style="gap:10px">${dot(c)}${esc(c.name)}</h1><div class="sub">${esc(sub)}</div></div>
     <span class="grow"></span>
     <button class="btn" data-act="export" data-cid="${c.id}">${ICON.down}Export</button>
     <button class="btn primary" data-act="rasrest">${ICON.check}Reste de la classe : RAS</button>
@@ -569,21 +717,21 @@ function viewFiche() {
 /* ---------- vue : réglages ---------- */
 function viewSettings() {
   const tab = V.tab || 'classes';
-  const tabs = [['classes','Classes et élèves'],['edt','Emploi du temps'],['periodes','Périodes'],['sauvegarde','Sauvegarde']];
+  const tabs = [['classes','Classes et élèves'],['edt','Emploi du temps'],['periodes','Périodes et vacances'],['sauvegarde','Sauvegarde']];
   let body = '';
   if (tab === 'classes') body = setClasses();
   if (tab === 'edt') body = setEdt();
   if (tab === 'periodes') body = setPeriodes();
   if (tab === 'sauvegarde') body = setBackup();
   return `
-  <header class="bar"><button class="btn ghost" data-act="home">${ICON.back}Aujourd'hui</button><div class="ttl"><h1>Réglages</h1></div></header>
+  <header class="bar"><button class="btn ghost" data-act="home">${ICON.back}Accueil</button><div class="ttl"><h1>Réglages</h1></div></header>
   <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${k === tab}" data-act="tab" data-tab="${k}">${l}</button>`).join('')}</nav>
   <main class="main"><div class="wrap" style="max-width:1100px">${body}</div></main>`;
 }
 function setClasses() {
   if (!V.cid || !cls(V.cid)) V.cid = DB.classes[0]?.id;
   const c = cls(V.cid);
-  const clist = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric:true})).map(x => `<button class="btn" data-act="sel-class" data-cid="${x.id}" aria-pressed="${x.id === V.cid}"><span>${esc(x.name)}</span><span class="small">${DB.students.filter(s => s.cid === x.id).length}</span></button>`).join('');
+  const clist = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric:true})).map(x => `<button class="btn" data-act="sel-class" data-cid="${x.id}" aria-pressed="${x.id === V.cid}"><span class="row" style="gap:8px">${dot(x)}${esc(x.name)}</span><span class="small">${DB.students.filter(s => s.cid === x.id).length}</span></button>`).join('');
   const left = `<div class="clist">${clist}</div>
     <form class="card" data-form="new-class" style="display:flex;flex-direction:column;gap:10px;padding:14px">
       <label class="f" for="nc-name">Nouvelle classe</label><input type="text" id="nc-name" placeholder="ex. 4e 5" required>
@@ -602,6 +750,7 @@ function setClasses() {
     <section class="card" style="display:flex;flex-direction:column;gap:12px">
       <div class="row"><h2 style="font-family:var(--serif);font-size:22px;flex:1">${esc(c.name)}</h2>
         <select data-chg="class-pt" data-cid="${c.id}" style="width:auto" aria-label="Découpage de l'année"><option value="semestre" ${c.pt === 'semestre' ? 'selected' : ''}>Semestres</option><option value="trimestre" ${c.pt === 'trimestre' ? 'selected' : ''}>Trimestres</option></select></div>
+      <div class="swatches" role="group" aria-label="Couleur de la classe">${CLASS_COLORS.map(([h, n]) => `<button type="button" class="sw" style="--sw:${h}" aria-label="${n}" aria-pressed="${c.color === h}" data-act="class-color" data-cid="${c.id}" data-col="${h}"></button>`).join('')}</div>
       <p class="small muted" style="margin:0">${plural(list.length, 'élève')} · G1 : ${g1} · G2 : ${g2} · ${plural(list.filter(s => PHOTOS[s.id]).length, 'photo')}</p>
       <div class="row">
         <button class="btn primary" data-act="imp-open">Importer une liste</button>
@@ -666,7 +815,7 @@ function setEdt() {
   const byDay = [1,2,3,4,5,6].map(d => {
     const sl = DB.slots.filter(s => s.day === d && cls(s.cid)).sort((a, b) => a.start.localeCompare(b.start));
     if (!sl.length) return '';
-    return `<div class="day"><h3>${DAYS[d]}</h3><ul class="stable">${sl.map(s => `<li><span style="width:130px;font-variant-numeric:tabular-nums">${fmtT(s.start)} – ${fmtT(s.end)}</span><span class="nm">${esc(cls(s.cid).name)}</span><span class="chip neu">${groupLabel(s.group)}</span><span class="chip ${s.week === 'all' ? 'neu' : 'dark'}">${s.week === 'all' ? 'Toutes les semaines' : 'Semaine ' + s.week}</span><button class="btn ghost" style="min-height:40px" data-act="del-slot" data-id="${s.id}">Retirer</button></li>`).join('')}</ul></div>`;
+    return `<div class="day"><h3>${DAYS[d]}</h3><ul class="stable">${sl.map(s => `<li><span style="width:130px;font-variant-numeric:tabular-nums">${fmtT(s.start)} – ${fmtT(s.end)}</span><span class="nm row" style="gap:8px">${dot(cls(s.cid))}${esc(cls(s.cid).name)}</span><span class="chip neu">${groupLabel(s.group)}</span><span class="chip ${s.week === 'all' ? 'neu' : 'dark'}">${s.week === 'all' ? 'Toutes les semaines' : 'Semaine ' + s.week}</span><button class="btn ghost" style="min-height:40px" data-act="del-slot" data-id="${s.id}">Retirer</button></li>`).join('')}</ul></div>`;
   }).join('');
   if (!DB.classes.length) return `<div class="empty"><p>Créez d'abord vos classes.</p><button class="btn" data-act="tab" data-tab="classes">Classes et élèves</button></div>`;
   return `<section class="card" style="display:flex;flex-direction:column;gap:8px">
@@ -689,7 +838,15 @@ function setPeriodes() {
       <label class="f" for="p-${k}-${i}-s">Début<input type="date" id="p-${k}-${i}-s" value="${p.s}" data-chg="period-date" data-k="${k}" data-i="${i}" data-f="s"></label>
       <label class="f" for="p-${k}-${i}-e">Fin<input type="date" id="p-${k}-${i}-e" value="${p.e}" data-chg="period-date" data-k="${k}" data-i="${i}" data-f="e"></label></div>`).join('')}</section>`;
   return `<p class="muted" style="margin:0">Les fiches élèves et les exports utilisent ces dates. Vérifiez-les avec le calendrier de l'établissement.</p>`
-    + block('semestre', 'Semestres (collège, Première)') + block('trimestre', 'Trimestres (Seconde)');
+    + block('semestre', 'Semestres (collège, Première)') + block('trimestre', 'Trimestres (Seconde)')
+    + `<section class="card" style="display:flex;flex-direction:column;gap:10px"><h3 style="font-size:17px">Jours sans cours</h3>
+      <p class="small muted" style="margin:0">Vacances et jours fériés de la zone A, déjà remplis. Ces jours-là, l'emploi du temps affiche le nom de la période et aucune séance n'est à compléter.</p>
+      ${DB.settings.holidays.map((h, i) => `<div class="form-grid">
+        <label class="f" for="h-${i}-n">Nom<input type="text" id="h-${i}-n" value="${esc(h.n)}" data-chg="hol" data-i="${i}" data-f="n"></label>
+        <label class="f" for="h-${i}-s">Du<input type="date" id="h-${i}-s" value="${h.s}" data-chg="hol" data-i="${i}" data-f="s"></label>
+        <label class="f" for="h-${i}-e">Au (inclus)<input type="date" id="h-${i}-e" value="${h.e}" data-chg="hol" data-i="${i}" data-f="e"></label>
+        <button class="btn ghost" data-act="hol-del" data-i="${i}">Retirer</button></div>`).join('')}
+      <div><button class="btn" data-act="hol-add">Ajouter une période sans cours</button></div></section>`;
 }
 function setBackup() {
   const lb = DB.settings.lastBackup;
@@ -712,15 +869,16 @@ function setBackup() {
 function openModal(html) { $('#modal').innerHTML = `<div class="scrim m" data-act="m-close"></div><div class="modal" role="dialog" aria-modal="true">${html}</div>`; $('#modal .modal button, #modal .modal input')?.focus(); }
 function closeModal() { $('#modal').innerHTML = ''; }
 
+const otherDate = () => (V.name === 'today' && (V.mode === 'day' || isNarrow())) ? V.date : todayStr();
 function otherModal(cid, group = 'all') {
   const list = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric:true}));
   cid = cid || list[0]?.id;
   if (!cid) { go({name:'settings', tab:'classes'}); return; }
   const g = hasGroups(cid);
   openModal(`<h2>Ouvrir une classe</h2>
-    <div class="pick">${list.map(c => `<button class="btn" data-act="om-cls" data-cid="${c.id}" aria-pressed="${c.id === cid}">${esc(c.name)}</button>`).join('')}</div>
+    <div class="pick">${list.map(c => `<button class="btn" data-act="om-cls" data-cid="${c.id}" aria-pressed="${c.id === cid}">${dot(c)}${esc(c.name)}</button>`).join('')}</div>
     ${g ? `<div class="seg" role="group" aria-label="Groupe">${['all','G1','G2'].map(x => `<button data-act="om-grp" data-cid="${cid}" data-g="${x}" aria-pressed="${x === group}">${x === 'all' ? 'Classe entière' : x}</button>`).join('')}</div>` : ''}
-    <p class="small muted">La séance sera datée du ${fmtLong(V.name === 'today' ? V.date : todayStr()).toLowerCase()}, hors emploi du temps.</p>
+    <p class="small muted">La séance sera datée du ${fmtLong(otherDate()).toLowerCase()}, hors emploi du temps.</p>
     <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn primary" data-act="om-go" data-cid="${cid}" data-g="${group}">Ouvrir</button></div>`);
 }
 
@@ -1022,7 +1180,7 @@ function loadDemo() {
   const F = ['Léa','Hugo','Inès','Nathan','Chloé','Yanis','Emma','Lucas','Manon','Adam','Jade','Louis','Sarah','Enzo','Camille','Noah','Zoé','Rayan','Lina','Tom','Alice','Mathis','Clara','Théo','Maël','Anna','Gabriel','Louise','Sacha','Rose','Ethan','Ambre','Paul','Nina','Jules','Lou','Arthur','Mila','Victor','Agathe'];
   const L = ['Martin','Bernard','Petit','Durand','Leroy','Moreau','Simon','Laurent','Michel','Garcia','David','Bertrand','Roux','Vincent','Fournier','Morel','Girard','André','Lefèvre','Mercier','Dupont','Lambert','Bonnet','François','Rousseau','Blanc','Guérin','Muller','Henry','Roussel','Nicolas','Perrin','Morin','Mathieu','Clément','Gauthier','Dumont','Lopez','Fontaine','Chevalier'];
   DB = freshDB(); PHOTOS = {};
-  const mk = (name, pt, n, off) => { const c = {id: uid(), name, pt}; DB.classes.push(c); for (let i = 0; i < n; i++) DB.students.push({id: uid(), cid: c.id, first: F[(i + off) % F.length], last: L[(i * 7 + off) % L.length], group: i % 2 ? 'G2' : 'G1'}); return c; };
+  const mk = (name, pt, n, off) => { const c = {id: uid(), name, pt, color: nextColor()}; DB.classes.push(c); for (let i = 0; i < n; i++) DB.students.push({id: uid(), cid: c.id, first: F[(i + off) % F.length], last: L[(i * 7 + off) % L.length], group: i % 2 ? 'G2' : 'G1'}); return c; };
   const c3 = mk('3e 4', 'semestre', 34, 0), c5 = mk('5e 5', 'semestre', 28, 5), c2 = mk('2de 5', 'trimestre', 34, 11), c4 = mk('4e 2', 'semestre', 30, 17);
   const sl = (day, start, end, c, group, week) => DB.slots.push({id: uid(), day, start, end, cid: c.id, group, week});
   [1,2,3,4,5].forEach(d => { sl(d, '08:00', '09:00', c5, 'G1', 'A'); sl(d, '09:00', '10:00', c5, 'G2', 'A'); sl(d, '08:00', '09:00', c5, 'all', 'B'); sl(d, '10:00', '11:00', c3, 'all', 'all'); sl(d, '14:30', '15:30', c2, 'all', 'all'); sl(d, '15:30', '16:30', c4, d % 2 ? 'G1' : 'G2', 'all'); });
@@ -1032,7 +1190,9 @@ function loadDemo() {
     slotsOn(date).forEach(s => {
       if (date === today && nowMin() < tMin(s.end)) return;
       const ses = sesFromSlot(date, s);
-      studentsOf(s.cid, s.group).forEach(st => {
+      const m = rnd(); if (k < 7 && m < 0.12) return;
+      const lst = studentsOf(s.cid, s.group); const cut = (k < 7 && m < 0.3) ? Math.floor(lst.length * 0.6) : lst.length;
+      lst.slice(0, cut).forEach(st => {
         const r = rnd(); const base = {sid: st.id, cid: s.cid, date, ses: ses.key, lbl: ses.label, t: Date.now() - k * 864e5};
         if (r < 0.04) DB.obs.push({...base, id: uid(), cat: 'absent', note: ''});
         else if (r < 0.34) DB.obs.push({...base, id: uid(), cat: CATS[Math.floor(rnd() * 7)].k, note: ''});
@@ -1048,15 +1208,25 @@ function loadDemo() {
 let longTimer = null, suppressClick = false;
 const ACT = {
   day: el => { const n = +el.dataset.n; V.date = n === 0 ? todayStr() : addDays(V.date, n); render(); },
-  home: () => { STACK = []; V = {name:'today', date: todayStr()}; render(); },
+  week: el => { const n = +el.dataset.n; V.date = n === 0 ? todayStr() : addDays(mondayOf(V.date), n); render(); },
+  mode: el => {
+    const m = el.dataset.m; if (m === V.mode) return;
+    if (m === 'day') { const mon = mondayOf(V.date); V.date = mon === mondayOf(todayStr()) ? todayStr() : mon; }
+    HOME_MODE = V.mode = m; render();
+  },
+  'slot-cancel': el => { const key = el.dataset.date + '|' + el.dataset.slot; if (DB.cancelled[key]) delete DB.cancelled[key]; else DB.cancelled[key] = true; save(); closeModal(); render(); toast(DB.cancelled[key] ? 'Séance marquée comme annulée' : 'Séance rétablie'); },
+  'class-color': el => { cls(el.dataset.cid).color = el.dataset.col; save(); render(); },
+  'hol-add': () => { DB.settings.holidays.push({n:'Sans cours', s: todayStr(), e: todayStr()}); save(); render(); },
+  'hol-del': el => { DB.settings.holidays.splice(+el.dataset.i, 1); save(); render(); },
+  home: () => { STACK = []; V = homeV(); render(); },
   back: () => back(),
   settings: el => go({name:'settings', tab: el.dataset.tab || 'classes', cid: el.dataset.cid}),
   tab: el => { V.tab = el.dataset.tab; render(); if (V.tab === 'sauvegarde') showPersist(); },
-  'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); if (s) go({name:'grid', ses: sesFromSlot(V.date, s)}); },
+  'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); closeModal(); if (s) go({name:'grid', ses: sesFromSlot(el.dataset.date || V.date, s)}); },
   other: () => otherModal(),
   'om-cls': el => otherModal(el.dataset.cid),
   'om-grp': el => otherModal(el.dataset.cid, el.dataset.g),
-  'om-go': el => { const d = V.name === 'today' ? V.date : todayStr(); closeModal(); go({name:'grid', ses: sesOther(d, el.dataset.cid, el.dataset.g)}); },
+  'om-go': el => { const d = otherDate(); closeModal(); go({name:'grid', ses: sesOther(d, el.dataset.cid, el.dataset.g)}); },
   'm-close': () => closeModal(),
   demo: () => { loadDemo(); STORAGE_OK && Store.replaceAll(); render(); toast('Élèves fictifs chargés. Réglages › Sauvegarde › Tout effacer pour repartir de zéro.'); },
   tile: el => openPanel(el.dataset.sid),
@@ -1118,7 +1288,7 @@ const ACT = {
     const data = PENDING_RESTORE; if (!data) return;
     DB = migrate(data.db); PHOTOS = data.photos || {}; PENDING_RESTORE = null;
     try { if (STORAGE_OK) await Store.replaceAll(); } catch (e) { toast('La restauration a échoué sur cet appareil.'); return; }
-    closeModal(); STACK = []; V = {name:'today', date: todayStr()}; render(); toast('Sauvegarde restaurée.');
+    closeModal(); STACK = []; V = homeV(); render(); toast('Sauvegarde restaurée.');
   },
   wipe: () => openModal(`<h2>Tout effacer ?</h2><p>Classes, élèves, photos, emploi du temps et observations seront supprimés de cet appareil. Cette action est définitive.</p>
     <label class="f" for="wipe-conf">Tapez EFFACER pour confirmer<input type="text" id="wipe-conf" autocomplete="off"></label>
@@ -1126,7 +1296,7 @@ const ACT = {
   'wipe-go': async () => {
     if ($('#wipe-conf').value.trim().toUpperCase() !== 'EFFACER') { $('#wipe-conf').focus(); toast('Tapez EFFACER pour confirmer.'); return; }
     DB = freshDB(); PHOTOS = {}; if (STORAGE_OK) await Store.replaceAll();
-    closeModal(); STACK = []; V = {name:'today', date: todayStr()}; render(); toast('Toutes les données ont été effacées.');
+    closeModal(); STACK = []; V = homeV(); render(); toast('Toutes les données ont été effacées.');
   },
   'sel-class': el => { V.cid = el.dataset.cid; V.imp = false; IMP = null; render(); },
   'imp-open': () => { V.imp = true; IMP = null; render(); $('#imp-text')?.focus(); },
@@ -1170,6 +1340,7 @@ const CHG = {
   group: el => { const s = stu(el.dataset.sid); s.group = el.value; save(); render(); },
   'class-pt': el => { cls(el.dataset.cid).pt = el.value; save(); },
   parity: el => { DB.settings.evenIsA = el.checked; save(); render(); },
+  hol: el => { const h = DB.settings.holidays[+el.dataset.i]; const v = el.value.trim(); if (!v) return; h[el.dataset.f] = v; if (h.s && h.e && h.e < h.s) h.e = h.s; save(); },
   'period-date': el => { const p = DB.settings.periods[el.dataset.k][+el.dataset.i]; if (el.value) { p[el.dataset.f] = el.value; save(); } },
   restore: el => { const f = el.files[0]; if (f) restoreFrom(f); el.value = ''; },
   'imp-file': el => { const f = el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { let t = r.result; if (/\uFFFD/.test(t)) { const r2 = new FileReader(); r2.onload = () => { IMP = {text: r2.result, ...parseList(r2.result, V.cid)}; render(); }; r2.readAsText(f, 'windows-1252'); return; } IMP = {text: t, ...parseList(t, V.cid)}; render(); }; r.readAsText(f, 'utf-8'); },
@@ -1179,7 +1350,7 @@ const CHG = {
   'tr-name': el => { const it = TR.items[+el.dataset.i]; it[el.dataset.k] = titleCase(el.value.trim()); renderKeep(); }
 };
 const FORMS = {
-  'new-class': () => { const name = $('#nc-name').value.trim(); if (!name) return; const c = {id: uid(), name, pt: $('#nc-pt').value}; DB.classes.push(c); V.cid = c.id; V.imp = true; IMP = null; save(); render(); toast('Classe créée. Importez maintenant la liste des élèves.'); },
+  'new-class': () => { const name = $('#nc-name').value.trim(); if (!name) return; const c = {id: uid(), name, pt: $('#nc-pt').value, color: nextColor()}; DB.classes.push(c); V.cid = c.id; V.imp = true; IMP = null; save(); render(); toast('Classe créée. Importez maintenant la liste des élèves.'); },
   'add-stu': f => { const first = titleCase($('#as-first').value.trim()), last = titleCase($('#as-last').value.trim()); if (!first || !last) return; DB.students.push({id: uid(), cid: f.dataset.cid, first, last, group: $('#as-group').value}); save(); render(); $('#as-first')?.focus(); },
   'add-slot': () => {
     const s = {id: uid(), day: +$('#sl-day').value, start: $('#sl-start').value, end: $('#sl-end').value, cid: $('#sl-cid').value, group: $('#sl-group').value, week: $('#sl-week').value};
@@ -1196,12 +1367,19 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form]?.(f); });
 document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P) closeLayer(); });
+let pressXY = null;
 document.addEventListener('pointerdown', e => {
-  const t = e.target.closest('.tile'); if (!t) return; suppressClick = false;
-  clearTimeout(longTimer); longTimer = setTimeout(() => { suppressClick = true; if (navigator.vibrate) navigator.vibrate(20); go({name:'fiche', sid: t.dataset.sid}); }, 550);
+  const t = e.target.closest('[data-long]'); if (!t) return; suppressClick = false; pressXY = [e.clientX, e.clientY];
+  clearTimeout(longTimer); longTimer = setTimeout(() => {
+    suppressClick = true; pressXY = null; if (navigator.vibrate) navigator.vibrate(20);
+    if (t.dataset.long === 'fiche') go({name:'fiche', sid: t.dataset.sid});
+    else if (t.dataset.long === 'slot') slotMenu(t.dataset.slot, t.dataset.date);
+  }, 550);
 });
-['pointerup','pointercancel','pointerleave'].forEach(ev => document.addEventListener(ev, () => { clearTimeout(longTimer); if (suppressClick) setTimeout(() => { suppressClick = false; }, 150); }, true));
-document.addEventListener('contextmenu', e => { if (e.target.closest('.tile')) e.preventDefault(); });
+document.addEventListener('pointermove', e => { if (pressXY && Math.hypot(e.clientX - pressXY[0], e.clientY - pressXY[1]) > 10) { clearTimeout(longTimer); pressXY = null; } }, true);
+['pointerup','pointercancel'].forEach(ev => document.addEventListener(ev, () => { clearTimeout(longTimer); pressXY = null; if (suppressClick) setTimeout(() => { suppressClick = false; }, 150); }, true));
+document.addEventListener('contextmenu', e => { if (e.target.closest('[data-long]')) e.preventDefault(); });
+let resizeT; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (V.name === 'today') render(); }, 200); });
 
 async function showPersist() {
   const el = $('#persist-status'); if (!el) return;

@@ -267,6 +267,34 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .proj .board{font-size:clamp(10px,1.1vw,15px)}
 /* Semaine */
 .chip.warn{background:var(--warn-soft);color:var(--warn-ink)}
+/* devoirs (jaune) et appréciation de classe */
+.chip.dv{background:#F6D45A;color:#3D3000}
+.chip.appr-dyn{background:var(--pos);color:var(--on-pos)}
+.chip.appr-bien{background:var(--pos-soft);color:var(--pos-ink)}
+.chip.appr-passive{background:var(--warn-soft);color:var(--warn-ink);border:1px solid var(--warn-line)}
+.chip.appr-penible{background:var(--neg);color:var(--on-neg)}
+.tile.dv-on{border:3px solid #E2B41B;background:#FFF4C2;box-shadow:0 0 0 1px #E2B41B}
+.tile.dv-on .nm{color:#3D3000}
+.dv-tag{position:absolute;left:6px;bottom:6px;padding:3px 9px;border-radius:8px;background:#F6D45A;color:#3D3000;font-weight:700;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.dv-tiles .tile{padding-bottom:8px}
+.dvpick .dvb{min-height:56px;font-size:16px}
+.dvpick .dvb[aria-pressed="true"]{background:#F6D45A;color:#3D3000;border-color:#E2B41B}
+.stabs{gap:6px}
+.stabs button{min-height:52px;padding:0 20px;font-size:16px;display:inline-flex;align-items:center;gap:8px}
+.stabs .bd{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:11px;font-size:12px;font-weight:700}
+.stabs .bd.warn{background:#D9A52B;color:#1B1E23}
+.stabs .bd.dv{background:#F6D45A;color:#3D3000}
+.stabs .bd.ok{background:var(--pos-soft);color:var(--pos-ink)}
+.stabs .bd.dot{min-width:10px;width:10px;height:10px;padding:0;background:#E2B41B}
+.apprbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:8px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.seg.appr button{min-height:44px;padding:0 16px;font-size:15px}
+.seg.appr button.appr-dyn[aria-pressed="true"]{background:var(--pos);color:var(--on-pos);border-color:var(--pos)}
+.seg.appr button.appr-bien[aria-pressed="true"]{background:var(--pos-soft);color:var(--pos-ink);border-color:var(--pos-line)}
+.seg.appr button.appr-passive[aria-pressed="true"]{background:#D9A52B;color:#1B1E23;border-color:#D9A52B}
+.seg.appr button.appr-penible[aria-pressed="true"]{background:var(--neg);color:var(--on-neg);border-color:var(--neg)}
+.pnav{display:flex;align-items:center;gap:6px}
+.prow.is-now{background:color-mix(in srgb,var(--pos) 10%,var(--surface));box-shadow:inset 5px 0 0 var(--pos)}
+.nowtag{display:inline-block;margin-bottom:3px;padding:1px 8px;border-radius:6px;background:var(--pos);color:var(--on-pos);font-size:12px;font-weight:700}
 .todo{color:var(--neg);font-weight:600}
 .cdot{display:inline-block;width:12px;height:12px;border-radius:4px;flex:none}
 .slot.past{background:var(--surface-2)}
@@ -454,7 +482,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '1.9', d: '2026-09-27'};
+const APP_VERSION = {n: '2.0', d: '2026-09-27'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -473,14 +501,23 @@ const ICON = {
 
 /* ---------- catégories ---------- */
 const CATS = [
-  ['participe','Participe','pos'],['moteur','Moteur','pos'],['actif','Actif','pos'],['question','Bonne question','pos'],
+  ['participe','Participe','pos'],['moteur','Moteur/rice','pos'],['actif','Actif/ve','pos'],['question','Bonne question','pos'],
   ['aide','Aide un camarade','pos'],['soigne','Travail soigné','pos'],['progres','Progrès / effort','pos'],
-  ['materiel','Oubli de matériel','neg'],['devoir','Devoir non fait','neg'],['bavarde','Bavarde','neg'],['samuse',"S'amuse",'neg'],
-  ['passif','Passif','neg'],['retard','Retard','neg'],['securite','Sécurité TP','neg'],['comportement','Comportement','neg'],
-  ['ras','RAS','neu'],['absent','Absent','abs']
+  ['materiel','Oubli de matériel','neg'],['devoir','Devoir non fait','neg'],['bavarde','Bavard/e','neg'],['samuse',"S'amuse",'neg'],
+  ['passif','Passif/ve','neg'],['retard','Retard','neg'],['securite','Sécurité TP','neg'],['comportement','Comportement','neg'],
+  ['devoir_inc','Devoir incomplet','neg'],['devoir_bac','Devoir bâclé','neg'],
+  ['ras','RAS','neu'],['absent','Absent/e','abs']
 ].map(([k, l, t]) => ({k, l, t}));
+/* devoirs : notés depuis l'onglet « Devoirs », affichés en jaune */
+const DV = new Set(['devoir', 'devoir_inc', 'devoir_bac']);
+const DV_SHORT = {devoir: 'Non fait', devoir_inc: 'Incomplet', devoir_bac: 'Bâclé'};
+const PANEL_HIDE = new Set(['devoir_inc', 'devoir_bac']);
+/* appréciation de la classe pour une séance */
+const APPR = [['dyn', 'Dynamique'], ['bien', 'Plutôt bien'], ['passive', 'Passive'], ['penible', 'Pénible']];
+const APPR_L = Object.fromEntries(APPR);
+const apprChip = key => { const a = DB.appr && DB.appr[key]; return a && APPR_L[a] ? `<span class="chip appr-${a}">${APPR_L[a]}</span>` : ''; };
 const CAT = Object.fromEntries(CATS.map(c => [c.k, c]));
-const catChip = k => { const c = CAT[k]; if (!c) return ''; const sign = c.t === 'pos' ? '+ ' : c.t === 'neg' ? '− ' : ''; return `<span class="chip ${c.t}">${sign}${esc(c.l)}</span>`; };
+const catChip = k => { const c = CAT[k]; if (!c) return ''; const sign = c.t === 'pos' ? '+ ' : c.t === 'neg' ? '− ' : ''; return `<span class="chip ${DV.has(k) ? 'dv' : c.t}">${sign}${esc(c.l)}</span>`; };
 
 /* ---------- données ---------- */
 // Calendrier zone A 2026-2027 (source : calendrier scolaire officiel) + fin des cours de l'établissement, modifiables dans Réglages.
@@ -507,7 +544,7 @@ function defaultSettings() {
     }
   };
 }
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 let STORAGE_OK = false;
@@ -519,7 +556,7 @@ function migrate(core) {
   if (!d.cancelled || typeof d.cancelled !== 'object') d.cancelled = {};
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
   if (!Array.isArray(d.catchup)) d.catchup = [];
-  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
   return d;
@@ -590,7 +627,7 @@ const holidayOn = date => {
   return DB.settings.holidays.find(h => h.s && h.e && date >= h.s && date <= h.e);
 };
 const mondayOf = d => { const x = parseD(d); const wd = x.getDay() || 7; x.setDate(x.getDate() - wd + 1); return dstr(x); };
-function fillMap() { const m = new Map(); DB.obs.forEach(o => { let st = m.get(o.ses); if (!st) m.set(o.ses, st = new Set()); st.add(o.sid); }); return m; }
+function fillMap() { const m = new Map(); DB.obs.forEach(o => { if (DV.has(o.cat)) return; let st = m.get(o.ses); if (!st) m.set(o.ses, st = new Set()); st.add(o.sid); }); return m; }
 function sesState(date, s, FM) {
   const t = todayStr(), key = date + '|' + s.id;
   if (DB.cancelled[key]) return {k:'cancel'};
@@ -620,7 +657,7 @@ const sesFromSlot = (date, s) => ({key: date + '|' + s.id, date, cid: s.cid, gro
 const sesOther = (date, cid, group) => ({key: date + '|x|' + cid + '|' + group, date, cid, group, label: 'Hors emploi du temps'});
 function sesSummary(key) {
   const m = {};
-  DB.obs.forEach(o => { if (o.ses !== key) return; const r = m[o.sid] || (m[o.sid] = {pos:0, neg:0, ras:false, abs:false}); const t = CAT[o.cat]?.t; if (t === 'pos') r.pos++; else if (t === 'neg') r.neg++; else if (o.cat === 'ras') r.ras = true; else if (o.cat === 'absent') r.abs = true; });
+  DB.obs.forEach(o => { if (o.ses !== key) return; const r = m[o.sid] || (m[o.sid] = {pos:0, neg:0, ras:false, abs:false, dv:null}); const t = CAT[o.cat]?.t; if (DV.has(o.cat)) r.dv = o.cat; else if (t === 'pos') r.pos++; else if (t === 'neg') r.neg++; else if (o.cat === 'ras') r.ras = true; else if (o.cat === 'absent') r.abs = true; });
   return m;
 }
 function periodsFor(c) {
@@ -639,15 +676,15 @@ function back() { V = STACK.pop() || homeV(); closeLayer(); render(); }
 function render() {
   const app = $('#app'); SESS_CACHE = {};
   if (V.name === 'today') app.innerHTML = V.tab === 'prog' ? viewProg() : V.tab === 'suivi' ? viewSuivi() : V.tab === 'salles' ? viewSalles() : (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
-  else if (V.name === 'grid') app.innerHTML = (V.ses.room && V.layout !== 'grid') ? viewPlan() : viewGrid();
+  else if (V.name === 'grid') app.innerHTML = viewSession();
   else if (V.name === 'plan') app.innerHTML = viewPlan();
-  else if (V.name === 'hub') app.innerHTML = viewHub();
   else if (V.name === 'proj') app.innerHTML = viewProj();
   else if (V.name === 'roomedit') app.innerHTML = viewRoomEdit();
   else if (V.name === 'fiche') app.innerHTML = viewFiche();
   else if (V.name === 'settings') app.innerHTML = viewSettings();
   else if (V.name === 'trombi') app.innerHTML = viewTrombi();
   saveNav();
+  if (V.name === 'today' && V.tab === 'prog') { const r = $('.prow.is-now'), k = V.pcid + '|' + V.pg; if (r && V.pScroll !== k) { V.pScroll = k; r.scrollIntoView({block: 'center'}); } }
 }
 /* se souvenir de la page ouverte, pour la retrouver après un rafraîchissement */
 const NAV_KEY = 'suivi-classe-nav';
@@ -659,14 +696,15 @@ function navValid(v) {
   if (v.name === 'fiche') return !!stu(v.sid);
   if (v.name === 'plan' || v.name === 'proj') return !!(cls(v.cid) && roomById(v.rid));
   if (v.name === 'roomedit') return !!roomById(v.rid);
-  if (v.name === 'hub') return !!(v.ses && cls(v.ses.cid));
   return false;
 }
 function restoreNav() {
   try {
     const n = JSON.parse(localStorage.getItem(NAV_KEY) || 'null');
     if (!n || Date.now() - n.t > 3 * 3600e3 || !navValid(n.V)) return;
-    V = n.V; STACK = (n.STACK || []).filter(navValid);
+    const fix = v => v && v.name === 'hub' ? {name: 'grid', ses: v.ses, stab: 'contenu'} : v;
+    V = fix(n.V); STACK = (n.STACK || []).map(fix).filter(navValid);
+    if (!navValid(V)) { V = homeV(); STACK = []; return; }
     if (V.name === 'today' && V.mode) HOME_MODE = V.mode;
     V.selSid = null; DRAG = null;
   } catch (e) {}
@@ -838,7 +876,6 @@ function welcomeCard() {
 /* ---------- vue : grille ---------- */
 function viewGrid() {
   const ses = V.ses, c = cls(ses.cid);
-  if (!c) { V = homeV(); return viewToday(); }
   const list = studentsOf(ses.cid, ses.group), sum = sesSummary(ses.key);
   const compact = list.length > 24;
   const ckAll = checkItems(ses), ckSet = new Set([...ckAll.catch.map(x => x.sid), ...ckAll.mat.map(x => x.sid), ...ckAll.dev.map(x => x.sid)]);
@@ -846,28 +883,19 @@ function viewGrid() {
   const tiles = list.map(s => {
     const r = sum[s.id] || {}; if (r.abs) abs++; else if (r.pos || r.neg || r.ras) seen++;
     const name = compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`;
-    const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '');
+    const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.dv ? `<span class="chip dv" title="${CAT[r.dv].l}">${compact ? 'Dev.' : 'Devoir'}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '');
     return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-long="fiche" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}">
-      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}</span>
+      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}</span>
       <span class="nm">${name}</span><span class="cnt">${chips}</span></button>`;
   }).join('');
   const present = list.length - abs;
-  const sub = `${groupLabel(ses.group)} · Semaine ${weekType(ses.date)} · ${ses.label}` + (ses.date !== todayStr() ? ' · ' + fmtLong(ses.date) : '');
   const body = list.length ? `<div class="tiles ${compact ? 'compact' : ''}">${tiles}</div>`
     : `<div class="empty"><p>Aucun élève dans ${ses.group === 'all' ? 'cette classe' : 'ce demi-groupe'}.</p><button class="btn" data-act="settings" data-tab="classes" data-cid="${c.id}">Ajouter des élèves</button></div>`;
-  return `
-  <header class="bar">
-    <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
-    <div class="ttl"><h1 class="row" style="gap:10px">${dot(c)}${esc(c.name)}</h1><div class="sub">${esc(sub)}</div></div>
-    <span class="grow"></span>
-    ${ses.room && roomById(ses.room) ? '<div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="layout" data-l="plan" aria-pressed="false">Plan</button><button type="button" aria-pressed="true">Grille</button></div>' : ''}
-    ${ses.group !== 'all' && DB.rooms.length ? `<button class="btn" data-act="room-change">${ses.room && roomById(ses.room) ? 'Changer de labo' : 'Plan de classe'}</button>` : ''}
-    ${eyeBtn(true)}
+  return `${sesHeader(ses, `${eyeBtn(true)}
     <button class="btn" data-act="export" data-cid="${c.id}">${ICON.down}Export</button>
-    <button class="btn primary" data-act="rasrest">${ICON.check}Reste de la classe : RAS</button>
-  </header>
-  <main class="main"><div class="sesbar">${ctButton(ses)}${checkButton(ses)}</div>${hwBanner(ses)}${body}</main>
-  <footer class="foot"><span>Toucher une photo : noter une observation</span><span>Appui long : fiche de l'élève</span><span class="grow"></span><span>${present} présents · ${plural(abs, 'absent')} · ${Math.max(0, present - seen)} non observés</span></footer>`;
+    <button class="btn primary" data-act="rasrest">${ICON.check}Reste de la classe : RAS</button>`)}
+  <main class="main">${apprCard(ses)}${body}</main>
+  <footer class="foot"><span>Toucher une photo : noter une observation (puis élève suivant)</span><span>Appui long : fiche de l'élève</span><span class="grow"></span><span>${present} présents · ${plural(abs, 'absent')} · ${Math.max(0, present - seen)} non observés</span></footer>`;
 }
 
 /* ---------- panneau d'observation ---------- */
@@ -880,22 +908,24 @@ function renderPanel() {
   const s = stu(P.sid), ses = V.ses, c = cls(s.cid);
   const list = DB.obs.filter(o => o.ses === ses.key && o.sid === s.id);
   const isAbs = list.some(o => o.cat === 'absent');
-  const catBtns = t => CATS.filter(x => x.t === t).map(x => `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
+  const catBtns = t => CATS.filter(x => x.t === t && !PANEL_HIDE.has(x.k)).map(x => `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
   const done = list.length ? `<div><div class="lbl" style="margin-bottom:6px">Déjà noté pendant cette séance</div><div class="done">${list.map(o => {
       const c2 = CAT[o.cat]; const sign = c2.t === 'pos' ? '+ ' : c2.t === 'neg' ? '− ' : '';
-      return `<span class="chip ${c2.t}">${sign}${esc(c2.l)}<button type="button" data-act="p-del" data-oid="${o.id}" aria-label="Retirer ${esc(c2.l)}">×</button></span>`; }).join('')}</div></div>` : '';
+      return `<span class="chip ${DV.has(o.cat) ? 'dv' : c2.t}">${sign}${esc(c2.l)}<button type="button" data-act="p-del" data-oid="${o.id}" aria-label="Retirer ${esc(c2.l)}">×</button></span>`; }).join('')}</div></div>` : '';
   $('#layer').innerHTML = `<div class="scrim" data-act="p-close"></div>
   <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="p-name">
     <div class="scroll">
       <div class="hd">
         <div class="avatar">${photoHTML(s)}</div>
         <div style="flex:1 1 140px;min-width:0"><h2 id="p-name">${esc(s.first + ' ' + s.last)}</h2><div class="small muted">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
+        ${bilanMode() ? (() => { const pv = bilanStep(s.id, -1), nx = bilanStep(s.id, 1); const all = studentsOf(ses.cid, ses.group).filter(x => x.id === s.id || !isAbsentIn(ses.key, x.id)); const i = all.findIndex(x => x.id === s.id);
+          return `<div class="pnav"><button class="btn icon-btn" data-act="p-step" data-d="-1" ${pv ? '' : 'disabled'} aria-label="Élève précédent">${ICON.back}</button><span class="small muted">${i + 1} / ${all.length}</span><button class="btn icon-btn" data-act="p-step" data-d="1" ${nx ? '' : 'disabled'} aria-label="Élève suivant">${ICON.next}</button></div>`; })() : ''}
         <button class="btn" data-act="p-fiche">Fiche</button>
         <button class="btn icon-btn ghost" data-act="p-close" aria-label="Fermer">${ICON.close}</button>
       </div>
-      <div class="row"><button class="btn" data-act="p-ras">RAS</button><button class="btn" data-act="p-abs">${isAbs ? "Retirer l'absence" : 'Absent'}</button><button class="btn" data-act="p-catch">À rattraper…</button></div>
+      <div class="row"><button class="btn" data-act="p-ras">RAS</button><button class="btn" data-act="p-abs">${isAbs ? "Retirer l'absence" : 'Absent/e'}</button><button class="btn" data-act="p-catch">À rattraper…</button></div>
       ${(() => { const sc = studentChecks(ses, s.id); const n = sc.catch.length + sc.mat.length + sc.dev.length; if (!n) return '';
-        return `<div class="pchk"><div class="lbl">À vérifier pour ${esc(s.first)}</div>${sc.catch.map(x => `<div class="row pchkrow"><span>${esc(catchText(x))}</span><button class="btn" data-act="catch-done" data-id="${x.id}">Rattrapé</button></div>`).join('')}${sc.dev.map(o => `<div class="row pchkrow"><span>Devoir non fait le ${fmtShort(o.date)}</span><button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button></div>`).join('')}${sc.mat.map(o => `<div class="row pchkrow"><span>Oubli de matériel le ${fmtShort(o.date)}</span><button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button></div>`).join('')}</div>`; })()}
+        return `<div class="pchk"><div class="lbl">À vérifier pour ${esc(s.first)}</div>${sc.catch.map(x => `<div class="row pchkrow"><span>${esc(catchText(x))}</span><button class="btn" data-act="catch-done" data-id="${x.id}">Rattrapé</button></div>`).join('')}${sc.dev.map(o => `<div class="row pchkrow"><span>${CAT[o.cat].l} le ${fmtShort(o.date)}</span><button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button></div>`).join('')}${sc.mat.map(o => `<div class="row pchkrow"><span>Oubli de matériel le ${fmtShort(o.date)}</span><button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button></div>`).join('')}</div>`; })()}
       ${done}
       <div><div class="sec-t pos">+ Positif</div><div class="cats">${catBtns('pos')}</div></div>
       <div><div class="sec-t neg">− Négatif</div><div class="cats">${catBtns('neg')}</div></div>
@@ -908,7 +938,7 @@ function renderPanel() {
 }
 function renderGroupPanel() {
   const ses = V.ses, studs = P.sids.map(stu).filter(Boolean);
-  const catBtns = t => CATS.filter(x => x.t === t).map(x => `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
+  const catBtns = t => CATS.filter(x => x.t === t && !PANEL_HIDE.has(x.k)).map(x => `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
   $('#layer').innerHTML = `<div class="scrim" data-act="p-close"></div>
   <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="p-name">
     <div class="scroll">
@@ -1484,6 +1514,9 @@ function loadDemo() {
   backfillCatchups();
   DB.catchup.push({id: uid(), sid: studentsOf(c3.id)[2].id, cid: c3.id, date: addDays(today, -6), ses: null, auto: false, text: 'Évaluation ch. 1', done: null});
   DB.obs.filter(o => o.cid === c5.id && o.cat === 'bavarde').slice(-2).forEach(o => { o.cat = 'devoir'; });
+  SESS_CACHE = {};
+  [c5, c3, c2, c4].forEach(c => classSessions(c.id).filter(x => sesStarted(x) && !x.extra).slice(-8).forEach(x => { const r = rnd(); if (r < 0.8) DB.appr[x.key] = APPR[r < 0.25 ? 0 : r < 0.55 ? 1 : r < 0.7 ? 2 : 3][0]; }));
+  DB.obs.filter(o => o.cid === c3.id && o.cat === 'samuse').slice(-2).forEach((o, i) => { o.cat = i ? 'devoir_bac' : 'devoir_inc'; });
   DB.settings.lastBackup = IS_DEMO ? today : null;
 }
 
@@ -1567,7 +1600,7 @@ function seatHTML(s, num, i, o) {
     return `<button type="button" class="seat empty ${o.selSid ? 'drop' : ''}" data-act="seat" data-num="${num}" data-i="${i}" aria-label="Place libre">${o.selSid ? 'Placer ici' : ''}</button>`;
   }
   const r = (o.sum && o.sum[s.id]) || {};
-  const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.ras ? '<span class="chip neu">RAS</span>' : '') + (r.abs ? '<span class="chip dark">Abs.</span>' : '');
+  const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.dv ? '<span class="chip dv">Dev.</span>' : '') + (r.ras ? '<span class="chip neu">RAS</span>' : '') + (r.abs ? '<span class="chip dark">Abs.</span>' : '');
   const inner = `<span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}</span><span class="sc">${chips}</span></span>`;
   if (o.ro) return `<span class="seat">${inner}</span>`;
   return `<button type="button" class="seat ${r.abs ? 'is-absent' : ''} ${o.selSid === s.id ? 'sel' : ''}" data-act="seat" data-num="${num}" data-i="${i}" data-sid="${s.id}" ${o.ses && !o.edit ? 'data-long="fiche"' : ''} aria-label="${esc(s.first + ' ' + s.last)}">${inner}</button>`;
@@ -1606,12 +1639,10 @@ const roomBox = (reserved, extra = '') => `class="room ${extra}" style="width:mi
 
 /* choix du labo à l'ouverture d'une séance en demi-groupe */
 let PEND_SES = null;
-function openSession(ses) {
-  if (ses.group !== 'all' && DB.rooms.length) {
-    const r = DB.sesRoom[ses.key];
-    go({name: 'grid', ses: {...ses, room: r && r !== 'none' && roomById(r) ? r : null}}); return;
-  }
-  go({name: 'grid', ses});
+/* ouvrir une séance : toujours sur l'onglet « Contenu » */
+function openSession(ses, stab) {
+  const r = ses.group !== 'all' ? DB.sesRoom[ses.key] : null;
+  go({name: 'grid', ses: {...ses, room: r && r !== 'none' && roomById(r) ? r : null}, stab: stab || 'contenu'});
 }
 function chooseRoom(ses, inPlace) {
   PEND_SES = {ses, inPlace};
@@ -1622,7 +1653,7 @@ function chooseRoom(ses, inPlace) {
     <p class="row small muted" style="gap:8px">${dot(c)}${esc(c.name)} · ${groupLabel(ses.group)} · ${fmtLong(ses.date).toLowerCase()}${ses.label ? ', ' + esc(ses.label) : ''}</p>
     ${pa.length ? `<div class="lbl">Paillasses · binômes</div><div class="pick">${pa.map(btn).join('')}</div>` : ''}
     ${il.length ? `<div class="lbl">Îlots</div><div class="pick">${il.map(btn).join('')}</div>` : ''}
-    <div class="ft"><button class="btn ghost" data-act="room-pick" data-rid="none" style="margin-right:auto" aria-pressed="${last === 'none'}">Sans plan (grille)</button><button class="btn" data-act="m-close">Annuler</button></div>`);
+    <div class="ft"><button class="btn ghost" data-act="room-pick" data-rid="none" style="margin-right:auto" aria-pressed="${last === 'none'}">Sans plan</button><button class="btn" data-act="m-close">Annuler</button></div>`);
 }
 
 /* vue plan : en séance (grid + salle) ou depuis l'onglet Salles */
@@ -1640,7 +1671,7 @@ function flagsBanner(pl, room, withLater) {
 }
 function viewPlan() {
   const ctx = planCtx(), c = cls(ctx.cid), room = roomById(ctx.rid);
-  if (!c || !room) { if (V.name === 'grid') { V.layout = 'grid'; return viewGrid(); } setTimeout(back, 0); return ''; }
+  if (!c || !room) { if (V.name === 'grid') return viewPlanPick(); setTimeout(back, 0); return ''; }
   const pl = getPlace(ctx.cid, ctx.group, room, false);
   const edit = !ctx.ses || !!V.edit;
   const sum = ctx.ses ? sesSummary(ctx.ses.key) : null;
@@ -1656,7 +1687,6 @@ function viewPlan() {
   if (!placed.size && studs.length && !edit) {
     ban += `<div class="banner ok"><p>Aucun élève n'est encore placé dans ce labo pour ce demi-groupe.</p><button class="btn primary" data-act="plan-random-edit">Répartir au hasard</button><button class="btn" data-act="plan-edit">Placer à la main</button></div>`; nb++;
   }
-  if (ctx.ses) { const hb = hwBanner(ctx.ses); ban = `<div class="sesbar">${ctButton(ctx.ses)}${checkButton(ctx.ses)}</div>` + hb + ban; nb += hb ? 2 : 1; }
   const o = {mode: 'plan', pl, sum, conflicts, cid: ctx.cid, group: ctx.group, ses: ctx.ses, edit, selSid: V.selSid};
   const word = room.kind === 'ilots' ? 'îlots' : 'binômes';
   const unplHTML = unpl.map(s => `<button type="button" class="seat ${V.selSid === s.id ? 'sel' : ''}" data-act="unpl" data-sid="${s.id}"><span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}</span></span></button>`).join('');
@@ -1676,17 +1706,10 @@ function viewPlan() {
   let head;
   if (ctx.ses) {
     const ses = ctx.ses;
-    head = `<header class="bar">
-      <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
-      <div class="ttl"><h1 class="row" style="gap:10px">${title}</h1><div class="sub">${esc(ses.label)}${ses.date !== todayStr() ? ' · ' + fmtLong(ses.date) : ''} · ${word}</div></div>
-      <span class="grow"></span>
-      <div class="seg" role="group" aria-label="Affichage"><button type="button" aria-pressed="true">Plan</button><button type="button" data-act="layout" data-l="grid" aria-pressed="false">Grille</button></div>
-      <button class="btn" data-act="room-change">Labo</button>
+    head = sesHeader(ses, `<button class="btn" data-act="room-change">Labo : ${esc(room.name)}</button>
       ${eyeBtn(true)}
       <button class="btn" data-act="plan-edit" aria-pressed="${edit}">Placer</button>
-      <button class="btn" data-act="proj-open">${ICON.proj}Projeter</button>
-      <button class="btn primary" data-act="rasrest">Reste : RAS</button>
-    </header>`;
+      <button class="btn" data-act="proj-open">${ICON.proj}Projeter</button>`);
   } else {
     head = `<header class="bar">
       <button class="btn ghost" data-act="back">${ICON.back}Salles</button>
@@ -1696,7 +1719,7 @@ function viewPlan() {
       <button class="btn ink" data-act="back">Terminé</button>
     </header>`;
   }
-  const reserved = 74 + 36 + nb * 50;
+  const reserved = 74 + 36 + nb * 50 + (ctx.ses ? 50 : 0);
   return `${head}
   <main class="main"><div class="wrap plan-page" style="max-width:1400px">${ban}
     <div class="plan-wrap"><div class="plan-main"><div ${roomBox(reserved)}>${renderRoom(room, o)}</div></div>${side}</div>
@@ -2119,6 +2142,9 @@ function viewProg() {
   const t = todayStr();
   const past = list.filter(sesStarted), fut = list.filter(s => !sesStarted(s));
   const lastCh = [...past].reverse().find(s => DB.content[s.key] && DB.content[s.key].ch != null);
+  /* séance en cours, sinon la prochaine */
+  const ongoing = list.find(s => !s.cancelled && s.date === t && s.start !== '99:99' && nowMin() >= tMin(s.start) && nowMin() < tMin(s.end));
+  const hi = ongoing || fut.find(s => !s.cancelled) || null;
   const row = s => {
     const ct = DB.content[s.key], st = sesStarted(s);
     let status = '', cl = 'muted';
@@ -2128,13 +2154,14 @@ function viewProg() {
     else { const sts = ct.items.map(i => i.st); status = sts.every(x => x === 'done') ? 'Fait' : sts.some(x => x === 'not' || x === 'part') ? (sts.every(x => x === 'not') ? 'Pas fait' : 'En partie') : 'À renseigner'; cl = status === 'Fait' ? 'pos' : status === 'À renseigner' ? 'muted' : 'warn'; }
     const items = ct ? ct.items.map(it => `${ityChip(it.type)}${it.label ? ' <span>' + esc(it.label) + '</span>' : ''}${st && it.st && it.st !== 'done' && it.st !== 'prev' ? ` <span class="small st-${it.st}">(${it.st === 'part' ? 'en partie' : 'pas fait'})</span>` : ''}`).join(' ') : '';
     const hw = ct && ct.hw.length ? 'À faire : ' + ct.hw.map(hwText).map(esc).join(' · ') : '';
-    return `<button class="prow ${s.cancelled ? 'is-cancel' : ''}" data-act="prog-open" data-key="${s.key}">
-      <span class="pd">${cap(parseD(s.date).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'}))}${s.start !== '99:99' ? '<br><span class="small muted">' + fmtT(s.start) + '</span>' : ''}</span>
+    const now = hi && s.key === hi.key;
+    return `<button class="prow ${s.cancelled ? 'is-cancel' : ''} ${now ? 'is-now' : ''}" data-act="prog-open" data-key="${s.key}">
+      <span class="pd">${now ? `<span class="nowtag">${ongoing ? 'En cours' : s.date === t ? "Aujourd'hui" : 'Prochaine'}</span>` : ''}${cap(parseD(s.date).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'}))}${s.start !== '99:99' ? '<br><span class="small muted">' + fmtT(s.start) + '</span>' : ''}</span>
       <span class="pg">${s.group === 'all' ? '<span class="chip neu">Entière</span>' : `<span class="chip neu">${s.group}</span>`}</span>
       <span class="pc small">${ct && ct.ch != null ? 'Ch. ' + ct.ch : '—'}</span>
       <span class="pi">${items || '<span class="small muted">—</span>'}</span>
       <span class="ph small muted">${hw}</span>
-      <span class="ps small ${cl}">${status}</span></button>`;
+      <span class="ps small ${cl}">${status}${DB.appr[s.key] ? '<br>' + apprChip(s.key) : ''}</span></button>`;
   };
   const trackOk = V.pg !== 'tout';
   const segs = [...opts.map(g => [g, g === 'all' ? 'Classe entière' : g]), ['tout', 'Toutes les séances']];
@@ -2192,7 +2219,7 @@ function checkItems(ses) {
   if (out.prev) {
     const obs = DB.obs.filter(o => o.ses === out.prev.key && ids.has(o.sid) && !o.seen);
     out.mat = obs.filter(o => o.cat === 'materiel');
-    out.dev = obs.filter(o => o.cat === 'devoir');
+    out.dev = obs.filter(o => DV.has(o.cat));
   }
   out.n = out.catch.length + out.mat.length + out.dev.length;
   return out;
@@ -2208,7 +2235,7 @@ function checkListHTML(ses, ck) {
   let h = '';
   if (ck.hw.length) h += `<div class="chksec"><div class="lbl">Travail à faire pour aujourd'hui</div><ul class="hwlist">${ck.hw.map(d => `<li class="hwitem"><span>${esc(hwText(d.h))}</span><span class="small muted">donné le ${fmtShort(d.from.date)}</span></li>`).join('')}</ul></div>`;
   h += sec('Rattrapages en cours', ck.catch.map(c => line(stu(c.sid), esc(catchText(c)), `<button class="btn" data-act="catch-done" data-id="${c.id}">Rattrapé</button>`)).join(''));
-  h += sec(`Devoir non fait le ${prevD}`, ck.dev.map(o => line(stu(o.sid), o.note ? esc(o.note) : 'À vérifier aujourd\'hui', `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
+  h += sec(`Devoirs le ${prevD}`, ck.dev.map(o => line(stu(o.sid), esc(CAT[o.cat].l) + (o.note ? ' · ' + esc(o.note) : ' · à vérifier aujourd\'hui'), `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
   h += sec(`Oubli de matériel le ${prevD}`, ck.mat.map(o => line(stu(o.sid), o.note ? esc(o.note) : 'À vérifier aujourd\'hui', `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
   return h || '<p class="muted" style="margin:0">Rien à vérifier pour cette séance.</p>';
 }
@@ -2218,7 +2245,7 @@ function progressHTML(ses, compact) {
   const block = (title, s, ct, showState, extra) => {
     if (!s) return '';
     const items = ct && ct.items.length ? ct.items.map(it => `<li>${ityChip(it.type)} ${esc(it.label || '')}${showState && it.st === 'part' ? ' <span class="small st-part">(en partie)</span>' : ''}${showState && it.st === 'not' ? ' <span class="small st-not">(pas fait)</span>' : ''}${it.rep ? ` <span class="small muted">→ reporté au ${fmtShort(it.rep)}</span>` : ''}</li>`).join('') : '';
-    return `<div class="pgblk ${extra || ''}"><div class="lbl">${title} · ${fmtShort(s.date)}${s.group !== 'all' ? ' · ' + s.group : ''}</div>
+    return `<div class="pgblk ${extra || ''}"><div class="lbl">${title} · ${fmtShort(s.date)}${s.group !== 'all' ? ' · ' + s.group : ''}${showState && s.key ? ' ' + apprChip(s.key) : ''}</div>
       ${ct && ct.ch != null ? `<div class="small">${esc(chapterLabel(lvl, ct.ch))}</div>` : ''}
       ${items ? `<ul class="pglist">${items}</ul>` : '<p class="small muted" style="margin:4px 0 0">Rien de renseigné.</p>'}</div>`;
   };
@@ -2227,20 +2254,112 @@ function progressHTML(ses, compact) {
     + block("Aujourd'hui", {date: ses.date, group: ses.group}, DB.content[ses.key], false, 'cur')
     + block('Séance suivante', nxt, nxt && DB.content[nxt.key], false);
 }
-function viewHub() {
-  const ses = V.ses, c = cls(ses.cid); if (!c) { setTimeout(back, 0); return ''; }
+/* ---------- écran de séance : Contenu · Devoirs · Plan · Bilan ---------- */
+const sesHasPlan = ses => ses.group !== 'all' && DB.rooms.length > 0;
+const isAbsentIn = (key, sid) => DB.obs.some(o => o.ses === key && o.sid === sid && o.cat === 'absent');
+const dvOf = (key, sid) => { const o = DB.obs.find(x => x.ses === key && x.sid === sid && DV.has(x.cat)); return o ? o.cat : null; };
+function viewSession() {
+  const ses = V.ses; if (!ses || !cls(ses.cid)) { setTimeout(() => { STACK = []; V = homeV(); render(); }, 0); return ''; }
+  if (!V.stab || (V.stab === 'plan' && !sesHasPlan(ses))) V.stab = V.stab === 'plan' ? 'bilan' : 'contenu';
+  if (V.stab === 'contenu') return viewHub();
+  if (V.stab === 'devoirs') return viewDevoirs();
+  if (V.stab === 'plan') return ses.room && roomById(ses.room) ? viewPlan() : viewPlanPick();
+  return viewGrid();
+}
+function sesTabs(ses) {
   const ck = checkItems(ses);
+  const ndv = DB.obs.filter(o => o.ses === ses.key && DV.has(o.cat)).length;
+  const hw = ck.hw.length;
+  const t = (k, l, bd) => `<button type="button" role="tab" data-act="stab" data-s="${k}" aria-selected="${V.stab === k}">${l}${bd || ''}</button>`;
+  return `<nav class="tabs stabs" role="tablist" aria-label="Séance">
+    ${t('contenu', 'Contenu', ck.n ? `<span class="bd warn">${ck.n}</span>` : '')}
+    ${t('devoirs', 'Devoirs', ndv ? `<span class="bd dv">${ndv}</span>` : hw ? '<span class="bd dot" title="Travail à vérifier aujourd\'hui"></span>' : '')}
+    ${sesHasPlan(ses) ? t('plan', 'Plan', ses.room && roomById(ses.room) ? `<span class="small muted" style="font-weight:400">· ${esc(roomById(ses.room).name)}</span>` : '') : ''}
+    ${t('bilan', 'Bilan', DB.appr[ses.key] ? '<span class="bd ok">✓</span>' : '')}
+  </nav>`;
+}
+function sesHeader(ses, actions) {
+  const c = cls(ses.cid);
+  const sub = `${groupLabel(ses.group)} · Semaine ${weekType(ses.date)} · ${ses.label}` + (ses.date !== todayStr() ? ' · ' + fmtLong(ses.date) : '');
   return `<header class="bar">
     <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
-    <div class="ttl"><h1 class="row" style="gap:10px">${dot(c)}${esc(c.name)}${ses.group !== 'all' ? ' · ' + ses.group : ''}</h1><div class="sub">${fmtLong(ses.date)} · ${esc(ses.label)} · aperçu visible par vous seul</div></div>
-    <span class="grow"></span>
-    <button class="btn" data-act="hub-content">Modifier le contenu</button>
-    <button class="btn primary" data-act="hub-start">Commencer la séance</button>
-  </header>
+    <div class="ttl"><h1 class="row" style="gap:10px">${dot(c)}${esc(c.name)}${ses.group !== 'all' ? ' · ' + ses.group : ''}</h1><div class="sub">${esc(sub)}</div></div>
+    <span class="grow"></span>${actions || ''}
+  </header>${sesTabs(ses)}`;
+}
+function viewHub() {
+  const ses = V.ses;
+  const ck = checkItems(ses);
+  return `${sesHeader(ses, `<button class="btn primary" data-act="hub-content">Modifier le contenu</button>`)}
   <main class="main"><div class="wrap hub" style="max-width:1300px">
     <section class="card"><h2 class="h2s">Progression</h2>${progressHTML(ses)}</section>
     <section class="card"><h2 class="h2s">À vérifier${ck.n ? ` <span class="chip warn">${ck.n}</span>` : ''}</h2>${checkListHTML(ses, ck)}</section>
   </div></main>`;
+}
+/* onglet Devoirs : un toucher = non fait, un 2e toucher = annuler, appui long = incomplet / bâclé */
+function viewDevoirs() {
+  const ses = V.ses, c = cls(ses.cid);
+  const list = studentsOf(ses.cid, ses.group), compact = list.length > 24;
+  const due = hwDueAt(ses);
+  const cnt = {devoir: 0, devoir_inc: 0, devoir_bac: 0}; let abs = 0;
+  const tiles = list.map(s => {
+    const a = isAbsentIn(ses.key, s.id), dv = dvOf(ses.key, s.id);
+    if (a) abs++; if (dv) cnt[dv]++;
+    const name = compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`;
+    return `<button class="tile ${a ? 'is-absent' : ''} ${dv ? 'dv-on' : ''}" data-act="dv-tap" ${a ? '' : 'data-long="dv"'} data-sid="${s.id}" aria-pressed="${!!dv}" aria-label="${esc(s.first + ' ' + s.last)}${dv ? ' : ' + CAT[dv].l : ''}">
+      <span class="ph">${photoHTML(s)}${a ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${dv ? `<span class="dv-tag">${DV_SHORT[dv]}</span>` : ''}</span>
+      <span class="nm">${name}</span></button>`;
+  }).join('');
+  const dates = [...new Set(due.map(d => fmtShort(d.from.date)))].join(', ');
+  const top = due.length ? `<div class="banner hw"><p><strong>Travail à vérifier :</strong> ${due.map(d => esc(hwText(d.h))).join(' · ')} <span class="small">(donné le ${dates})</span></p></div>`
+    : `<div class="banner ok"><p>Aucun travail n'était prévu pour cette séance. Vous pouvez tout de même noter un devoir non fait.</p></div>`;
+  const tot = cnt.devoir + cnt.devoir_inc + cnt.devoir_bac;
+  const recap = tot ? [cnt.devoir && plural(cnt.devoir, 'non fait', 'non faits'), cnt.devoir_inc && plural(cnt.devoir_inc, 'incomplet'), cnt.devoir_bac && plural(cnt.devoir_bac, 'bâclé')].filter(Boolean).join(' · ') : 'Aucun devoir noté';
+  const body = list.length ? `<div class="tiles dv-tiles ${compact ? 'compact' : ''}">${tiles}</div>` : `<div class="empty"><p>Aucun élève.</p></div>`;
+  return `${sesHeader(ses, eyeBtn(true))}
+  <main class="main">${top}${body}</main>
+  <footer class="foot"><span>Toucher : devoir non fait (toucher à nouveau : annuler)</span><span>Appui long : incomplet ou bâclé</span><span class="grow"></span><span>${recap}${abs ? ' · ' + plural(abs, 'absent') : ''}</span></footer>`;
+}
+function dvMenu(sid) {
+  const s = stu(sid), cur = dvOf(V.ses.key, sid); if (!s) return;
+  const b = (k, l) => `<button class="btn dvb ${k}" data-act="dv-set" data-sid="${sid}" data-cat="${k}" aria-pressed="${cur === k}">${l}</button>`;
+  openModal(`<h2>Devoir · ${esc(s.first + ' ' + s.last)}</h2>
+    <div class="pick dvpick">${b('devoir', 'Non fait')}${b('devoir_inc', 'Incomplet')}${b('devoir_bac', 'Bâclé')}</div>
+    <p class="small muted">Repris automatiquement dans le bilan de la séance et rappelé à la séance suivante.</p>
+    <div class="ft"><button class="btn ghost" data-act="dv-set" data-sid="${sid}" data-cat="none" style="margin-right:auto" ${cur ? '' : 'disabled'}>Fait (retirer)</button><button class="btn" data-act="m-close">Fermer</button></div>`);
+}
+function setDv(sid, cat) {
+  const key = V.ses.key;
+  removeObs(o => o.ses === key && o.sid === sid && DV.has(o.cat));
+  if (cat && cat !== 'none') addObs(sid, cat);
+  save();
+}
+/* onglet Plan sans labo choisi : choix facultatif */
+function viewPlanPick() {
+  const ses = V.ses, last = DB.lastRoom[ses.cid + '|' + ses.group] || '';
+  const btn = r => `<button class="btn roomb" data-act="room-in" data-rid="${r.id}" aria-pressed="${r.id === last}">${esc(r.name)}${r.id === last ? '<span class="small">dernier utilisé</span>' : ''}</button>`;
+  const pa = DB.rooms.filter(r => r.kind !== 'ilots'), il = DB.rooms.filter(r => r.kind === 'ilots');
+  return `${sesHeader(ses, '')}
+  <main class="main"><div class="wrap" style="max-width:820px">
+    <section class="card"><h2 class="h2s">Dans quel labo ?</h2>
+      <p class="small muted" style="margin-top:0">Facultatif : sans plan, le bilan se fait sur la grille des photos.</p>
+      ${pa.length ? `<div class="lbl">Paillasses · binômes</div><div class="pick">${pa.map(btn).join('')}</div>` : ''}
+      ${il.length ? `<div class="lbl" style="margin-top:10px">Îlots</div><div class="pick">${il.map(btn).join('')}</div>` : ''}
+    </section>
+  </div></main>`;
+}
+/* bilan : élève suivant / précédent (absents sautés) */
+function bilanStep(sid, dir) {
+  const key = V.ses.key;
+  const list = studentsOf(V.ses.cid, V.ses.group).filter(s => s.id === sid || !isAbsentIn(key, s.id));
+  const i = list.findIndex(s => s.id === sid); if (i < 0) return null;
+  const n = list[i + dir]; return n ? n.id : null;
+}
+const bilanMode = () => V.name === 'grid' && V.stab === 'bilan' && P && P.sid;
+function apprCard(ses) {
+  const cur = DB.appr[ses.key];
+  return `<section class="apprbar"><span class="lbl" style="margin:0">Appréciation de la classe</span>
+    <div class="seg appr" role="group" aria-label="Appréciation de la classe">${APPR.map(([k, l]) => `<button type="button" class="appr-${k}" data-act="appr" data-v="${k}" aria-pressed="${cur === k}">${l}</button>`).join('')}</div></section>`;
 }
 let CHK = false;
 function renderCheckSheet() {
@@ -2291,11 +2410,11 @@ const ACT = {
   back: () => back(),
   settings: el => go({name:'settings', tab: el.dataset.tab || 'classes', cid: el.dataset.cid}),
   tab: el => { V.tab = el.dataset.tab; render(); if (V.tab === 'sauvegarde') showPersist(); },
-  'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); closeModal(); if (s) go({name: 'hub', ses: sesFromSlot(el.dataset.date || V.date, s)}); },
+  'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); closeModal(); if (s) openSession(sesFromSlot(el.dataset.date || V.date, s)); },
   other: () => otherModal(),
   'om-cls': el => otherModal(el.dataset.cid),
   'om-grp': el => otherModal(el.dataset.cid, el.dataset.g),
-  'om-go': el => { const d = otherDate(); closeModal(); go({name: 'hub', ses: sesOther(d, el.dataset.cid, el.dataset.g)}); },
+  'om-go': el => { const d = otherDate(); closeModal(); openSession(sesOther(d, el.dataset.cid, el.dataset.g)); },
   'm-close': () => closeModal(),
   demo: () => { loadDemo(); STORAGE_OK && Store.replaceAll(); render(); toast('Élèves fictifs chargés. Réglages › Sauvegarde › Tout effacer pour repartir de zéro.'); },
   tile: el => openPanel(el.dataset.sid),
@@ -2319,26 +2438,28 @@ const ACT = {
       cats.forEach(c => addObs(sid, c, c === target ? note : '', t));
     });
     const grp = !!P.sids;
-    save(); closeLayer(); renderKeep();
+    const nx = !grp && bilanMode() ? bilanStep(P.sid, 1) : null;
+    save(); closeLayer(); renderKeep(); if (nx) openPanel(nx);
     toast(grp ? `Enregistré pour ${plural(sids.length, 'élève')}` : (cats.length > 1 ? cats.length + ' observations enregistrées' : 'Observation enregistrée'));
   },
   'p-ras': () => {
     const key = V.ses.key, sid = P.sid;
-    if (DB.obs.some(o => o.ses === key && o.sid === sid && ['pos','neg'].includes(CAT[o.cat].t))) { toast('Des observations sont déjà notées pour cette séance.'); return; }
+    if (DB.obs.some(o => o.ses === key && o.sid === sid && !DV.has(o.cat) && ['pos','neg'].includes(CAT[o.cat].t))) { toast('Des observations sont déjà notées pour cette séance.'); return; }
     removeObs(o => o.ses === key && o.sid === sid && (o.cat === 'absent' || o.cat === 'ras'));
-    addObs(sid, 'ras'); save(); closeLayer(); render();
+    const nx = bilanMode() ? bilanStep(sid, 1) : null;
+    addObs(sid, 'ras'); save(); closeLayer(); renderKeep(); if (nx) openPanel(nx);
   },
   'p-abs': () => {
     const key = V.ses.key, sid = P.sid;
     const isAbs = DB.obs.some(o => o.ses === key && o.sid === sid && o.cat === 'absent');
     if (isAbs) { removeObs(o => o.ses === key && o.sid === sid && o.cat === 'absent'); removeAutoCatch(sid, key); }
-    else { removeObs(o => o.ses === key && o.sid === sid && o.cat === 'ras'); addObs(sid, 'absent'); addAutoCatch(sid, V.ses); }
+    else { removeObs(o => o.ses === key && o.sid === sid && (o.cat === 'ras' || DV.has(o.cat))); addObs(sid, 'absent'); addAutoCatch(sid, V.ses); }
     save(); closeLayer(); render();
   },
   'p-del': el => { removeObs(o => o.id === el.dataset.oid); save(); renderPanel(); render(); },
   rasrest: () => {
     const ses = V.ses, sum = sesSummary(ses.key);
-    const todo = studentsOf(ses.cid, ses.group).filter(s => !sum[s.id]);
+    const todo = studentsOf(ses.cid, ses.group).filter(s => { const r = sum[s.id]; return !r || !(r.pos || r.neg || r.ras || r.abs); });
     if (!todo.length) { toast('Tous les élèves ont déjà une observation.'); return; }
     const t = Date.now(); const ids = todo.map(s => addObs(s.id, 'ras', '', t).id);
     save(); render();
@@ -2445,7 +2566,8 @@ const ACT = {
     if (!PEND_SES) return; const {ses, inPlace} = PEND_SES, rid = el.dataset.rid; PEND_SES = null;
     DB.sesRoom[ses.key] = rid; if (rid !== 'none') DB.lastRoom[ses.cid + '|' + ses.group] = rid; save(); closeModal();
     const s2 = {...ses, room: rid === 'none' ? null : rid};
-    if (inPlace) { V.ses = s2; V.layout = null; V.edit = false; V.selSid = null; V.hideFlags = false; render(); } else go({name:'grid', ses: s2});
+    if (!inPlace) { openSession(s2, 'plan'); return; }
+    if (inPlace) { V.ses = s2; V.edit = false; V.selSid = null; V.hideFlags = false; render(); } else go({name:'grid', ses: s2});
   },
   'room-change': () => chooseRoom(V.ses, true),
   layout: el => { V.layout = el.dataset.l; V.selSid = null; render(); },
@@ -2570,19 +2692,28 @@ const ACT = {
   },
   'prog-export': () => {
     const c = cls(V.pcid), lvl = levelOf(c);
-    const rows = [['Date', 'Horaire', 'Groupe', 'Chapitre', 'Déroulé', 'Travail à faire', 'État']];
+    const rows = [['Date', 'Horaire', 'Groupe', 'Chapitre', 'Déroulé', 'Travail à faire', 'État', 'Appréciation de la classe']];
     classSessions(c.id).forEach(s => {
       const ct = DB.content[s.key];
       rows.push([s.date.split('-').reverse().join('/'), s.start === '99:99' ? '' : fmtT(s.start), s.group === 'all' ? 'Classe entière' : s.group, ct && ct.ch != null ? chapterLabel(lvl, ct.ch) : '',
         ct ? ct.items.map(i => (ITYPE[i.type] || ITYPE.autre).l + (i.label ? ' : ' + i.label : '') + (i.st === 'part' ? ' (en partie)' : i.st === 'not' ? ' (pas fait)' : '')).join(' | ') : '',
-        ct ? ct.hw.map(hwText).join(' | ') : '', s.cancelled ? 'Annulé' : '']);
+        ct ? ct.hw.map(hwText).join(' | ') : '', s.cancelled ? 'Annulé' : '', APPR_L[DB.appr[s.key]] || '']);
     });
     deliver(`progression-${safeName(c.name)}.csv`, csv(rows), 'text/csv', navigator.canShare ? 'share' : 'dl');
   },
   'chap-open': el => chapModal(el.dataset.lvl),
   'chap-add': el => { const list = chaptersOf(el.dataset.lvl); list.push({n: list.reduce((m, x) => Math.max(m, x.n), 0) + 1, t: ''}); save(); chapModal(el.dataset.lvl); },
   'chap-del': el => { const lvl = el.dataset.lvl; DB.chapters[lvl] = chaptersOf(lvl).filter(x => x.n !== +el.dataset.n); save(); chapModal(lvl); render(); },
-  'hub-start': () => openSession(V.ses),
+  stab: el => { V.stab = el.dataset.s; V.edit = false; V.selSid = null; closeLayer(); render(); $('.main')?.scrollTo(0, 0); },
+  'dv-tap': el => {
+    const sid = el.dataset.sid;
+    if (isAbsentIn(V.ses.key, sid)) { toast('Élève absent/e à cette séance.'); return; }
+    setDv(sid, dvOf(V.ses.key, sid) ? 'none' : 'devoir'); renderKeep();
+  },
+  'dv-set': el => { setDv(el.dataset.sid, el.dataset.cat); closeModal(); renderKeep(); },
+  'room-in': el => { const ses = V.ses, rid = el.dataset.rid; DB.sesRoom[ses.key] = rid; DB.lastRoom[ses.cid + '|' + ses.group] = rid; save(); V.ses = {...ses, room: rid}; V.edit = false; V.selSid = null; V.hideFlags = false; render(); },
+  appr: el => { const k = V.ses.key, v = el.dataset.v; if (DB.appr[k] === v) delete DB.appr[k]; else DB.appr[k] = v; save(); renderKeep(); },
+  'p-step': el => { const nx = bilanStep(P.sid, +el.dataset.d); if (nx) openPanel(nx); },
   'hub-content': () => openContent(V.ses),
   'chk-open': () => { CHK = true; renderCheckSheet(); },
   'chk-close': () => { CHK = false; closeLayer(); },
@@ -2594,7 +2725,7 @@ const ACT = {
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
 /* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
-const UNDO_MSG = {'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+const UNDO_MSG = {'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
   'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'sep-del': 'Paire retirée'};
@@ -2650,7 +2781,9 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form]?.(f); });
-document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P || CT || CHK) { CT = null; CHK = false; closeLayer(); } else if (V.name === 'proj') ACT['proj-exit'](); });
+document.addEventListener('keydown', e => {
+  if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && bilanMode() && !$('#modal').innerHTML && !e.target.closest('input, textarea')) { const nx = bilanStep(P.sid, e.key === 'ArrowRight' ? 1 : -1); if (nx) openPanel(nx); return; }
+  if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P || CT || CHK) { CT = null; CHK = false; closeLayer(); } else if (V.name === 'proj') ACT['proj-exit'](); });
 function openProj(cid, group, rid) { go({name:'proj', cid, group, rid}); try { const r = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) {} }
 document.addEventListener('pointerdown', e => {
   const d = e.target.closest('[data-drag]'); if (!d || V.name !== 'roomedit') return;
@@ -2683,6 +2816,7 @@ document.addEventListener('pointerdown', e => {
     if (t.dataset.long === 'fiche') go({name:'fiche', sid: t.dataset.sid});
     else if (t.dataset.long === 'slot') slotMenu(t.dataset.slot, t.dataset.date);
     else if (t.dataset.long === 'unit') unitMenu(t.dataset.num);
+    else if (t.dataset.long === 'dv') dvMenu(t.dataset.sid);
   }, 550);
 });
 document.addEventListener('pointermove', e => { if (pressXY && Math.hypot(e.clientX - pressXY[0], e.clientY - pressXY[1]) > 10) { clearTimeout(longTimer); pressXY = null; } }, true);

@@ -100,6 +100,47 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .welcome h2{font-family:var(--serif);font-size:24px;margin-bottom:8px}
 .welcome ol{margin:0 0 16px;padding-left:20px;color:var(--ink-2)}
 
+/* Contenu des séances */
+.ity{display:inline-flex;align-items:center;padding:1px 9px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;background:color-mix(in srgb,var(--tc) 18%,var(--surface));color:var(--ink)}
+.ity.ev{background:var(--neg);color:var(--on-neg)}
+.sesbar{margin-bottom:10px}
+.plan-page > .sesbar{margin:0}
+.ctbtn{max-width:100%;justify-content:flex-start;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.ctbtn.ct-empty{border-style:dashed;color:var(--ink-2);font-weight:500}
+.banner.hw{background:var(--warn-soft)}
+.sheet.wide{width:min(700px,100%)}
+.ctlist,.hwlist{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ctitem{border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column;gap:6px}
+.ctitem input{min-height:40px;flex:1 1 auto;min-width:0}
+.seg.mini{padding:3px;gap:2px;flex-wrap:nowrap}
+.seg.mini button{min-height:36px;padding:0 9px;font-size:13px}
+.seg.mini button.st-done[aria-pressed="true"]{background:var(--pos);color:var(--on-pos);border-color:var(--pos)}
+.seg.mini button.st-part[aria-pressed="true"]{background:#D9A52B;color:#1B1E23;border-color:#D9A52B}
+.seg.mini button.st-not[aria-pressed="true"]{background:var(--neg);color:var(--on-neg);border-color:var(--neg)}
+.reprow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 8px;border-radius:8px;background:var(--warn-soft);color:var(--warn-ink)}
+.reprow .btn{min-height:36px;font-size:14px}
+.hwitem{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:10px;background:var(--surface-2)}
+.hwitem > span:first-child{flex:1;font-weight:600}
+.hwform{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.hwform select{width:auto;flex:0 1 240px}
+.hwform input{flex:1 1 140px;width:auto}
+.addty{min-height:38px;padding:0 10px;font-size:13px;border-color:color-mix(in srgb,var(--tc) 45%,var(--line))}
+.check.other{padding:0 12px;border-radius:10px;background:var(--pos-soft);color:var(--pos-ink)}
+.evb{align-self:flex-start;padding:0 6px;border-radius:5px;background:var(--neg);color:var(--on-neg);font-size:11px;font-weight:700}
+.blk.short .evb{display:none}
+.blk.has-eval .bg{color:var(--neg);font-weight:700}
+.hwform .check{flex:0 0 auto;white-space:nowrap;min-height:40px}
+.psep{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--surface-2);border-top:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink-2)}
+.psep .btn{min-height:36px;font-size:14px}
+.prow{width:100%;display:grid;grid-template-columns:110px 80px 56px minmax(0,2.2fr) minmax(0,1.4fr) 110px;align-items:center;gap:0 12px;padding:8px 16px;border:none;border-top:1px solid var(--line);background:transparent;text-align:left;font-size:14px;min-height:52px}
+.prow .pi{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.prow .ph{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .ps{text-align:right;font-weight:600}
+.prow .ps.pos{color:var(--pos)}.prow .ps.warn{color:#B07A12}
+.prow.is-cancel{opacity:.5}
+.prow.more{display:block;text-align:center;color:var(--pos);font-weight:600;min-height:44px}
+.st-part{color:#B07A12}.st-not{color:var(--neg)}
+@media (max-width:900px){.prow{grid-template-columns:90px 64px 44px minmax(0,1fr) 90px}.prow .ph{display:none}}
 /* Onglets */
 .appbar{display:flex;align-items:stretch;gap:2px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--line);flex:none;min-height:56px;flex-wrap:wrap}
 .appbar .brand{display:flex;align-items:center;font-family:var(--serif);font-size:19px;font-weight:600;margin-right:14px}
@@ -223,7 +264,10 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .blk .bc{font-weight:700;font-size:15px;line-height:1.15;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .blk .bg{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .blk .chip{align-self:flex-start;font-size:12px;padding:1px 7px;margin-top:auto}
-.blk.short .bg{display:none}
+.blk.short{padding:5px 7px 4px;gap:0}
+.blk.short .bc{font-size:14px}
+.blk.short .bg{font-size:11px}
+.blk.short .chip{font-size:10px;padding:0 5px}
 .bgrp{font-weight:600;font-size:12px;padding:0 5px;border-radius:5px;background:color-mix(in srgb,var(--cc) 30%,var(--surface));color:var(--ink);vertical-align:1px}
 .blk.past{background:color-mix(in srgb,var(--cc) 8%,var(--surface-2));border-color:var(--line);box-shadow:inset 0 4px 0 color-mix(in srgb,var(--cc) 75%,var(--surface-2))}
 .blk.past .bc,.blk.past .bg{color:var(--muted)}
@@ -388,7 +432,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '1.6', d: '2026-09-27'};
+const APP_VERSION = {n: '1.8', d: '2026-09-27'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -441,7 +485,7 @@ function defaultSettings() {
     }
   };
 }
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 let STORAGE_OK = false;
@@ -452,7 +496,7 @@ function migrate(core) {
   ['classes','students','slots','obs'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
   if (!d.cancelled || typeof d.cancelled !== 'object') d.cancelled = {};
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
-  ['place', 'sep', 'sesRoom', 'lastRoom'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
   return d;
@@ -511,7 +555,17 @@ const photoHTML = s => PHOTOS[s.id] && !DB.settings.hidePhotos ? `<img src="${PH
 
 const ccol = c => (c && c.color) || '#5A6B7D';
 const dot = c => `<span class="cdot" style="background:${ccol(c)}" aria-hidden="true"></span>`;
-const holidayOn = date => DB.settings.holidays.find(h => h.s && h.e && date >= h.s && date <= h.e);
+function yearBounds() {
+  const all = [...DB.settings.periods.semestre, ...DB.settings.periods.trimestre].filter(p => p.s && p.e);
+  if (!all.length) return null;
+  return {s: all.reduce((m, p) => p.s < m ? p.s : m, all[0].s), e: all.reduce((m, p) => p.e > m ? p.e : m, all[0].e)};
+}
+const OUT_OF_YEAR = {n: 'Hors année scolaire'};
+const holidayOn = date => {
+  const yb = yearBounds();
+  if (yb && (date < yb.s || date > yb.e)) return OUT_OF_YEAR;
+  return DB.settings.holidays.find(h => h.s && h.e && date >= h.s && date <= h.e);
+};
 const mondayOf = d => { const x = parseD(d); const wd = x.getDay() || 7; x.setDate(x.getDate() - wd + 1); return dstr(x); };
 function fillMap() { const m = new Map(); DB.obs.forEach(o => { let st = m.get(o.ses); if (!st) m.set(o.ses, st = new Set()); st.add(o.sid); }); return m; }
 function sesState(date, s, FM) {
@@ -560,8 +614,8 @@ function go(v) { STACK.push(V); V = v; closeLayer(); render(); $('.main')?.scrol
 function back() { V = STACK.pop() || homeV(); closeLayer(); render(); }
 
 function render() {
-  const app = $('#app');
-  if (V.name === 'today') app.innerHTML = V.tab === 'suivi' ? viewSuivi() : V.tab === 'salles' ? viewSalles() : (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
+  const app = $('#app'); SESS_CACHE = {};
+  if (V.name === 'today') app.innerHTML = V.tab === 'prog' ? viewProg() : V.tab === 'suivi' ? viewSuivi() : V.tab === 'salles' ? viewSalles() : (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
   else if (V.name === 'grid') app.innerHTML = (V.ses.room && V.layout !== 'grid') ? viewPlan() : viewGrid();
   else if (V.name === 'plan') app.innerHTML = viewPlan();
   else if (V.name === 'proj') app.innerHTML = viewProj();
@@ -670,7 +724,7 @@ function slotCard(d, s, FM) {
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span></span><span class="small muted">${plural(n, 'élève')}</span></span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span></span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
     ${right}</button></li>`;
 }
 
@@ -705,8 +759,8 @@ function viewWeek() {
       const top = (tMin(x.start) - t0) * PPM, h = (tMin(x.end) - tMin(x.start)) * PPM - 4;
       const w = 100 / nl;
       const g = x.group === 'all' ? 'Classe entière' : 'Demi-groupe ' + x.group;
-      return `<button class="blk ${d < t ? 'past' : ''} ${isNow ? 'now' : ''} ${st.k === 'cancel' ? 'cancel' : ''} ${h < 58 ? 'short' : ''}" style="top:${top}px;height:${h}px;left:calc(${x._lane * w}% + 2px);width:calc(${w}% - 4px);--cc:${ccol(c)}" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + g + ', ' + fmtT(x.start))}">
-        <span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}</span><span class="bg">${fmtT(x.start)} – ${fmtT(x.end)}</span>${stateChip(st)}</button>`;
+      return `<button class="blk ${hasEval(DB.content[d + '|' + x.id]) ? 'has-eval' : ''} ${d < t ? 'past' : ''} ${isNow ? 'now' : ''} ${st.k === 'cancel' ? 'cancel' : ''} ${h < 58 ? 'short' : ''}" style="top:${top}px;height:${h}px;left:calc(${x._lane * w}% + 2px);width:calc(${w}% - 4px);--cc:${ccol(c)}" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + g + ', ' + fmtT(x.start))}">
+        <span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}</span><span class="bg">${(() => { const ct = DB.content[d + '|' + x.id]; const sm = contentSummary(ct, levelOf(c), true); return sm ? esc(sm) : fmtT(x.start) + ' – ' + fmtT(x.end); })()}</span>${hasEval(DB.content[d + '|' + x.id]) ? '<span class="evb">Évaluation</span>' : ''}${stateChip(st)}</button>`;
     }).join('');
     return {head, body: `<div class="tt-col" style="height:${H}px">${blocks}</div>`};
   });
@@ -786,7 +840,7 @@ function viewGrid() {
     <button class="btn" data-act="export" data-cid="${c.id}">${ICON.down}Export</button>
     <button class="btn primary" data-act="rasrest">${ICON.check}Reste de la classe : RAS</button>
   </header>
-  <main class="main">${body}</main>
+  <main class="main"><div class="sesbar">${ctButton(ses)}</div>${hwBanner(ses)}${body}</main>
   <footer class="foot"><span>Toucher une photo : noter une observation</span><span>Appui long : fiche de l'élève</span><span class="grow"></span><span>${present} présents · ${plural(abs, 'absent')} · ${Math.max(0, present - seen)} non observés</span></footer>`;
 }
 
@@ -927,6 +981,7 @@ function setClasses() {
   return `<div class="split"><div>${left}</div><div style="display:flex;flex-direction:column;gap:14px;min-width:0">
     <section class="card" style="display:flex;flex-direction:column;gap:12px">
       <div class="row"><h2 style="font-family:var(--serif);font-size:22px;flex:1">${esc(c.name)}</h2>
+        <label class="f" for="cl-lvl" style="flex-direction:row;align-items:center;gap:6px">Niveau <input type="text" id="cl-lvl" list="lvl-list" value="${esc(levelOf(c))}" data-chg="class-level" data-cid="${c.id}" style="width:80px"></label><datalist id="lvl-list"><option>6e</option><option>5e</option><option>4e</option><option>3e</option><option>2de</option><option>1re</option><option>Tle</option></datalist>
         <select data-chg="class-pt" data-cid="${c.id}" style="width:auto" aria-label="Découpage de l'année"><option value="semestre" ${c.pt === 'semestre' ? 'selected' : ''}>Semestres</option><option value="trimestre" ${c.pt === 'trimestre' ? 'selected' : ''}>Trimestres</option></select></div>
       <div class="swatches" role="group" aria-label="Couleur de la classe">${CLASS_COLORS.map(([h, n]) => `<button type="button" class="sw" style="--sw:${h}" aria-label="${n}" aria-pressed="${c.color === h}" data-act="class-color" data-cid="${c.id}" data-col="${h}"></button>`).join('')}</div>
       <p class="small muted" style="margin:0">${plural(list.length, 'élève')} · G1 : ${g1} · G2 : ${g2} · ${plural(list.filter(s => PHOTOS[s.id]).length, 'photo')}</p>
@@ -1385,6 +1440,17 @@ function loadDemo() {
   p1.flags['3'] = {r: 'Bavardages', d: addDays(today, -5)};
   const s5 = studentsOf(c5.id, 'G2'); if (s5.length > 3) DB.sep[c5.id] = [[s5[1].id, s5[3].id]];
   const p2 = getPlace(c4.id, 'G1', pc5, true); const r2 = randomPlacement(c4.id, 'G1', pc5); p2.g = r2.g; p2.upd = addDays(today, -7);
+  // contenus d'exemple
+  DB.chapters['5e'] = [{n: 1, t: 'Les mélanges'}, {n: 2, t: 'La matière et ses trois états'}];
+  DB.chapters['3e'] = [{n: 1, t: 'Mouvements et interactions'}, {n: 2, t: 'Énergie et conversions'}];
+  SESS_CACHE = {};
+  const ss5 = classSessions(c5.id), s3 = classSessions(c3.id);
+  const pastG1 = ss5.filter(s => s.group === 'G1' && sesStarted(s)).slice(-2), futG1 = ss5.filter(s => s.group === 'G1' && !sesStarted(s)).slice(0, 3);
+  pastG1.forEach((s, i) => { DB.content[s.key] = {ch: 2, items: i ? [{id: uid(), type: 'tp', label: 'TP 1 : températures de changement d\'état', st: 'done'}, {id: uid(), type: 'cours', label: 'Bilan du TP 1', st: 'not'}] : [{id: uid(), type: 'act', label: 'Les trois états de la matière', st: 'done'}], hw: i ? [{id: uid(), kind: 'cr', detail: 'TP 1, question 4'}, {id: uid(), kind: 'manuel', page: '45', nums: '3, 5, 7'}] : []}; });
+  futG1.forEach((s, i) => { DB.content[s.key] = {ch: 2, items: [[{id: uid(), type: 'cours', label: 'Bilan du TP 1', st: 'prev'}], [{id: uid(), type: 'exo', label: 'Séance d\'exercices', st: 'prev'}], [{id: uid(), type: 'eval', label: 'Évaluation ch. 2', st: 'prev'}]][i], hw: []}; });
+  const f3 = s3.filter(s => !sesStarted(s)).slice(0, 4);
+  f3.forEach((s, i) => { DB.content[s.key] = {ch: 2, items: [{id: uid(), type: ['act', 'cours', 'corr', 'eval'][i], label: '', st: 'prev'}], hw: []}; });
+  SESS_CACHE = {};
   DB.settings.lastBackup = IS_DEMO ? today : null;
 }
 
@@ -1558,6 +1624,7 @@ function viewPlan() {
   if (!placed.size && studs.length && !edit) {
     ban += `<div class="banner ok"><p>Aucun élève n'est encore placé dans ce labo pour ce demi-groupe.</p><button class="btn primary" data-act="plan-random-edit">Répartir au hasard</button><button class="btn" data-act="plan-edit">Placer à la main</button></div>`; nb++;
   }
+  if (ctx.ses) { const hb = hwBanner(ctx.ses); ban = `<div class="sesbar">${ctButton(ctx.ses)}</div>` + hb + ban; nb += hb ? 2 : 1; }
   const o = {mode: 'plan', pl, sum, conflicts, cid: ctx.cid, group: ctx.group, ses: ctx.ses, edit, selSid: V.selSid};
   const word = room.kind === 'ilots' ? 'îlots' : 'binômes';
   const unplHTML = unpl.map(s => `<button type="button" class="seat ${V.selSid === s.id ? 'sel' : ''}" data-act="unpl" data-sid="${s.id}"><span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}</span></span></button>`).join('');
@@ -1762,7 +1829,7 @@ function eyeBtn(compact) {
 }
 function tabBar(active) {
   const t = (k, l) => `<button class="tb" data-act="htab" data-t="${k}" ${active === k ? 'aria-current="page"' : ''}>${l}</button>`;
-  return `<nav class="appbar" aria-label="Onglets"><span class="brand" title="${versionLabel()}">Suivi de classe</span>${t('edt', 'Emploi du temps')}${t('suivi', 'Suivi')}${t('salles', 'Salles')}<button class="tb" data-act="settings" data-tab="classes">Réglages</button><span class="grow"></span>${eyeBtn(false)}</nav>`;
+  return `<nav class="appbar" aria-label="Onglets"><span class="brand" title="${versionLabel()}">Suivi de classe</span>${t('edt', 'Emploi du temps')}${t('suivi', 'Suivi')}${t('prog', 'Progression')}${t('salles', 'Salles')}<button class="tb" data-act="settings" data-tab="classes">Réglages</button><span class="grow"></span>${eyeBtn(false)}</nav>`;
 }
 
 /* panneau « à modifier » sur un îlot / une paillasse */
@@ -1794,6 +1861,276 @@ function addPairs(cid, ids) {
     const a = ids[i], b = ids[j];
     if (a !== b && !list.some(p => (p[0] === a && p[1] === b) || (p[0] === b && p[1] === a))) list.push([a, b]);
   }
+}
+
+
+/* ---------- contenu des séances, devoirs, progression ---------- */
+const ITYPES = [['tp', 'TP', '#2F6DB5'], ['act', 'Activité', '#1E8C8C'], ['exo', 'Exercices', '#6E8B2E'], ['cours', 'Cours / bilan', '#5A6B7D'], ['corr', 'Correction', '#7B4FB3'], ['eval', 'Évaluation', '#B5472F'], ['autre', 'Autre', '#8A8F96']];
+const ITYPE = Object.fromEntries(ITYPES.map(([k, l, c]) => [k, {k, l, c}]));
+const ityChip = k => { const t = ITYPE[k] || ITYPE.autre; return `<span class="ity ${k === 'eval' ? 'ev' : ''}" style="--tc:${t.c}">${t.l}</span>`; };
+const HWKINDS = [['manuel', 'Exercices du manuel'], ['fiche', "Fiche d'exercices"], ['act', 'Activité'], ['recop', 'Recopier un bilan / le cours'], ['cr', 'Terminer le compte rendu'], ['lecon', 'Apprendre la leçon'], ['autre', 'Autre']];
+function hwText(h) {
+  const f = v => String(v || '').trim();
+  switch (h.kind) {
+    case 'manuel': return `Manuel${f(h.page) ? ' p. ' + f(h.page) : ''}${f(h.nums) ? ' : ex. ' + f(h.nums) : ''}`;
+    case 'fiche': return `Fiche d'exercices${f(h.name) ? ' « ' + f(h.name) + ' »' : ''}${f(h.nums) ? ' : ex. ' + f(h.nums) : ''}`;
+    case 'act': return `Activité${f(h.name) ? ' ' + f(h.name) : ''} : ${h.all || (!f(h.from) && !f(h.to)) ? 'toutes les questions' : (f(h.to) ? `questions ${f(h.from) || 1} à ${f(h.to)}` : `question ${f(h.from)}`)}`;
+    case 'recop': return `Recopier ${h.what === 'cours' ? 'la partie du cours' : 'le bilan'}${f(h.page) ? (/^\d/.test(f(h.page)) ? ' p. ' : ' ') + f(h.page) : ''}`;
+    case 'cr': return `Terminer le compte rendu${f(h.detail) ? ' (' + f(h.detail) + ')' : ''}`;
+    case 'lecon': return `Apprendre la leçon${f(h.detail) ? ' : ' + f(h.detail) : ''}`;
+    default: return f(h.text) || 'Travail à faire';
+  }
+}
+function detectLevel(name) {
+  const n = String(name || '').trim();
+  let m = n.match(/^([3-6])\s*(e|è|ème|eme)\b/i); if (m) return m[1] + 'e';
+  if (/^2\s*(de|nde|nd)\b/i.test(n)) return '2de';
+  if (/^1\s*(re|ère|ere|e)\b/i.test(n)) return '1re';
+  if (/^t(le|erm)/i.test(n)) return 'Tle';
+  return n.split(/\s+/)[0] || n;
+}
+const levelOf = c => (c && (c.level || detectLevel(c.name))) || '';
+const chaptersOf = lvl => DB.chapters[lvl] || (DB.chapters[lvl] = []);
+const chapterLabel = (lvl, n) => { const c = chaptersOf(lvl).find(x => x.n === n); return 'Chapitre ' + n + (c && c.t ? ' · ' + c.t : ''); };
+const compat = (a, b) => a === 'all' || b === 'all' || a === b;
+
+/* toutes les séances d'une classe sur l'année (emploi du temps + séances hors EDT qui ont un contenu) */
+let SESS_CACHE = {};
+function classSessions(cid) {
+  if (SESS_CACHE[cid]) return SESS_CACHE[cid];
+  const out = [], yb = yearBounds();
+  if (yb) for (let d = yb.s; d <= yb.e; d = addDays(d, 1)) {
+    slotsOn(d).forEach(s => { if (s.cid === cid) out.push({key: d + '|' + s.id, date: d, start: s.start, end: s.end, group: s.group, slot: s.id, label: fmtT(s.start) + ' – ' + fmtT(s.end), cancelled: !!DB.cancelled[d + '|' + s.id]}); });
+  }
+  Object.keys(DB.content).forEach(k => {
+    const p = k.split('|'); if (p[1] !== 'x' || p[2] !== cid) return;
+    out.push({key: k, date: p[0], start: '99:99', end: '99:99', group: p[3], slot: null, label: 'Hors emploi du temps', cancelled: false, extra: true});
+  });
+  out.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+  return (SESS_CACHE[cid] = out);
+}
+const sesStarted = s => { const t = todayStr(); return s.date < t || (s.date === t && (s.start === '99:99' || nowMin() >= tMin(s.start))); };
+function nextSession(cid, key, group, sameTrack) {
+  const list = classSessions(cid); const i = list.findIndex(s => s.key === key); if (i < 0) return null;
+  return list.slice(i + 1).find(s => !s.cancelled && (sameTrack ? s.group === group : compat(s.group, group))) || null;
+}
+function firstSessionOnOrAfter(cid, date, group) { return classSessions(cid).find(s => !s.cancelled && s.date >= date && compat(s.group, group)) || null; }
+/* devoirs à vérifier à la séance `ses` */
+function hwDueAt(ses) {
+  const list = classSessions(ses.cid), out = [];
+  list.forEach(p => {
+    if (p.key === ses.key || p.date > ses.date) return;
+    const ct = DB.content[p.key]; if (!ct || !ct.hw || !ct.hw.length) return;
+    if (!compat(p.group, ses.group)) return;
+    ct.hw.forEach(h => {
+      const target = h.due ? firstSessionOnOrAfter(ses.cid, h.due, ses.group) : nextSession(ses.cid, p.key, ses.group, false);
+      if (target && target.key === ses.key) out.push({h, from: p});
+    });
+  });
+  return out;
+}
+function hwBanner(ses) {
+  if (!ses) return '';
+  const due = hwDueAt(ses); if (!due.length) return '';
+  const dates = [...new Set(due.map(d => fmtShort(d.from.date)))].join(', ');
+  return `<div class="banner hw"><p><strong>À vérifier :</strong> ${due.map(d => esc(hwText(d.h))).join(' · ')} <span class="small">(donné le ${dates})</span></p><span class="small">Touchez un élève → « Devoir non fait »</span></div>`;
+}
+function contentSummary(ct, lvl, short) {
+  if (!ct || (!ct.items.length && ct.ch == null)) return '';
+  const parts = [];
+  if (ct.ch != null) parts.push(short ? 'Ch. ' + ct.ch : chapterLabel(lvl, ct.ch));
+  if (ct.items.length) parts.push(short ? [...new Set(ct.items.map(it => (ITYPE[it.type] || ITYPE.autre).l.replace(' / bilan', '')))].join(', ') : ct.items.map(it => it.label || (ITYPE[it.type] || ITYPE.autre).l).join(', '));
+  return parts.join(' · ');
+}
+const hasEval = ct => !!(ct && ct.items.some(i => i.type === 'eval'));
+function ctButton(ses) {
+  const ct = DB.content[ses.key], c = cls(ses.cid);
+  const sum = contentSummary(ct, levelOf(c), false);
+  return `<button class="btn ctbtn ${sum ? '' : 'ct-empty'}" data-act="ct-open">${sum ? esc(sum) : '+ Contenu de la séance'}</button>`;
+}
+
+/* panneau « contenu de la séance » */
+let CT = null;
+function openContent(ses) {
+  const src = DB.content[ses.key];
+  CT = {ses: {key: ses.key, cid: ses.cid, group: ses.group, date: ses.date, label: ses.label},
+    data: src ? JSON.parse(JSON.stringify(src)) : {ch: null, items: [], hw: []},
+    titles: {}, hw: {kind: 'manuel', due: 'next'}, other: true};
+  if (CT.data.ch == null) { // proposer le chapitre de la séance précédente
+    const prev = classSessions(ses.cid).filter(s => s.key !== ses.key && s.date <= ses.date && DB.content[s.key] && DB.content[s.key].ch != null).pop();
+    if (prev) CT.data.ch = DB.content[prev.key].ch;
+  }
+  renderContent();
+}
+function otherGroupSession(ses) {
+  if (ses.group !== 'G1' && ses.group !== 'G2') return null;
+  const og = ses.group === 'G1' ? 'G2' : 'G1';
+  const list = classSessions(ses.cid), i = list.findIndex(s => s.key === ses.key);
+  const cand = list.slice(i + 1).find(s => !s.cancelled && s.group === og);
+  return cand && (parseD(cand.date) - parseD(ses.date)) / 864e5 <= 10 ? cand : null;
+}
+function renderContent() {
+  const s = CT.ses, c = cls(s.cid), lvl = levelOf(c), d = CT.data;
+  const started = sesStarted(classSessions(s.cid).find(x => x.key === s.key) || {date: s.date, start: '00:00'});
+  const chs = chaptersOf(lvl).slice().sort((a, b) => a.n - b.n);
+  const chBtns = chs.map(ch => `<button type="button" class="gchip" data-act="ct-ch" data-n="${ch.n}" aria-pressed="${d.ch === ch.n}">Ch. ${ch.n}</button>`).join('');
+  const curCh = chs.find(x => x.n === d.ch);
+  const title = d.ch != null ? (CT.titles[d.ch] != null ? CT.titles[d.ch] : (curCh ? curCh.t : '')) : '';
+  const nxt = nextSession(s.cid, s.key, s.group, true);
+  const items = d.items.map((it, i) => {
+    const stSeg = started ? `<div class="seg mini" role="group" aria-label="État">${[['done', 'Fait'], ['part', 'En partie'], ['not', 'Pas fait']].map(([v, l]) => `<button type="button" data-act="ct-st" data-i="${i}" data-v="${v}" aria-pressed="${it.st === v}" class="st-${v}">${l}</button>`).join('')}</div>` : '<span class="small muted">Prévu</span>';
+    const rep = started && (it.st === 'not' || it.st === 'part') ? (it.rep ? `<div class="reprow"><span class="small">Reporté le ${fmtShort(it.rep)}.</span></div>`
+      : nxt ? `<div class="reprow"><span class="small">Pas terminé :</span><button type="button" class="btn" data-act="ct-report" data-i="${i}">Reporter à la séance suivante</button><button type="button" class="btn" data-act="ct-shift" data-i="${i}">Décaler toute la suite</button></div>` : '') : '';
+    return `<li class="ctitem"><div class="row" style="gap:8px;flex-wrap:nowrap">${ityChip(it.type)}
+      <input type="text" id="ct-l-${i}" value="${esc(it.label || '')}" placeholder="Intitulé (facultatif)" data-inp="ct-label" data-i="${i}" aria-label="Intitulé">
+      <button type="button" class="btn icon-btn ghost" data-act="ct-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></div>
+      <div class="row" style="gap:8px">${stSeg}</div>${rep}</li>`;
+  }).join('');
+  const hws = d.hw.map((h, i) => `<li class="hwitem"><span>${esc(hwText(h))}</span><span class="small muted">${h.due ? 'pour le ' + fmtShort(h.due) : 'pour la séance suivante'}</span><button type="button" class="btn icon-btn ghost" data-act="hw-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></li>`).join('');
+  const k = CT.hw.kind;
+  const fld = (id, ph, w) => `<input type="text" id="${id}" placeholder="${ph}" style="${w ? 'max-width:' + w : ''}">`;
+  let fields = '';
+  if (k === 'manuel') fields = fld('hw-page', 'Page', '110px') + fld('hw-nums', 'Numéros : 3, 5, 7');
+  if (k === 'fiche') fields = fld('hw-name', 'Nom de la fiche (facultatif)') + fld('hw-nums', 'Exercices : 1 à 4');
+  if (k === 'act') fields = fld('hw-name', 'Activité (n° ou nom)') + `<label class="check" style="min-height:40px"><input type="checkbox" id="hw-all" ${CT.hw.allq !== false ? 'checked' : ''} data-act="hw-allq"> Toutes les questions</label>` + (CT.hw.allq === false ? fld('hw-from', 'De', '80px') + fld('hw-to', 'À', '80px') : '');
+  if (k === 'recop') fields = `<select id="hw-what" style="max-width:160px"><option value="bilan">le bilan</option><option value="cours">la partie du cours</option></select>` + fld('hw-page', 'Page ou titre');
+  if (k === 'cr') fields = fld('hw-detail', 'Précision (facultatif) : TP 1, question 4');
+  if (k === 'lecon') fields = fld('hw-detail', 'Quelle leçon (facultatif)');
+  if (k === 'autre') fields = fld('hw-text', 'Travail à faire');
+  const nextAny = nextSession(s.cid, s.key, s.group, false);
+  const other = otherGroupSession(s);
+  $('#layer').innerHTML = `<div class="scrim" data-act="ct-close"></div>
+  <aside class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="ct-t">
+    <div class="scroll">
+      <div class="hd"><div style="flex:1 1 200px;min-width:0"><h2 id="ct-t">Contenu de la séance</h2><div class="small muted">${dot(c)} ${esc(c.name)}${s.group !== 'all' ? ' · ' + s.group : ''} · ${fmtLong(s.date)}${s.label ? ', ' + esc(s.label) : ''}</div></div>
+        <button class="btn icon-btn ghost" data-act="ct-close" aria-label="Fermer">${ICON.close}</button></div>
+      <div><div class="lbl">Chapitre <span style="text-transform:none;letter-spacing:0;font-weight:400">· liste commune aux ${esc(lvl)}</span></div>
+        <div class="row" style="gap:6px;margin-top:6px">${chBtns}<button type="button" class="gchip" data-act="ct-newch">+ Chapitre ${(chs.reduce((m, x) => Math.max(m, x.n), 0)) + 1}</button>${d.ch != null ? '<button type="button" class="btn ghost" data-act="ct-noch">Aucun</button>' : ''}</div>
+        ${d.ch != null ? `<label class="f" for="ct-title" style="margin-top:8px;display:block">Titre du chapitre ${d.ch} <span class="muted" style="font-weight:400">(facultatif)</span><input style="margin-top:6px" type="text" id="ct-title" value="${esc(title)}" data-inp="ct-title" placeholder="ex. La matière et ses trois états"></label>` : ''}</div>
+      <div><div class="lbl">Déroulé de la séance</div>
+        ${items ? `<ul class="ctlist">${items}</ul>` : '<p class="small muted" style="margin:6px 0">Ajoutez un ou plusieurs éléments.</p>'}
+        <div class="row" style="gap:6px;margin-top:6px">${ITYPES.map(([key, l, col]) => `<button type="button" class="btn addty" style="--tc:${col}" data-act="ct-add" data-t="${key}">+ ${l}</button>`).join('')}</div></div>
+      <div><div class="lbl">Travail à faire</div>
+        ${hws ? `<ul class="hwlist">${hws}</ul>` : ''}
+        <div class="hwform">
+          <select id="hw-kind" data-chg="hw-kind" aria-label="Type de devoir">${HWKINDS.map(([v, l]) => `<option value="${v}" ${v === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
+          ${fields}
+        </div>
+        <div class="row" style="gap:8px;margin-top:6px">
+          <select id="hw-due" data-chg="hw-due" aria-label="Pour quand" style="width:auto"><option value="next" ${CT.hw.due === 'next' ? 'selected' : ''}>Pour la séance suivante${nextAny ? ' (' + fmtShort(nextAny.date) + ')' : ''}</option><option value="date" ${CT.hw.due === 'date' ? 'selected' : ''}>Pour une autre date…</option></select>
+          ${CT.hw.due === 'date' ? `<input type="date" id="hw-date" style="width:auto" value="${nextAny ? nextAny.date : s.date}">` : ''}
+          <button type="button" class="btn" data-act="hw-add">Ajouter le devoir</button></div></div>
+      ${other ? `<label class="check other"><input type="checkbox" id="ct-other" ${CT.other ? 'checked' : ''} data-act="ct-other"> Même contenu pour le ${other.group} (${fmtShort(other.date)}, ${fmtT(other.start)})</label>` : ''}
+      <p class="err" id="ct-err" hidden></p>
+    </div>
+    <div class="ft"><button class="btn" data-act="ct-close">Annuler</button><button class="btn ink" data-act="ct-save">Enregistrer</button></div>
+  </aside>`;
+}
+function readHwForm() {
+  const v = id => { const e = $('#' + id); return e ? e.value.trim() : ''; };
+  const h = {id: uid(), kind: CT.hw.kind};
+  if (h.kind === 'manuel') { h.page = v('hw-page'); h.nums = v('hw-nums'); if (!h.page && !h.nums) return null; }
+  if (h.kind === 'fiche') { h.name = v('hw-name'); h.nums = v('hw-nums'); }
+  if (h.kind === 'act') { h.name = v('hw-name'); h.all = CT.hw.allq !== false; h.from = v('hw-from'); h.to = v('hw-to'); }
+  if (h.kind === 'recop') { h.what = v('hw-what') || 'bilan'; h.page = v('hw-page'); }
+  if (h.kind === 'cr' || h.kind === 'lecon') h.detail = v('hw-detail');
+  if (h.kind === 'autre') { h.text = v('hw-text'); if (!h.text) return null; }
+  if (CT.hw.due === 'date') { h.due = v('hw-date') || null; }
+  return h;
+}
+function syncInputs() {
+  document.querySelectorAll('#layer [data-inp="ct-label"]').forEach(el => { const it = CT.data.items[+el.dataset.i]; if (it) it.label = el.value.trim(); });
+  const t = $('#ct-title'); if (t && CT.data.ch != null) CT.titles[CT.data.ch] = t.value.trim();
+}
+function saveContent(fromCT) {
+  const s = CT.ses, d = CT.data, lvl = levelOf(cls(s.cid));
+  Object.entries(CT.titles).forEach(([n, t]) => { const ch = chaptersOf(lvl).find(x => x.n === +n); if (ch) ch.t = t; });
+  const empty = !d.items.length && !d.hw.length && d.ch == null;
+  if (empty) delete DB.content[s.key]; else DB.content[s.key] = d;
+  const other = otherGroupSession(s);
+  if (other && CT.other && !empty) {
+    const cur = DB.content[other.key];
+    if (!cur || (!cur.items.length && !cur.hw.length)) DB.content[other.key] = {ch: d.ch, items: d.items.map(it => ({...it, id: uid(), st: 'prev', rep: null})), hw: d.hw.map(h => ({...h, id: uid()}))};
+  }
+  SESS_CACHE = {};
+}
+/* décaler : chaque séance suivante (même groupe) prend le contenu de la précédente */
+function shiftAt(cid, group, startKey, firstContent) {
+  const list = classSessions(cid).filter(s => !s.cancelled && s.group === group);
+  const i = list.findIndex(s => s.key === startKey); if (i < 0) return 0;
+  const after = list.slice(i);
+  let last = -1; after.forEach((s, j) => { if (DB.content[s.key]) last = j; });
+  const moving = after.slice(0, last + 1).map(s => DB.content[s.key] || null);
+  if (last + 1 >= after.length && moving.length) { /* pas de séance libre à la fin de l'année : on garde le dernier contenu fusionné */
+    const tail = moving.pop(); const prev = moving[moving.length - 1];
+    if (prev && tail) { prev.items = prev.items.concat(tail.items); prev.hw = prev.hw.concat(tail.hw); }
+  }
+  after.forEach((s, j) => { if (j <= moving.length) delete DB.content[s.key]; });
+  if (after[0] && firstContent) DB.content[after[0].key] = firstContent;
+  moving.forEach((ct, j) => { const tgt = after[j + 1]; if (tgt && ct) DB.content[tgt.key] = ct; });
+  SESS_CACHE = {};
+  return moving.length;
+}
+
+/* onglet Progression */
+function viewProg() {
+  const classes = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
+  if (!V.pcid || !cls(V.pcid)) V.pcid = classes[0] && classes[0].id;
+  const c = cls(V.pcid);
+  if (!c) return `${tabBar('prog')}<main class="main"><div class="wrap"><div class="empty"><p>Aucune classe pour l'instant.</p></div></div></main>`;
+  const all = classSessions(c.id), groups = [...new Set(all.map(s => s.group))];
+  const opts = [...(groups.includes('G1') ? ['G1'] : []), ...(groups.includes('G2') ? ['G2'] : []), ...(groups.includes('all') ? ['all'] : [])];
+  if (!V.pg || (V.pg !== 'tout' && !opts.includes(V.pg))) V.pg = opts[0] || 'tout';
+  const lvl = levelOf(c);
+  const list = all.filter(s => V.pg === 'tout' || s.group === V.pg);
+  const t = todayStr();
+  const past = list.filter(sesStarted), fut = list.filter(s => !sesStarted(s));
+  const lastCh = [...past].reverse().find(s => DB.content[s.key] && DB.content[s.key].ch != null);
+  const row = s => {
+    const ct = DB.content[s.key], st = sesStarted(s);
+    let status = '', cl = 'muted';
+    if (s.cancelled) status = 'Annulé';
+    else if (!ct || !ct.items.length) status = st ? 'Non renseigné' : 'Non préparé';
+    else if (!st) status = s.date === t ? "Aujourd'hui" : 'Prévu';
+    else { const sts = ct.items.map(i => i.st); status = sts.every(x => x === 'done') ? 'Fait' : sts.some(x => x === 'not' || x === 'part') ? (sts.every(x => x === 'not') ? 'Pas fait' : 'En partie') : 'À renseigner'; cl = status === 'Fait' ? 'pos' : status === 'À renseigner' ? 'muted' : 'warn'; }
+    const items = ct ? ct.items.map(it => `${ityChip(it.type)}${it.label ? ' <span>' + esc(it.label) + '</span>' : ''}${st && it.st && it.st !== 'done' && it.st !== 'prev' ? ` <span class="small st-${it.st}">(${it.st === 'part' ? 'en partie' : 'pas fait'})</span>` : ''}`).join(' ') : '';
+    const hw = ct && ct.hw.length ? 'À faire : ' + ct.hw.map(hwText).map(esc).join(' · ') : '';
+    return `<button class="prow ${s.cancelled ? 'is-cancel' : ''}" data-act="prog-open" data-key="${s.key}">
+      <span class="pd">${cap(parseD(s.date).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'}))}${s.start !== '99:99' ? '<br><span class="small muted">' + fmtT(s.start) + '</span>' : ''}</span>
+      <span class="pg">${s.group === 'all' ? '<span class="chip neu">Entière</span>' : `<span class="chip neu">${s.group}</span>`}</span>
+      <span class="pc small">${ct && ct.ch != null ? 'Ch. ' + ct.ch : '—'}</span>
+      <span class="pi">${items || '<span class="small muted">—</span>'}</span>
+      <span class="ph small muted">${hw}</span>
+      <span class="ps small ${cl}">${status}</span></button>`;
+  };
+  const trackOk = V.pg !== 'tout';
+  const segs = [...opts.map(g => [g, g === 'all' ? 'Classe entière' : g]), ['tout', 'Toutes les séances']];
+  return `${tabBar('prog')}
+  <main class="main"><div class="wrap" style="max-width:1300px">
+    <div class="row" style="gap:6px">${classes.map(x => `<button class="gchip" data-act="prog-c" data-cid="${x.id}" aria-pressed="${x.id === c.id}">${dot(x)}${esc(x.name)}</button>`).join('')}</div>
+    <div class="row"><div class="seg" role="group" aria-label="Séances">${segs.map(([v, l]) => `<button type="button" data-act="prog-g" data-v="${v}" aria-pressed="${V.pg === v}">${l}</button>`).join('')}</div>
+      <span class="small muted">En cours : <strong style="color:var(--ink)">${lastCh ? esc(chapterLabel(lvl, DB.content[lastCh.key].ch)) : '—'}</strong></span>
+      <span class="grow" style="flex:1"></span>
+      <button class="btn" data-act="chap-open" data-lvl="${esc(lvl)}">Chapitres des ${esc(lvl)}</button>
+      <button class="btn" data-act="prog-export">${ICON.down}Exporter</button></div>
+    <section class="card stable-card">
+      <div class="psep"><span>Séances passées</span></div>
+      ${past.length > 6 && !V.pAll ? `<button class="prow more" data-act="prog-all">Voir les ${past.length - 6} séances plus anciennes</button>` : ''}
+      ${(V.pAll ? past : past.slice(-6)).map(row).join('') || '<p class="small muted" style="padding:10px 16px;margin:0">Aucune séance passée.</p>'}
+      <div class="psep"><span>À venir</span><span class="grow" style="flex:1"></span>${trackOk && fut.length ? '<button class="btn" data-act="prog-shift">Décaler la suite d\'une séance</button>' : ''}</div>
+      ${fut.map(row).join('') || '<p class="small muted" style="padding:10px 16px;margin:0">Aucune séance à venir.</p>'}
+    </section>
+    <p class="small muted" style="margin:0">Toucher une séance : voir ou préparer son contenu. « Décaler la suite » laisse vide la prochaine séance et fait glisser tout le prévu d'une séance.</p>
+  </div></main>`;
+}
+function chapModal(lvl) {
+  const chs = chaptersOf(lvl).slice().sort((a, b) => a.n - b.n);
+  const keys = new Set(); DB.classes.filter(c => levelOf(c) === lvl).forEach(c => classSessions(c.id).forEach(s => keys.add(s.key)));
+  const used = n => [...keys].some(k => DB.content[k] && DB.content[k].ch === n);
+  openModal(`<h2>Chapitres des ${esc(lvl)}</h2>
+    <p class="small muted">Liste commune à toutes vos classes de ${esc(lvl)}.</p>
+    <ul class="stable">${chs.map(ch => `<li><span style="width:110px;font-weight:600">Chapitre ${ch.n}</span><input type="text" id="chm-${ch.n}" value="${esc(ch.t || '')}" placeholder="Titre (facultatif)" data-chg="chap-title" data-lvl="${esc(lvl)}" data-n="${ch.n}" style="flex:1 1 200px">${used(ch.n) ? '' : `<button class="btn ghost" data-act="chap-del" data-lvl="${esc(lvl)}" data-n="${ch.n}">Retirer</button>`}</li>`).join('') || '<li class="muted">Aucun chapitre pour l\'instant.</li>'}</ul>
+    <div class="ft"><button class="btn" data-act="chap-add" data-lvl="${esc(lvl)}">+ Chapitre ${chs.reduce((m, x) => Math.max(m, x.n), 0) + 1}</button><button class="btn ink" data-act="m-close">Fermer</button></div>`);
 }
 
 /* ---------- actions ---------- */
@@ -2053,10 +2390,62 @@ const ACT = {
     Object.keys(DB.lastRoom).forEach(k => { if (DB.lastRoom[k] === id) delete DB.lastRoom[k]; });
     save(); closeModal(); back(); V.rid = null; render();
   },
+  'ct-open': () => openContent(V.ses),
+  'prog-open': el => { const s = classSessions(V.pcid).find(x => x.key === el.dataset.key); if (s) openContent({key: s.key, cid: V.pcid, group: s.group, date: s.date, label: s.label}); },
+  'ct-close': () => { CT = null; closeLayer(); },
+  'ct-ch': el => { syncInputs(); CT.data.ch = +el.dataset.n; renderContent(); },
+  'ct-noch': () => { syncInputs(); CT.data.ch = null; renderContent(); },
+  'ct-newch': () => { syncInputs(); const lvl = levelOf(cls(CT.ses.cid)), list = chaptersOf(lvl); const n = list.reduce((m, x) => Math.max(m, x.n), 0) + 1; list.push({n, t: ''}); CT.data.ch = n; save(); renderContent(); setTimeout(() => $('#ct-title') && $('#ct-title').focus(), 0); },
+  'ct-add': el => { syncInputs(); const s = classSessions(CT.ses.cid).find(x => x.key === CT.ses.key); CT.data.items.push({id: uid(), type: el.dataset.t, label: '', st: s && sesStarted(s) ? 'done' : 'prev'}); renderContent(); const i = CT.data.items.length - 1; setTimeout(() => $('#ct-l-' + i) && $('#ct-l-' + i).focus(), 0); },
+  'ct-del': el => { syncInputs(); CT.data.items.splice(+el.dataset.i, 1); renderContent(); },
+  'ct-st': el => { syncInputs(); const it = CT.data.items[+el.dataset.i]; it.st = it.st === el.dataset.v ? 'prev' : el.dataset.v; renderContent(); },
+  'ct-other': el => { CT.other = el.checked; },
+  'hw-allq': el => { syncInputs(); const nm = $('#hw-name') ? $('#hw-name').value : ''; CT.hw.allq = el.checked; renderContent(); if ($('#hw-name')) $('#hw-name').value = nm; },
+  'hw-add': () => { syncInputs(); const h = readHwForm(); if (!h) { toast('Complétez le devoir (page, numéros ou texte).'); return; } CT.data.hw.push(h); CT.hw.allq = true; renderContent(); },
+  'hw-del': el => { syncInputs(); CT.data.hw.splice(+el.dataset.i, 1); renderContent(); },
+  'ct-save': () => {
+    syncInputs();
+    const pending = $('#hw-kind') && readHwForm();
+    if (pending && ((pending.page || pending.nums || pending.text || pending.name || pending.detail))) { CT.data.hw.push(pending); }
+    saveContent(); save(); const keep = CT; CT = null; closeLayer(); renderKeep(); toast('Contenu enregistré');
+  },
+  'ct-report': el => {
+    syncInputs(); const s = CT.ses, it = CT.data.items[+el.dataset.i], nxt = nextSession(s.cid, s.key, s.group, true); if (!it || !nxt) return;
+    it.rep = nxt.date; saveContent(); const ct = DB.content[nxt.key] || (DB.content[nxt.key] = {ch: CT.data.ch, items: [], hw: []});
+    ct.items.unshift({id: uid(), type: it.type, label: it.label, st: 'prev'}); if (ct.ch == null) ct.ch = CT.data.ch;
+    save(); const ses = CT.ses; openContent(ses); renderKeep(); toast(`Reporté au ${fmtShort(nxt.date)}`);
+  },
+  'ct-shift': el => {
+    syncInputs(); const s = CT.ses, it = CT.data.items[+el.dataset.i], nxt = nextSession(s.cid, s.key, s.group, true); if (!it || !nxt) return;
+    it.rep = nxt.date; saveContent();
+    shiftAt(s.cid, s.group, nxt.key, {ch: CT.data.ch, items: [{id: uid(), type: it.type, label: it.label, st: 'prev'}], hw: []});
+    save(); const ses = CT.ses; openContent(ses); renderKeep(); toast('Suite décalée d\'une séance');
+  },
+  'prog-c': el => { V.pcid = el.dataset.cid; V.pg = null; render(); },
+  'prog-g': el => { V.pg = el.dataset.v; V.pAll = false; render(); },
+  'prog-all': () => { V.pAll = true; renderKeep(); },
+  'prog-shift': () => {
+    const fut = classSessions(V.pcid).filter(s => !s.cancelled && s.group === V.pg && !sesStarted(s)); if (!fut.length) return;
+    shiftAt(V.pcid, V.pg, fut[0].key, null); save(); renderKeep(); toast(`La séance du ${fmtShort(fut[0].date)} est libérée, la suite est décalée`);
+  },
+  'prog-export': () => {
+    const c = cls(V.pcid), lvl = levelOf(c);
+    const rows = [['Date', 'Horaire', 'Groupe', 'Chapitre', 'Déroulé', 'Travail à faire', 'État']];
+    classSessions(c.id).forEach(s => {
+      const ct = DB.content[s.key];
+      rows.push([s.date.split('-').reverse().join('/'), s.start === '99:99' ? '' : fmtT(s.start), s.group === 'all' ? 'Classe entière' : s.group, ct && ct.ch != null ? chapterLabel(lvl, ct.ch) : '',
+        ct ? ct.items.map(i => (ITYPE[i.type] || ITYPE.autre).l + (i.label ? ' : ' + i.label : '') + (i.st === 'part' ? ' (en partie)' : i.st === 'not' ? ' (pas fait)' : '')).join(' | ') : '',
+        ct ? ct.hw.map(hwText).join(' | ') : '', s.cancelled ? 'Annulé' : '']);
+    });
+    deliver(`progression-${safeName(c.name)}.csv`, csv(rows), 'text/csv', navigator.canShare ? 'share' : 'dl');
+  },
+  'chap-open': el => chapModal(el.dataset.lvl),
+  'chap-add': el => { const list = chaptersOf(el.dataset.lvl); list.push({n: list.reduce((m, x) => Math.max(m, x.n), 0) + 1, t: ''}); save(); chapModal(el.dataset.lvl); },
+  'chap-del': el => { const lvl = el.dataset.lvl; DB.chapters[lvl] = chaptersOf(lvl).filter(x => x.n !== +el.dataset.n); save(); chapModal(lvl); render(); },
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
 /* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
-const UNDO_MSG = {'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+const UNDO_MSG = {'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
   'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'sep-del': 'Paire retirée'};
@@ -2086,6 +2475,10 @@ const CHG = {
   restore: el => { const f = el.files[0]; if (f) restoreFrom(f); el.value = ''; },
   'imp-file': el => { const f = el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { let t = r.result; if (/\uFFFD/.test(t)) { const r2 = new FileReader(); r2.onload = () => { IMP = {text: r2.result, ...parseList(r2.result, V.cid)}; render(); }; r2.readAsText(f, 'windows-1252'); return; } IMP = {text: t, ...parseList(t, V.cid)}; render(); }; r.readAsText(f, 'utf-8'); },
   'ex-cid': el => exportModal(el.value),
+  'hw-kind': el => { syncInputs(); CT.hw.kind = el.value; CT.hw.allq = true; renderContent(); },
+  'hw-due': el => { syncInputs(); CT.hw.due = el.value; const keep = {}; ['hw-page', 'hw-nums', 'hw-name', 'hw-detail', 'hw-text', 'hw-from', 'hw-to'].forEach(id => { if ($('#' + id)) keep[id] = $('#' + id).value; }); renderContent(); Object.entries(keep).forEach(([id, v]) => { if ($('#' + id)) $('#' + id).value = v; }); },
+  'chap-title': el => { const ch = chaptersOf(el.dataset.lvl).find(x => x.n === +el.dataset.n); if (ch) { ch.t = el.value.trim(); save(); } },
+  'class-level': el => { const c = cls(el.dataset.cid), v = el.value.trim(); if (c) { c.level = v || null; save(); } },
   'room-name': el => { const r = roomById(V.rid); const v = el.value.trim(); if (r && v) { r.name = v; save(); } },
   trombi: el => { const f = el.files[0]; el.value = ''; if (f) startTrombi(f, el.dataset.cid); },
   'tr-sel': el => { const it = TR.items[+el.dataset.i]; it.sid = el.value; if (el.value && el.value !== 'new' && el.value !== 'skip') it.group = stu(el.value)?.group || it.group; renderKeep(); },
@@ -2108,7 +2501,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form]?.(f); });
-document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P) closeLayer(); else if (V.name === 'proj') ACT['proj-exit'](); });
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P || CT) { CT = null; closeLayer(); } else if (V.name === 'proj') ACT['proj-exit'](); });
 function openProj(cid, group, rid) { go({name:'proj', cid, group, rid}); try { const r = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) {} }
 document.addEventListener('pointerdown', e => {
   const d = e.target.closest('[data-drag]'); if (!d || V.name !== 'roomedit') return;

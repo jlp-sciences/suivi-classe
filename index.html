@@ -100,6 +100,28 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .welcome h2{font-family:var(--serif);font-size:24px;margin-bottom:8px}
 .welcome ol{margin:0 0 16px;padding-left:20px;color:var(--ink-2)}
 
+/* Aperçu de séance */
+.hub{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.hub{grid-template-columns:1fr}}
+.h2s{font-size:17px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.pgblk{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.pgblk:first-of-type{border-top:none}
+.pgblk.cur{background:var(--pos-soft);margin:0 -12px;padding:10px 12px;border-radius:10px;border-top:none}
+.pglist{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.pgrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 12px;border-radius:10px;background:var(--surface-2)}
+.pgrow .pgblk{border-top:none;padding:0}
+.chksec{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.chklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.chk{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;background:var(--surface-2)}
+.chk .thumb{width:40px;height:40px}
+.chk .thumb .ini{font-size:14px}
+.chk .cn{flex:1;display:flex;flex-direction:column;min-width:0}
+.chk .btn{min-height:38px}
+.chkbtn{margin-left:8px}
+.tag-chk{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:#D9A52B;color:#1B1E23;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--surface)}
+.pchk{padding:10px 12px;border-radius:10px;background:var(--warn-soft);color:var(--warn-ink);display:flex;flex-direction:column;gap:6px}
+.pchkrow{justify-content:space-between;flex-wrap:nowrap}
+.pchkrow .btn{min-height:36px;flex:none}
 /* Contenu des séances */
 .ity{display:inline-flex;align-items:center;padding:1px 9px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;background:color-mix(in srgb,var(--tc) 18%,var(--surface));color:var(--ink)}
 .ity.ev{background:var(--neg);color:var(--on-neg)}
@@ -432,7 +454,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '1.8', d: '2026-09-27'};
+const APP_VERSION = {n: '1.9', d: '2026-09-27'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -485,7 +507,7 @@ function defaultSettings() {
     }
   };
 }
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 let STORAGE_OK = false;
@@ -496,6 +518,7 @@ function migrate(core) {
   ['classes','students','slots','obs'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
   if (!d.cancelled || typeof d.cancelled !== 'object') d.cancelled = {};
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
+  if (!Array.isArray(d.catchup)) d.catchup = [];
   ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
@@ -618,6 +641,7 @@ function render() {
   if (V.name === 'today') app.innerHTML = V.tab === 'prog' ? viewProg() : V.tab === 'suivi' ? viewSuivi() : V.tab === 'salles' ? viewSalles() : (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
   else if (V.name === 'grid') app.innerHTML = (V.ses.room && V.layout !== 'grid') ? viewPlan() : viewGrid();
   else if (V.name === 'plan') app.innerHTML = viewPlan();
+  else if (V.name === 'hub') app.innerHTML = viewHub();
   else if (V.name === 'proj') app.innerHTML = viewProj();
   else if (V.name === 'roomedit') app.innerHTML = viewRoomEdit();
   else if (V.name === 'fiche') app.innerHTML = viewFiche();
@@ -635,6 +659,7 @@ function navValid(v) {
   if (v.name === 'fiche') return !!stu(v.sid);
   if (v.name === 'plan' || v.name === 'proj') return !!(cls(v.cid) && roomById(v.rid));
   if (v.name === 'roomedit') return !!roomById(v.rid);
+  if (v.name === 'hub') return !!(v.ses && cls(v.ses.cid));
   return false;
 }
 function restoreNav() {
@@ -816,13 +841,14 @@ function viewGrid() {
   if (!c) { V = homeV(); return viewToday(); }
   const list = studentsOf(ses.cid, ses.group), sum = sesSummary(ses.key);
   const compact = list.length > 24;
+  const ckAll = checkItems(ses), ckSet = new Set([...ckAll.catch.map(x => x.sid), ...ckAll.mat.map(x => x.sid), ...ckAll.dev.map(x => x.sid)]);
   let abs = 0, seen = 0;
   const tiles = list.map(s => {
     const r = sum[s.id] || {}; if (r.abs) abs++; else if (r.pos || r.neg || r.ras) seen++;
     const name = compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`;
     const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '');
     return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-long="fiche" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}">
-      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent</span>' : ''}</span>
+      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}</span>
       <span class="nm">${name}</span><span class="cnt">${chips}</span></button>`;
   }).join('');
   const present = list.length - abs;
@@ -835,12 +861,12 @@ function viewGrid() {
     <div class="ttl"><h1 class="row" style="gap:10px">${dot(c)}${esc(c.name)}</h1><div class="sub">${esc(sub)}</div></div>
     <span class="grow"></span>
     ${ses.room && roomById(ses.room) ? '<div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="layout" data-l="plan" aria-pressed="false">Plan</button><button type="button" aria-pressed="true">Grille</button></div>' : ''}
-    ${ses.group !== 'all' && DB.rooms.length ? `<button class="btn" data-act="room-change">${ses.room && roomById(ses.room) ? 'Changer de labo' : 'Choisir un labo'}</button>` : ''}
+    ${ses.group !== 'all' && DB.rooms.length ? `<button class="btn" data-act="room-change">${ses.room && roomById(ses.room) ? 'Changer de labo' : 'Plan de classe'}</button>` : ''}
     ${eyeBtn(true)}
     <button class="btn" data-act="export" data-cid="${c.id}">${ICON.down}Export</button>
     <button class="btn primary" data-act="rasrest">${ICON.check}Reste de la classe : RAS</button>
   </header>
-  <main class="main"><div class="sesbar">${ctButton(ses)}</div>${hwBanner(ses)}${body}</main>
+  <main class="main"><div class="sesbar">${ctButton(ses)}${checkButton(ses)}</div>${hwBanner(ses)}${body}</main>
   <footer class="foot"><span>Toucher une photo : noter une observation</span><span>Appui long : fiche de l'élève</span><span class="grow"></span><span>${present} présents · ${plural(abs, 'absent')} · ${Math.max(0, present - seen)} non observés</span></footer>`;
 }
 
@@ -867,7 +893,9 @@ function renderPanel() {
         <button class="btn" data-act="p-fiche">Fiche</button>
         <button class="btn icon-btn ghost" data-act="p-close" aria-label="Fermer">${ICON.close}</button>
       </div>
-      <div class="row"><button class="btn" data-act="p-ras">RAS</button><button class="btn" data-act="p-abs">${isAbs ? "Retirer l'absence" : 'Absent'}</button></div>
+      <div class="row"><button class="btn" data-act="p-ras">RAS</button><button class="btn" data-act="p-abs">${isAbs ? "Retirer l'absence" : 'Absent'}</button><button class="btn" data-act="p-catch">À rattraper…</button></div>
+      ${(() => { const sc = studentChecks(ses, s.id); const n = sc.catch.length + sc.mat.length + sc.dev.length; if (!n) return '';
+        return `<div class="pchk"><div class="lbl">À vérifier pour ${esc(s.first)}</div>${sc.catch.map(x => `<div class="row pchkrow"><span>${esc(catchText(x))}</span><button class="btn" data-act="catch-done" data-id="${x.id}">Rattrapé</button></div>`).join('')}${sc.dev.map(o => `<div class="row pchkrow"><span>Devoir non fait le ${fmtShort(o.date)}</span><button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button></div>`).join('')}${sc.mat.map(o => `<div class="row pchkrow"><span>Oubli de matériel le ${fmtShort(o.date)}</span><button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button></div>`).join('')}</div>`; })()}
       ${done}
       <div><div class="sec-t pos">+ Positif</div><div class="cats">${catBtns('pos')}</div></div>
       <div><div class="sec-t neg">− Négatif</div><div class="cats">${catBtns('neg')}</div></div>
@@ -940,6 +968,8 @@ function viewFiche() {
     </aside>
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
       <section class="card"><h2 style="font-size:16px;margin-bottom:12px">Répartition</h2>${bars.length ? `<div class="bars">${bars.map(b => `<div class="barrow"><span>${esc(b.l)}</span><span class="tr"><span class="fl ${b.t}" style="display:block;width:${(cnt[b.k] / max * 100).toFixed(1)}%"></span></span><b>${cnt[b.k]}</b></div>`).join('')}</div>` : '<p class="muted" style="margin:0">Rien à afficher pour l\'instant.</p>'}</section>
+      ${(() => { const cs = DB.catchup.filter(x => x.sid === s.id).sort((a, b) => b.date.localeCompare(a.date)); if (!cs.length) return '';
+        return `<section class="card"><h2 style="font-size:16px;margin-bottom:8px">Rattrapages</h2><ul class="log">${cs.map(x => `<li><span class="d">${fmtShort(x.date)}</span><span class="n">${esc(catchText(x))}</span>${x.done ? `<span class="chip pos">Rattrapé le ${fmtShort(x.done)}</span>` : '<span class="chip warn">En cours</span>'}<button type="button" class="x" data-act="catch-toggle" data-id="${x.id}">${x.done ? 'Rouvrir' : 'Rattrapé'}</button></li>`).join('')}</ul></section>`; })()}
       <section class="card"><h2 style="font-size:16px;margin-bottom:8px">Chronologie</h2>${log}</section>
     </div>
   </div></main>`;
@@ -1451,6 +1481,9 @@ function loadDemo() {
   const f3 = s3.filter(s => !sesStarted(s)).slice(0, 4);
   f3.forEach((s, i) => { DB.content[s.key] = {ch: 2, items: [{id: uid(), type: ['act', 'cours', 'corr', 'eval'][i], label: '', st: 'prev'}], hw: []}; });
   SESS_CACHE = {};
+  backfillCatchups();
+  DB.catchup.push({id: uid(), sid: studentsOf(c3.id)[2].id, cid: c3.id, date: addDays(today, -6), ses: null, auto: false, text: 'Évaluation ch. 1', done: null});
+  DB.obs.filter(o => o.cid === c5.id && o.cat === 'bavarde').slice(-2).forEach(o => { o.cat = 'devoir'; });
   DB.settings.lastBackup = IS_DEMO ? today : null;
 }
 
@@ -1576,8 +1609,7 @@ let PEND_SES = null;
 function openSession(ses) {
   if (ses.group !== 'all' && DB.rooms.length) {
     const r = DB.sesRoom[ses.key];
-    if (r) { go({name: 'grid', ses: {...ses, room: r === 'none' || !roomById(r) ? null : r}}); return; }
-    chooseRoom(ses, false); return;
+    go({name: 'grid', ses: {...ses, room: r && r !== 'none' && roomById(r) ? r : null}}); return;
   }
   go({name: 'grid', ses});
 }
@@ -1624,7 +1656,7 @@ function viewPlan() {
   if (!placed.size && studs.length && !edit) {
     ban += `<div class="banner ok"><p>Aucun élève n'est encore placé dans ce labo pour ce demi-groupe.</p><button class="btn primary" data-act="plan-random-edit">Répartir au hasard</button><button class="btn" data-act="plan-edit">Placer à la main</button></div>`; nb++;
   }
-  if (ctx.ses) { const hb = hwBanner(ctx.ses); ban = `<div class="sesbar">${ctButton(ctx.ses)}</div>` + hb + ban; nb += hb ? 2 : 1; }
+  if (ctx.ses) { const hb = hwBanner(ctx.ses); ban = `<div class="sesbar">${ctButton(ctx.ses)}${checkButton(ctx.ses)}</div>` + hb + ban; nb += hb ? 2 : 1; }
   const o = {mode: 'plan', pl, sum, conflicts, cid: ctx.cid, group: ctx.group, ses: ctx.ses, edit, selSid: V.selSid};
   const word = room.kind === 'ilots' ? 'îlots' : 'binômes';
   const unplHTML = unpl.map(s => `<button type="button" class="seat ${V.selSid === s.id ? 'sel' : ''}" data-act="unpl" data-sid="${s.id}"><span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}</span></span></button>`).join('');
@@ -2004,6 +2036,7 @@ function renderContent() {
     <div class="scroll">
       <div class="hd"><div style="flex:1 1 200px;min-width:0"><h2 id="ct-t">Contenu de la séance</h2><div class="small muted">${dot(c)} ${esc(c.name)}${s.group !== 'all' ? ' · ' + s.group : ''} · ${fmtLong(s.date)}${s.label ? ', ' + esc(s.label) : ''}</div></div>
         <button class="btn icon-btn ghost" data-act="ct-close" aria-label="Fermer">${ICON.close}</button></div>
+      ${progressHTML({key: s.key, cid: s.cid, group: s.group, date: s.date}, true)}
       <div><div class="lbl">Chapitre <span style="text-transform:none;letter-spacing:0;font-weight:400">· liste commune aux ${esc(lvl)}</span></div>
         <div class="row" style="gap:6px;margin-top:6px">${chBtns}<button type="button" class="gchip" data-act="ct-newch">+ Chapitre ${(chs.reduce((m, x) => Math.max(m, x.n), 0)) + 1}</button>${d.ch != null ? '<button type="button" class="btn ghost" data-act="ct-noch">Aucun</button>' : ''}</div>
         ${d.ch != null ? `<label class="f" for="ct-title" style="margin-top:8px;display:block">Titre du chapitre ${d.ch} <span class="muted" style="font-weight:400">(facultatif)</span><input style="margin-top:6px" type="text" id="ct-title" value="${esc(title)}" data-inp="ct-title" placeholder="ex. La matière et ses trois états"></label>` : ''}</div>
@@ -2133,6 +2166,113 @@ function chapModal(lvl) {
     <div class="ft"><button class="btn" data-act="chap-add" data-lvl="${esc(lvl)}">+ Chapitre ${chs.reduce((m, x) => Math.max(m, x.n), 0) + 1}</button><button class="btn ink" data-act="m-close">Fermer</button></div>`);
 }
 
+
+/* ---------- aperçu de séance, « à vérifier », rattrapages ---------- */
+function prevSession(ses) {
+  const list = classSessions(ses.cid), i = list.findIndex(s => s.key === ses.key);
+  const before = i >= 0 ? list.slice(0, i) : list.filter(s => s.date < ses.date);
+  return before.reverse().find(s => !s.cancelled && compat(s.group, ses.group)) || null;
+}
+function catchText(c) {
+  if (!c.auto) return c.text || 'À rattraper';
+  const ct = DB.content[c.ses];
+  const cls0 = cls(c.cid);
+  const sm = ct ? contentSummary(ct, levelOf(cls0), false) : '';
+  return `Absent le ${fmtShort(c.date)}${sm ? ' : ' + sm : ''}`;
+}
+function addAutoCatch(sid, ses) {
+  if (DB.catchup.some(c => c.auto && c.sid === sid && c.ses === ses.key)) return;
+  DB.catchup.push({id: uid(), sid, cid: ses.cid, date: ses.date, ses: ses.key, auto: true, text: '', done: null});
+}
+const removeAutoCatch = (sid, key) => { DB.catchup = DB.catchup.filter(c => !(c.auto && c.sid === sid && c.ses === key)); };
+function checkItems(ses) {
+  const ids = new Set(studentsOf(ses.cid, ses.group).map(s => s.id));
+  const out = {catch: [], mat: [], dev: [], hw: hwDueAt(ses), prev: prevSession(ses)};
+  out.catch = DB.catchup.filter(c => !c.done && ids.has(c.sid) && c.date <= ses.date && c.ses !== ses.key).sort((a, b) => a.date.localeCompare(b.date));
+  if (out.prev) {
+    const obs = DB.obs.filter(o => o.ses === out.prev.key && ids.has(o.sid) && !o.seen);
+    out.mat = obs.filter(o => o.cat === 'materiel');
+    out.dev = obs.filter(o => o.cat === 'devoir');
+  }
+  out.n = out.catch.length + out.mat.length + out.dev.length;
+  return out;
+}
+function studentChecks(ses, sid) {
+  const ck = checkItems(ses);
+  return {catch: ck.catch.filter(c => c.sid === sid), mat: ck.mat.filter(o => o.sid === sid), dev: ck.dev.filter(o => o.sid === sid)};
+}
+function checkListHTML(ses, ck) {
+  const line = (s, txt, btn) => s ? `<li class="chk"><span class="thumb">${photoHTML(s)}</span><span class="cn"><b>${esc(s.first + ' ' + s.last)}</b><span class="small">${txt}</span></span>${btn}</li>` : '';
+  const sec = (title, items) => items ? `<div class="chksec"><div class="lbl">${title}</div><ul class="chklist">${items}</ul></div>` : '';
+  const prevD = ck.prev ? fmtShort(ck.prev.date) : '';
+  let h = '';
+  if (ck.hw.length) h += `<div class="chksec"><div class="lbl">Travail à faire pour aujourd'hui</div><ul class="hwlist">${ck.hw.map(d => `<li class="hwitem"><span>${esc(hwText(d.h))}</span><span class="small muted">donné le ${fmtShort(d.from.date)}</span></li>`).join('')}</ul></div>`;
+  h += sec('Rattrapages en cours', ck.catch.map(c => line(stu(c.sid), esc(catchText(c)), `<button class="btn" data-act="catch-done" data-id="${c.id}">Rattrapé</button>`)).join(''));
+  h += sec(`Devoir non fait le ${prevD}`, ck.dev.map(o => line(stu(o.sid), o.note ? esc(o.note) : 'À vérifier aujourd\'hui', `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
+  h += sec(`Oubli de matériel le ${prevD}`, ck.mat.map(o => line(stu(o.sid), o.note ? esc(o.note) : 'À vérifier aujourd\'hui', `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
+  return h || '<p class="muted" style="margin:0">Rien à vérifier pour cette séance.</p>';
+}
+function progressHTML(ses, compact) {
+  const c = cls(ses.cid), lvl = levelOf(c);
+  const prev = prevSession(ses), nxt = nextSession(ses.cid, ses.key, ses.group, false);
+  const block = (title, s, ct, showState, extra) => {
+    if (!s) return '';
+    const items = ct && ct.items.length ? ct.items.map(it => `<li>${ityChip(it.type)} ${esc(it.label || '')}${showState && it.st === 'part' ? ' <span class="small st-part">(en partie)</span>' : ''}${showState && it.st === 'not' ? ' <span class="small st-not">(pas fait)</span>' : ''}${it.rep ? ` <span class="small muted">→ reporté au ${fmtShort(it.rep)}</span>` : ''}</li>`).join('') : '';
+    return `<div class="pgblk ${extra || ''}"><div class="lbl">${title} · ${fmtShort(s.date)}${s.group !== 'all' ? ' · ' + s.group : ''}</div>
+      ${ct && ct.ch != null ? `<div class="small">${esc(chapterLabel(lvl, ct.ch))}</div>` : ''}
+      ${items ? `<ul class="pglist">${items}</ul>` : '<p class="small muted" style="margin:4px 0 0">Rien de renseigné.</p>'}</div>`;
+  };
+  if (compact) return `<div class="pgrow">${block('Séance précédente', prev, prev && DB.content[prev.key], true)}${block('Séance suivante', nxt, nxt && DB.content[nxt.key], false)}</div>`;
+  return block('Séance précédente', prev, prev && DB.content[prev.key], true)
+    + block("Aujourd'hui", {date: ses.date, group: ses.group}, DB.content[ses.key], false, 'cur')
+    + block('Séance suivante', nxt, nxt && DB.content[nxt.key], false);
+}
+function viewHub() {
+  const ses = V.ses, c = cls(ses.cid); if (!c) { setTimeout(back, 0); return ''; }
+  const ck = checkItems(ses);
+  return `<header class="bar">
+    <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
+    <div class="ttl"><h1 class="row" style="gap:10px">${dot(c)}${esc(c.name)}${ses.group !== 'all' ? ' · ' + ses.group : ''}</h1><div class="sub">${fmtLong(ses.date)} · ${esc(ses.label)} · aperçu visible par vous seul</div></div>
+    <span class="grow"></span>
+    <button class="btn" data-act="hub-content">Modifier le contenu</button>
+    <button class="btn primary" data-act="hub-start">Commencer la séance</button>
+  </header>
+  <main class="main"><div class="wrap hub" style="max-width:1300px">
+    <section class="card"><h2 class="h2s">Progression</h2>${progressHTML(ses)}</section>
+    <section class="card"><h2 class="h2s">À vérifier${ck.n ? ` <span class="chip warn">${ck.n}</span>` : ''}</h2>${checkListHTML(ses, ck)}</section>
+  </div></main>`;
+}
+let CHK = false;
+function renderCheckSheet() {
+  const ses = V.ses; const ck = checkItems(ses);
+  $('#layer').innerHTML = `<div class="scrim" data-act="chk-close"></div>
+  <aside class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="chk-t"><div class="scroll">
+    <div class="hd"><h2 id="chk-t" style="flex:1">À vérifier</h2><button class="btn icon-btn ghost" data-act="chk-close" aria-label="Fermer">${ICON.close}</button></div>
+    ${checkListHTML(ses, ck)}</div></aside>`;
+}
+function checkButton(ses) {
+  const ck = checkItems(ses);
+  return ck.n || ck.hw.length ? `<button class="btn chkbtn" data-act="chk-open">À vérifier${ck.n ? ` <span class="chip warn">${ck.n}</span>` : ''}</button>` : '';
+}
+function refreshChecks() { if (CHK) renderCheckSheet(); else if (P && P.sid) renderPanel(); renderKeep(); }
+function backfillCatchups() {
+  if (DB.settings.catchInit) return;
+  const lim = addDays(todayStr(), -7);
+  DB.obs.filter(o => o.cat === 'absent' && o.date >= lim).forEach(o => addAutoCatch(o.sid, {cid: o.cid, date: o.date, key: o.ses}));
+  DB.settings.catchInit = true;
+}
+function catchModal(sid) {
+  const s = stu(sid), ses = V.ses; if (!s) return;
+  const prev = ses && prevSession(ses);
+  const wasAbs = prev && DB.obs.some(o => o.ses === prev.key && o.sid === sid && o.cat === 'absent');
+  const sug = wasAbs ? contentSummary(DB.content[prev.key], levelOf(cls(s.cid)), false) : '';
+  openModal(`<h2>À rattraper · ${esc(s.first + ' ' + s.last)}</h2>
+    <label class="f" for="cu-t">Quoi ?<input type="text" id="cu-t" value="${esc(sug)}" placeholder="ex. Évaluation ch. 2, recopier le bilan"></label>
+    <p class="small muted">Rappelé à chaque séance jusqu'à ce que vous le marquiez « Rattrapé ».</p>
+    <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn ink" data-act="catch-add" data-sid="${sid}">Ajouter</button></div>`);
+  setTimeout(() => $('#cu-t') && $('#cu-t').focus(), 0);
+}
+
 /* ---------- actions ---------- */
 let longTimer = null, suppressClick = false;
 const ACT = {
@@ -2151,11 +2291,11 @@ const ACT = {
   back: () => back(),
   settings: el => go({name:'settings', tab: el.dataset.tab || 'classes', cid: el.dataset.cid}),
   tab: el => { V.tab = el.dataset.tab; render(); if (V.tab === 'sauvegarde') showPersist(); },
-  'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); closeModal(); if (s) openSession(sesFromSlot(el.dataset.date || V.date, s)); },
+  'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); closeModal(); if (s) go({name: 'hub', ses: sesFromSlot(el.dataset.date || V.date, s)}); },
   other: () => otherModal(),
   'om-cls': el => otherModal(el.dataset.cid),
   'om-grp': el => otherModal(el.dataset.cid, el.dataset.g),
-  'om-go': el => { const d = otherDate(); closeModal(); openSession(sesOther(d, el.dataset.cid, el.dataset.g)); },
+  'om-go': el => { const d = otherDate(); closeModal(); go({name: 'hub', ses: sesOther(d, el.dataset.cid, el.dataset.g)}); },
   'm-close': () => closeModal(),
   demo: () => { loadDemo(); STORAGE_OK && Store.replaceAll(); render(); toast('Élèves fictifs chargés. Réglages › Sauvegarde › Tout effacer pour repartir de zéro.'); },
   tile: el => openPanel(el.dataset.sid),
@@ -2191,8 +2331,8 @@ const ACT = {
   'p-abs': () => {
     const key = V.ses.key, sid = P.sid;
     const isAbs = DB.obs.some(o => o.ses === key && o.sid === sid && o.cat === 'absent');
-    if (isAbs) removeObs(o => o.ses === key && o.sid === sid && o.cat === 'absent');
-    else { removeObs(o => o.ses === key && o.sid === sid && o.cat === 'ras'); addObs(sid, 'absent'); }
+    if (isAbs) { removeObs(o => o.ses === key && o.sid === sid && o.cat === 'absent'); removeAutoCatch(sid, key); }
+    else { removeObs(o => o.ses === key && o.sid === sid && o.cat === 'ras'); addObs(sid, 'absent'); addAutoCatch(sid, V.ses); }
     save(); closeLayer(); render();
   },
   'p-del': el => { removeObs(o => o.id === el.dataset.oid); save(); renderPanel(); render(); },
@@ -2442,10 +2582,19 @@ const ACT = {
   'chap-open': el => chapModal(el.dataset.lvl),
   'chap-add': el => { const list = chaptersOf(el.dataset.lvl); list.push({n: list.reduce((m, x) => Math.max(m, x.n), 0) + 1, t: ''}); save(); chapModal(el.dataset.lvl); },
   'chap-del': el => { const lvl = el.dataset.lvl; DB.chapters[lvl] = chaptersOf(lvl).filter(x => x.n !== +el.dataset.n); save(); chapModal(lvl); render(); },
+  'hub-start': () => openSession(V.ses),
+  'hub-content': () => openContent(V.ses),
+  'chk-open': () => { CHK = true; renderCheckSheet(); },
+  'chk-close': () => { CHK = false; closeLayer(); },
+  'p-catch': () => { const sid = P.sid; catchModal(sid); },
+  'catch-add': el => { const t = $('#cu-t').value.trim(); if (!t) { $('#cu-t').focus(); return; } const s = stu(el.dataset.sid); DB.catchup.push({id: uid(), sid: s.id, cid: s.cid, date: V.ses ? V.ses.date : todayStr(), ses: V.ses ? V.ses.key : null, auto: false, text: t, done: null}); save(); closeModal(); refreshChecks(); toast('Rattrapage ajouté'); },
+  'catch-done': el => { const c = DB.catchup.find(x => x.id === el.dataset.id); if (c) { c.done = todayStr(); save(); refreshChecks(); toast('Rattrapage validé'); } },
+  'catch-toggle': el => { const c = DB.catchup.find(x => x.id === el.dataset.id); if (c) { c.done = c.done ? null : todayStr(); save(); render(); toast(c.done ? 'Rattrapage validé' : 'Rattrapage rouvert'); } },
+  'obs-seen': el => { const o = DB.obs.find(x => x.id === el.dataset.oid); if (o) { o.seen = true; save(); refreshChecks(); toast('Marqué comme vu'); } },
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
 /* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
-const UNDO_MSG = {'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+const UNDO_MSG = {'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
   'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'sep-del': 'Paire retirée'};
@@ -2501,7 +2650,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form]?.(f); });
-document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P || CT) { CT = null; closeLayer(); } else if (V.name === 'proj') ACT['proj-exit'](); });
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if ($('#modal').innerHTML) closeModal(); else if (P || CT || CHK) { CT = null; CHK = false; closeLayer(); } else if (V.name === 'proj') ACT['proj-exit'](); });
 function openProj(cid, group, rid) { go({name:'proj', cid, group, rid}); try { const r = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) {} }
 document.addEventListener('pointerdown', e => {
   const d = e.target.closest('[data-drag]'); if (!d || V.name !== 'roomedit') return;
@@ -2554,6 +2703,7 @@ async function init() {
   if (IS_DEMO && !DB.classes.length) { loadDemo(); if (STORAGE_OK) Store.replaceAll().catch(() => {}); }
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
   if (!IS_DEMO && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (!DB.settings.catchInit && DB.classes.length) { backfillCatchups(); save(); }
   if (!IS_DEMO) restoreNav();
   render();
   if (DB.settings.appVersion !== APP_VERSION.n) {

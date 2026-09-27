@@ -388,6 +388,8 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
+const APP_VERSION = {n: '1.6', d: '2026-09-27'};
+const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
   back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',
@@ -567,6 +569,28 @@ function render() {
   else if (V.name === 'fiche') app.innerHTML = viewFiche();
   else if (V.name === 'settings') app.innerHTML = viewSettings();
   else if (V.name === 'trombi') app.innerHTML = viewTrombi();
+  saveNav();
+}
+/* se souvenir de la page ouverte, pour la retrouver après un rafraîchissement */
+const NAV_KEY = 'suivi-classe-nav';
+function saveNav() { try { localStorage.setItem(NAV_KEY, JSON.stringify({t: Date.now(), V, STACK: STACK.slice(-10)})); } catch (e) {} }
+function navValid(v) {
+  if (!v || !v.name) return false;
+  if (v.name === 'today' || v.name === 'settings') return true;
+  if (v.name === 'grid') return !!(v.ses && cls(v.ses.cid));
+  if (v.name === 'fiche') return !!stu(v.sid);
+  if (v.name === 'plan' || v.name === 'proj') return !!(cls(v.cid) && roomById(v.rid));
+  if (v.name === 'roomedit') return !!roomById(v.rid);
+  return false;
+}
+function restoreNav() {
+  try {
+    const n = JSON.parse(localStorage.getItem(NAV_KEY) || 'null');
+    if (!n || Date.now() - n.t > 3 * 3600e3 || !navValid(n.V)) return;
+    V = n.V; STACK = (n.STACK || []).filter(navValid);
+    if (V.name === 'today' && V.mode) HOME_MODE = V.mode;
+    V.selSid = null; DRAG = null;
+  } catch (e) {}
 }
 
 /* ---------- toast ---------- */
@@ -877,7 +901,7 @@ function viewSettings() {
   if (tab === 'periodes') body = setPeriodes();
   if (tab === 'sauvegarde') body = setBackup();
   return `
-  <header class="bar"><button class="btn ghost" data-act="home">${ICON.back}Accueil</button><div class="ttl"><h1>Réglages</h1></div></header>
+  <header class="bar"><button class="btn ghost" data-act="home">${ICON.back}Accueil</button><div class="ttl"><h1>Réglages</h1></div><span class="grow"></span><span class="small muted">${versionLabel()}</span></header>
   <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${k === tab}" data-act="tab" data-tab="${k}">${l}</button>`).join('')}</nav>
   <main class="main"><div class="wrap" style="max-width:1100px">${body}</div></main>`;
 }
@@ -1738,7 +1762,7 @@ function eyeBtn(compact) {
 }
 function tabBar(active) {
   const t = (k, l) => `<button class="tb" data-act="htab" data-t="${k}" ${active === k ? 'aria-current="page"' : ''}>${l}</button>`;
-  return `<nav class="appbar" aria-label="Onglets"><span class="brand">Suivi de classe</span>${t('edt', 'Emploi du temps')}${t('suivi', 'Suivi')}${t('salles', 'Salles')}<button class="tb" data-act="settings" data-tab="classes">Réglages</button><span class="grow"></span>${eyeBtn(false)}</nav>`;
+  return `<nav class="appbar" aria-label="Onglets"><span class="brand" title="${versionLabel()}">Suivi de classe</span>${t('edt', 'Emploi du temps')}${t('suivi', 'Suivi')}${t('salles', 'Salles')}<button class="tb" data-act="settings" data-tab="classes">Réglages</button><span class="grow"></span>${eyeBtn(false)}</nav>`;
 }
 
 /* panneau « à modifier » sur un îlot / une paillasse */
@@ -2137,7 +2161,13 @@ async function init() {
   if (IS_DEMO && !DB.classes.length) { loadDemo(); if (STORAGE_OK) Store.replaceAll().catch(() => {}); }
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
   if (!IS_DEMO && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (!IS_DEMO) restoreNav();
   render();
+  if (DB.settings.appVersion !== APP_VERSION.n) {
+    const first = !DB.settings.appVersion && !DB.classes.length;
+    DB.settings.appVersion = APP_VERSION.n; save();
+    if (!first && !IS_DEMO) toast(`Mise à jour installée : ${versionLabel().toLowerCase()}`);
+  }
   setInterval(() => { if (V.name === 'today' && !$('#modal').innerHTML && document.visibilityState === 'visible') render(); }, 60000);
 }
 init();

@@ -178,7 +178,10 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .psep .btn{min-height:36px;font-size:14px}
 .prow{width:100%;display:grid;grid-template-columns:110px 80px 56px minmax(0,2.2fr) minmax(0,1.4fr) 110px;align-items:center;gap:0 12px;padding:8px 16px;border:none;border-top:1px solid var(--line);background:transparent;text-align:left;font-size:14px;min-height:52px}
 .prow .pi{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
-.prow .ph{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .ph{display:flex;flex-direction:column;gap:2px;min-width:0}
+.prow .hwl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2)}
+.prow .hwl b{color:var(--ink);font-weight:600}
+.prow .hwl.hwv b{color:#B07A12}
 .prow .ps{text-align:right;font-weight:600}
 .prow .ps.pos{color:var(--pos)}.prow .ps.warn{color:#B07A12}
 .prow.is-cancel{opacity:.5}
@@ -301,6 +304,7 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .proj .board{font-size:clamp(10px,1.1vw,15px)}
 /* Semaine */
 .chip.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.shch{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .syncpill{min-height:40px;padding:0 12px;font-size:13px;font-weight:600;gap:6px;white-space:nowrap}
 .syncpill svg{width:16px;height:16px}
 .syncpill .ss{display:none}
@@ -537,7 +541,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.2', d: '2026-09-28'};
+const APP_VERSION = {n: '2.3', d: '2026-09-28'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -615,6 +619,8 @@ function migrate(core) {
   ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
+  /* nouvelle détection du niveau : on regroupe les listes de chapitres existantes */
+  d.classes.forEach(c => { if (c.level) return; const o = detectLevelOld(c.name), n = detectLevel(c.name); if (o !== n && d.chapters[o]) { d.chapters[n] = mergeChapters(d.chapters[n], d.chapters[o]); if (!d.classes.some(x => !x.level && detectLevelOld(x.name) === o && detectLevel(x.name) !== n)) delete d.chapters[o]; } });
   return d;
 }
 
@@ -1111,8 +1117,11 @@ function setClasses() {
   return `<div class="split"><div>${left}</div><div style="display:flex;flex-direction:column;gap:14px;min-width:0">
     <section class="card" style="display:flex;flex-direction:column;gap:12px">
       <div class="row"><h2 style="font-family:var(--serif);font-size:22px;flex:1">${esc(c.name)}</h2>
-        <label class="f" for="cl-lvl" style="flex-direction:row;align-items:center;gap:6px">Niveau <input type="text" id="cl-lvl" list="lvl-list" value="${esc(levelOf(c))}" data-chg="class-level" data-cid="${c.id}" style="width:80px"></label><datalist id="lvl-list"><option>6e</option><option>5e</option><option>4e</option><option>3e</option><option>2de</option><option>1re</option><option>Tle</option></datalist>
+
         <select data-chg="class-pt" data-cid="${c.id}" style="width:auto" aria-label="Découpage de l'année"><option value="semestre" ${c.pt === 'semestre' ? 'selected' : ''}>Semestres</option><option value="trimestre" ${c.pt === 'trimestre' ? 'selected' : ''}>Trimestres</option></select></div>
+      ${DB.classes.length > 1 ? (() => { const lv = levelOf(c), others = DB.classes.filter(x => x.id !== c.id).sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
+        return `<div class="shch"><span class="lbl" style="margin:0">Chapitres communs avec</span>${others.map(x => `<button type="button" class="gchip" data-act="ch-share" data-cid="${c.id}" data-other="${x.id}" aria-pressed="${levelOf(x) === lv}">${dot(x)}${esc(x.name)}</button>`).join('')}
+          <span class="small muted" style="flex-basis:100%">Les classes cochées utilisent la même liste de chapitres (numéros et titres). Le contenu des séances reste propre à chaque classe.</span></div>`; })() : ''}
       <div class="swatches" role="group" aria-label="Couleur de la classe">${CLASS_COLORS.map(([h, n]) => `<button type="button" class="sw" style="--sw:${h}" aria-label="${n}" aria-pressed="${c.color === h}" data-act="class-color" data-cid="${c.id}" data-col="${h}"></button>`).join('')}</div>
       <p class="small muted" style="margin:0">${plural(list.length, 'élève')} · G1 : ${g1} · G2 : ${g2} · ${plural(list.filter(s => PHOTOS[s.id]).length, 'photo')}</p>
       <div class="row">
@@ -2008,7 +2017,7 @@ function hwText(h) {
     default: return f(h.text) || 'Travail à faire';
   }
 }
-function detectLevel(name) {
+function detectLevelOld(name) {
   const n = String(name || '').trim();
   let m = n.match(/^([3-6])\s*(e|è|ème|eme)\b/i); if (m) return m[1] + 'e';
   if (/^2\s*(de|nde|nd)\b/i.test(n)) return '2de';
@@ -2016,6 +2025,23 @@ function detectLevel(name) {
   if (/^t(le|erm)/i.test(n)) return 'Tle';
   return n.split(/\s+/)[0] || n;
 }
+/* niveau déduit du nom : « 5e 2 », « 5ème2 », « 5_2 », « 5A » → 5e ; « 2nde 5 » → 2de… */
+function detectLevel(name) {
+  const n = String(name || '').trim();
+  let m = n.match(/^([3-6])(?![0-9])/); if (m) return m[1] + 'e';
+  if (/^2(?![0-9])/.test(n)) return '2de';
+  if (/^1(?![0-9])/.test(n)) return '1re';
+  if (/^2\s*(de|nde|nd)\b/i.test(n)) return '2de';
+  if (/^1\s*(re|ère|ere|e)\b/i.test(n)) return '1re';
+  if (/^t(le|erm)/i.test(n)) return 'Tle';
+  return n.split(/\s+/)[0] || n;
+}
+function mergeChapters(a, b) {
+  const out = (a || []).map(x => ({...x}));
+  (b || []).forEach(x => { const y = out.find(z => z.n === x.n); if (!y) out.push({...x}); else if (!y.t && x.t) y.t = x.t; });
+  return out.sort((p, q) => p.n - q.n);
+}
+const chapScope = lvl => { const l = DB.classes.filter(c => levelOf(c) === lvl).map(c => c.name).sort((a, b) => a.localeCompare(b, 'fr', {numeric: true})); return l.length > 1 ? 'commune à ' + l.join(', ') : 'propre à ' + (l[0] || lvl); };
 const levelOf = c => (c && (c.level || detectLevel(c.name))) || '';
 const chaptersOf = lvl => DB.chapters[lvl] || (DB.chapters[lvl] = []);
 const chapterLabel = (lvl, n) => { const c = chaptersOf(lvl).find(x => x.n === n); return 'Chapitre ' + n + (c && c.t ? ' · ' + c.t : ''); };
@@ -2042,6 +2068,13 @@ function nextSession(cid, key, group, sameTrack) {
   return list.slice(i + 1).find(s => !s.cancelled && (sameTrack ? s.group === group : compat(s.group, group))) || null;
 }
 function firstSessionOnOrAfter(cid, date, group) { return classSessions(cid).find(s => !s.cancelled && s.date >= date && compat(s.group, group)) || null; }
+/* séance pour laquelle un devoir est à faire (donné à la séance `from`) */
+function hwTarget(h, from, cid, group) {
+  if (h.dueKey) { const t = classSessions(cid).find(x => x.key === h.dueKey); if (t && !t.cancelled && compat(t.group, group)) return t; }
+  return h.due ? firstSessionOnOrAfter(cid, h.due, group) : nextSession(cid, from.key, group, false);
+}
+const dayShort = d => parseD(d).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'});
+function hwDueLabel(h, from, cid, group) { const t = hwTarget(h, from, cid, group); return t ? 'pour le ' + dayShort(t.date) : h.due ? 'pour le ' + dayShort(h.due) : 'pour la séance suivante'; }
 /* devoirs à vérifier à la séance `ses` */
 function hwDueAt(ses) {
   const list = classSessions(ses.cid), out = [];
@@ -2050,7 +2083,7 @@ function hwDueAt(ses) {
     const ct = DB.content[p.key]; if (!ct || !ct.hw || !ct.hw.length) return;
     if (!compat(p.group, ses.group)) return;
     ct.hw.forEach(h => {
-      const target = h.due ? firstSessionOnOrAfter(ses.cid, h.due, ses.group) : nextSession(ses.cid, p.key, ses.group, false);
+      const target = hwTarget(h, p, ses.cid, ses.group);
       if (target && target.key === ses.key) out.push({h, from: p});
     });
   });
@@ -2113,7 +2146,7 @@ function renderContent() {
       <button type="button" class="btn icon-btn ghost" data-act="ct-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></div>
       <div class="row" style="gap:8px">${stSeg}</div>${rep}</li>`;
   }).join('');
-  const hws = d.hw.map((h, i) => `<li class="hwitem"><span>${esc(hwText(h))}</span><span class="small muted">${h.due ? 'pour le ' + fmtShort(h.due) : 'pour la séance suivante'}</span><button type="button" class="btn icon-btn ghost" data-act="hw-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></li>`).join('');
+  const hws = d.hw.map((h, i) => `<li class="hwitem"><span>${esc(hwText(h))}</span><span class="small muted">${hwDueLabel(h, s, s.cid, s.group)}</span><button type="button" class="btn icon-btn ghost" data-act="hw-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></li>`).join('');
   const k = CT.hw.kind;
   const fld = (id, ph, w) => `<input type="text" id="${id}" placeholder="${ph}" style="${w ? 'max-width:' + w : ''}">`;
   let fields = '';
@@ -2132,7 +2165,7 @@ function renderContent() {
       <div class="hd"><div style="flex:1 1 200px;min-width:0"><h2 id="ct-t">Contenu de la séance</h2><div class="small muted">${dot(c)} ${esc(c.name)}${s.group !== 'all' ? ' · ' + s.group : ''} · ${fmtLong(s.date)}${s.label ? ', ' + esc(s.label) : ''}</div></div>
         <button class="btn icon-btn ghost" data-act="ct-close" aria-label="Fermer">${ICON.close}</button></div>
       ${progressHTML({key: s.key, cid: s.cid, group: s.group, date: s.date}, true)}
-      <div><div class="lbl">Chapitre <span style="text-transform:none;letter-spacing:0;font-weight:400">· liste commune aux ${esc(lvl)}</span></div>
+      <div><div class="lbl">Chapitre <span style="text-transform:none;letter-spacing:0;font-weight:400">· liste ${esc(chapScope(lvl))}</span></div>
         <div class="row" style="gap:6px;margin-top:6px">${chBtns}<button type="button" class="gchip" data-act="ct-newch">+ Chapitre ${(chs.reduce((m, x) => Math.max(m, x.n), 0)) + 1}</button>${d.ch != null ? '<button type="button" class="btn ghost" data-act="ct-noch">Aucun</button>' : ''}</div>
         ${d.ch != null ? `<label class="f" for="ct-title" style="margin-top:8px;display:block">Titre du chapitre ${d.ch} <span class="muted" style="font-weight:400">(facultatif)</span><input style="margin-top:6px" type="text" id="ct-title" value="${esc(title)}" data-inp="ct-title" placeholder="ex. La matière et ses trois états"></label>` : ''}</div>
       <div><div class="lbl">Déroulé de la séance</div>
@@ -2145,8 +2178,12 @@ function renderContent() {
           ${fields}
         </div>
         <div class="row" style="gap:8px;margin-top:6px">
-          <select id="hw-due" data-chg="hw-due" aria-label="Pour quand" style="width:auto"><option value="next" ${CT.hw.due === 'next' ? 'selected' : ''}>Pour la séance suivante${nextAny ? ' (' + fmtShort(nextAny.date) + ')' : ''}</option><option value="date" ${CT.hw.due === 'date' ? 'selected' : ''}>Pour une autre date…</option></select>
-          ${CT.hw.due === 'date' ? `<input type="date" id="hw-date" style="width:auto" value="${nextAny ? nextAny.date : s.date}">` : ''}
+          <select id="hw-due" aria-label="Pour quand" style="width:auto">${(() => {
+            const list = classSessions(s.cid), k = list.findIndex(x => x.key === s.key);
+            const after = (k >= 0 ? list.slice(k + 1) : list.filter(x => x.date > s.date)).filter(x => !x.cancelled && compat(x.group, s.group)).slice(0, 16);
+            if (!after.length) return '<option value="next">Pour la séance suivante</option>';
+            return after.map((x, n) => `<option value="${n ? x.key : 'next'}" ${CT.hw.due === (n ? x.key : 'next') ? 'selected' : ''}>${n ? '' : 'Séance suivante : '}${cap(dayShort(x.date))}${x.start !== '99:99' ? ', ' + fmtT(x.start) : ''}${x.group !== 'all' && x.group !== s.group ? '' : ''}${x.group === 'all' && s.group !== 'all' ? ' (classe entière)' : ''}</option>`).join('');
+          })()}</select>
           <button type="button" class="btn" data-act="hw-add">Ajouter le devoir</button></div></div>
       <div><label class="lbl" for="ct-note" style="display:block">Commentaire <span style="text-transform:none;letter-spacing:0;font-weight:400">· visible par vous seul</span></label>
         <textarea id="ct-note" rows="3" data-inp="ct-note" placeholder="ex. Manqué de temps, bilan à reprendre · groupe agité après la récréation" style="margin-top:6px">${esc(d.note || '')}</textarea></div>
@@ -2165,12 +2202,14 @@ function readHwForm() {
   if (h.kind === 'recop') { h.what = v('hw-what') || 'bilan'; h.page = v('hw-page'); }
   if (h.kind === 'cr' || h.kind === 'lecon') h.detail = v('hw-detail');
   if (h.kind === 'autre') { h.text = v('hw-text'); if (!h.text) return null; }
-  if (CT.hw.due === 'date') { h.due = v('hw-date') || null; }
+  const dv = v('hw-due'); CT.hw.due = dv || 'next';
+  if (dv && dv !== 'next') { const t = classSessions(CT.ses.cid).find(x => x.key === dv); if (t) { h.due = t.date; h.dueKey = t.key; } }
   return h;
 }
 function syncInputs() {
   document.querySelectorAll('#layer [data-inp="ct-label"]').forEach(el => { const it = CT.data.items[+el.dataset.i]; if (it) it.label = el.value.trim(); });
   const t = $('#ct-title'); if (t && CT.data.ch != null) CT.titles[CT.data.ch] = t.value.trim();
+  const hd = $('#hw-due'); if (hd) CT.hw.due = hd.value;
   const n = $('#ct-note'); if (n) { const v = n.value.trim(); if (v) CT.data.note = v; else delete CT.data.note; }
 }
 function saveContent(fromCT) {
@@ -2181,7 +2220,7 @@ function saveContent(fromCT) {
   const other = otherGroupSession(s);
   if (other && CT.other && !empty) {
     const cur = DB.content[other.key];
-    if (!cur || (!cur.items.length && !cur.hw.length)) DB.content[other.key] = {ch: d.ch, items: d.items.map(it => ({...it, id: uid(), st: 'prev', rep: null})), hw: d.hw.map(h => ({...h, id: uid()}))};
+    if (!cur || (!cur.items.length && !cur.hw.length)) DB.content[other.key] = {ch: d.ch, items: d.items.map(it => ({...it, id: uid(), st: 'prev', rep: null})), hw: d.hw.map(h => { const x = {...h, id: uid()}; delete x.dueKey; return x; })};
   }
   SESS_CACHE = {};
 }
@@ -2211,7 +2250,7 @@ function viewProg() {
   if (!c) return `${tabBar('prog')}<main class="main"><div class="wrap"><div class="empty"><p>Aucune classe pour l'instant.</p></div></div></main>`;
   const all = classSessions(c.id), groups = [...new Set(all.map(s => s.group))];
   const opts = [...(groups.includes('G1') ? ['G1'] : []), ...(groups.includes('G2') ? ['G2'] : []), ...(groups.includes('all') ? ['all'] : [])];
-  if (!V.pg || (V.pg !== 'tout' && !opts.includes(V.pg))) V.pg = opts[0] || 'tout';
+  if (!V.pg || (V.pg !== 'tout' && !opts.includes(V.pg))) V.pg = 'tout';
   const lvl = levelOf(c);
   const list = all.filter(s => V.pg === 'tout' || s.group === V.pg);
   const t = todayStr();
@@ -2228,7 +2267,9 @@ function viewProg() {
     else if (!st) status = s.date === t ? "Aujourd'hui" : 'Prévu';
     else { const sts = ct.items.map(i => i.st); status = sts.every(x => x === 'done') ? 'Fait' : sts.some(x => x === 'not' || x === 'part') ? (sts.every(x => x === 'not') ? 'Pas fait' : 'En partie') : 'À renseigner'; cl = status === 'Fait' ? 'pos' : status === 'À renseigner' ? 'muted' : 'warn'; }
     const items = ct ? ct.items.map(it => `${ityChip(it.type)}${it.label ? ' <span>' + esc(it.label) + '</span>' : ''}${st && it.st && it.st !== 'done' && it.st !== 'prev' ? ` <span class="small st-${it.st}">(${it.st === 'part' ? 'en partie' : 'pas fait'})</span>` : ''}`).join(' ') : '';
-    const hw = ct && ct.hw.length ? 'À faire : ' + ct.hw.map(hwText).map(esc).join(' · ') : '';
+    const given = ct && ct.hw.length ? ct.hw.map(h => `<span class="hwl"><b>${cap(esc(hwDueLabel(h, s, c.id, s.group)))}</b> : ${esc(hwText(h))}</span>`).join('') : '';
+    const due = s.cancelled ? '' : hwDueAt({...s, cid: c.id}).map(d => `<span class="hwl hwv"><b>À vérifier</b> (donné le ${esc(dayShort(d.from.date))}) : ${esc(hwText(d.h))}</span>`).join('');
+    const hw = given + due;
     const note = ct && ct.note ? `<span class="pnote">${esc(ct.note)}</span>` : '';
     const now = hi && s.key === hi.key;
     return `<button class="prow ${s.cancelled ? 'is-cancel' : ''} ${now ? 'is-now' : ''}" data-act="prog-open" data-key="${s.key}">
@@ -2247,7 +2288,7 @@ function viewProg() {
     <div class="row"><div class="seg" role="group" aria-label="Séances">${segs.map(([v, l]) => `<button type="button" data-act="prog-g" data-v="${v}" aria-pressed="${V.pg === v}">${l}</button>`).join('')}</div>
       <span class="small muted">En cours : <strong style="color:var(--ink)">${lastCh ? esc(chapterLabel(lvl, DB.content[lastCh.key].ch)) : '—'}</strong></span>
       <span class="grow" style="flex:1"></span>
-      <button class="btn" data-act="chap-open" data-lvl="${esc(lvl)}">Chapitres des ${esc(lvl)}</button>
+      <button class="btn" data-act="chap-open" data-lvl="${esc(lvl)}">Chapitres</button>
       <button class="btn" data-act="prog-export">${ICON.down}Exporter</button></div>
     <section class="card stable-card">
       <div class="psep"><span>Séances passées</span></div>
@@ -2263,8 +2304,8 @@ function chapModal(lvl) {
   const chs = chaptersOf(lvl).slice().sort((a, b) => a.n - b.n);
   const keys = new Set(); DB.classes.filter(c => levelOf(c) === lvl).forEach(c => classSessions(c.id).forEach(s => keys.add(s.key)));
   const used = n => [...keys].some(k => DB.content[k] && DB.content[k].ch === n);
-  openModal(`<h2>Chapitres des ${esc(lvl)}</h2>
-    <p class="small muted">Liste commune à toutes vos classes de ${esc(lvl)}.</p>
+  openModal(`<h2>Chapitres</h2>
+    <p class="small muted">${(() => { const l = DB.classes.filter(c => levelOf(c) === lvl).map(c => c.name); return l.length > 1 ? 'Liste commune à : ' + l.map(esc).join(', ') + '.' : 'Liste propre à ' + esc(l[0] || lvl) + '. Pour la partager : Réglages › Classes et élèves › « Chapitres communs avec ».'; })()}</p>
     <ul class="stable">${chs.map(ch => `<li><span style="width:110px;font-weight:600">Chapitre ${ch.n}</span><input type="text" id="chm-${ch.n}" value="${esc(ch.t || '')}" placeholder="Titre (facultatif)" data-chg="chap-title" data-lvl="${esc(lvl)}" data-n="${ch.n}" style="flex:1 1 200px">${used(ch.n) ? '' : `<button class="btn ghost" data-act="chap-del" data-lvl="${esc(lvl)}" data-n="${ch.n}">Retirer</button>`}</li>`).join('') || '<li class="muted">Aucun chapitre pour l\'instant.</li>'}</ul>
     <div class="ft"><button class="btn" data-act="chap-add" data-lvl="${esc(lvl)}">+ Chapitre ${chs.reduce((m, x) => Math.max(m, x.n), 0) + 1}</button><button class="btn ink" data-act="m-close">Fermer</button></div>`);
 }
@@ -2356,7 +2397,7 @@ function detailHTML(ses) {
   const ct = DB.content[s.key], st = sesStarted(s), items = itemsHTML(ct, st);
   const j = list.findIndex(x => x.key === ses.key);
   const rel = s.key === ses.key ? (s.date === todayStr() ? "Aujourd'hui" : 'Cette séance') : i === j - 1 ? 'Séance précédente' : i === j + 1 ? 'Séance suivante' : i < j ? 'Plus tôt' : 'Plus tard';
-  const hw = ct && ct.hw.length ? `<ul class="hwlist">${ct.hw.map(h => `<li class="hwitem"><span>${esc(hwText(h))}</span><span class="small muted">${h.due ? 'pour le ' + fmtShort(h.due) : 'pour la séance suivante'}</span></li>`).join('')}</ul>` : '<p class="small muted" style="margin:0">Aucun travail donné.</p>';
+  const hw = ct && ct.hw.length ? `<ul class="hwlist">${ct.hw.map(h => `<li class="hwitem"><span>${esc(hwText(h))}</span><span class="small muted">${hwDueLabel(h, s, ses.cid, s.group)}</span></li>`).join('')}</ul>` : '<p class="small muted" style="margin:0">Aucun travail donné.</p>';
   return `<section class="card pgdetail">
     <div class="pgdh"><button class="btn icon-btn" data-act="pg-step" data-key="${pv ? pv.key : ''}" ${pv ? '' : 'disabled'} aria-label="Séance précédente">${ICON.back}</button>
       <div class="pgdt"><span class="small muted">${rel}${s.group !== 'all' ? ' · ' + s.group : ''}</span><strong>${cap(fmtDay(s.date))}</strong><span class="small muted">${esc(s.label || '')}${s.cancelled ? ' · annulée' : ''}</span></div>
@@ -2520,6 +2561,21 @@ const ACT = {
     HOME_MODE = V.mode = m; render();
   },
   'slot-cancel': el => { const key = el.dataset.date + '|' + el.dataset.slot; if (DB.cancelled[key]) delete DB.cancelled[key]; else DB.cancelled[key] = true; save(); closeModal(); render(); toast(DB.cancelled[key] ? 'Séance marquée comme annulée' : 'Séance rétablie'); },
+  'ch-share': el => {
+    const c = cls(el.dataset.cid), x = cls(el.dataset.other); if (!c || !x) return;
+    const lv = levelOf(c);
+    if (levelOf(x) === lv) { // retirer x du partage : il garde une copie de la liste
+      const own = x.name.trim() || x.id; const key = DB.chapters[own] && own !== lv ? own + ' (' + x.id.slice(-3) + ')' : own;
+      DB.chapters[key] = (DB.chapters[lv] || []).map(y => ({...y})); x.level = key;
+      toast(`${x.name} a maintenant sa propre liste de chapitres.`);
+    } else {
+      const old = levelOf(x); if (!c.level) c.level = lv;
+      DB.chapters[lv] = mergeChapters(DB.chapters[lv], DB.chapters[old]);
+      x.level = lv; // l'ancienne liste est conservée telle quelle (au cas où on annule le partage)
+      toast(`${x.name} partage maintenant les chapitres de ${c.name}.`);
+    }
+    SESS_CACHE = {}; save(); render();
+  },
   'class-color': el => { cls(el.dataset.cid).color = el.dataset.col; save(); render(); },
   'hol-add': () => { DB.settings.holidays.push({n:'Sans cours', s: todayStr(), e: todayStr()}); save(); render(); },
   'hol-del': el => { DB.settings.holidays.splice(+el.dataset.i, 1); save(); render(); },
@@ -2782,7 +2838,7 @@ const ACT = {
   'ct-st': el => { syncInputs(); const it = CT.data.items[+el.dataset.i]; it.st = it.st === el.dataset.v ? 'prev' : el.dataset.v; renderContent(); },
   'ct-other': el => { CT.other = el.checked; },
   'hw-allq': el => { syncInputs(); const nm = $('#hw-name') ? $('#hw-name').value : ''; CT.hw.allq = el.checked; renderContent(); if ($('#hw-name')) $('#hw-name').value = nm; },
-  'hw-add': () => { syncInputs(); const h = readHwForm(); if (!h) { toast('Complétez le devoir (page, numéros ou texte).'); return; } CT.data.hw.push(h); CT.hw.allq = true; renderContent(); },
+  'hw-add': () => { syncInputs(); const h = readHwForm(); if (!h) { toast('Complétez le devoir (page, numéros ou texte).'); return; } CT.data.hw.push(h); CT.hw.allq = true; CT.hw.due = 'next'; renderContent(); },
   'hw-del': el => { syncInputs(); CT.data.hw.splice(+el.dataset.i, 1); renderContent(); },
   'ct-save': () => {
     syncInputs();
@@ -2816,7 +2872,7 @@ const ACT = {
       const ct = DB.content[s.key];
       rows.push([s.date.split('-').reverse().join('/'), s.start === '99:99' ? '' : fmtT(s.start), s.group === 'all' ? 'Classe entière' : s.group, ct && ct.ch != null ? chapterLabel(lvl, ct.ch) : '',
         ct ? ct.items.map(i => (ITYPE[i.type] || ITYPE.autre).l + (i.label ? ' : ' + i.label : '') + (i.st === 'part' ? ' (en partie)' : i.st === 'not' ? ' (pas fait)' : '')).join(' | ') : '',
-        ct ? ct.hw.map(hwText).join(' | ') : '', s.cancelled ? 'Annulé' : '', APPR_L[DB.appr[s.key]] || '', ct && ct.note ? ct.note : '']);
+        ct ? ct.hw.map(h => hwText(h) + ' (' + hwDueLabel(h, s, c.id, s.group) + ')').join(' | ') : '', s.cancelled ? 'Annulé' : '', APPR_L[DB.appr[s.key]] || '', ct && ct.note ? ct.note : '']);
     });
     deliver(`progression-${safeName(c.name)}.csv`, csv(rows), 'text/csv', navigator.canShare ? 'share' : 'dl');
   },
@@ -2868,7 +2924,7 @@ const ACT = {
 const UNDO_MSG = {'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
-  'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'sep-del': 'Paire retirée'};
+  'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'ch-share': 'Partage des chapitres modifié', 'sep-del': 'Paire retirée'};
 Object.keys(UNDO_MSG).forEach(name => {
   const fn = ACT[name]; if (!fn) return;
   ACT[name] = (el, e) => {
@@ -2897,7 +2953,6 @@ const CHG = {
   'imp-file': el => { const f = el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { let t = r.result; if (/\uFFFD/.test(t)) { const r2 = new FileReader(); r2.onload = () => { IMP = {text: r2.result, ...parseList(r2.result, V.cid)}; render(); }; r2.readAsText(f, 'windows-1252'); return; } IMP = {text: t, ...parseList(t, V.cid)}; render(); }; r.readAsText(f, 'utf-8'); },
   'ex-cid': el => exportModal(el.value),
   'hw-kind': el => { syncInputs(); CT.hw.kind = el.value; CT.hw.allq = true; renderContent(); },
-  'hw-due': el => { syncInputs(); CT.hw.due = el.value; const keep = {}; ['hw-page', 'hw-nums', 'hw-name', 'hw-detail', 'hw-text', 'hw-from', 'hw-to'].forEach(id => { if ($('#' + id)) keep[id] = $('#' + id).value; }); renderContent(); Object.entries(keep).forEach(([id, v]) => { if ($('#' + id)) $('#' + id).value = v; }); },
   'chap-title': el => { const ch = chaptersOf(el.dataset.lvl).find(x => x.n === +el.dataset.n); if (ch) { ch.t = el.value.trim(); save(); } },
   'class-level': el => { const c = cls(el.dataset.cid), v = el.value.trim(); if (c) { c.level = v || null; save(); } },
   'room-name': el => { const r = roomById(V.rid); const v = el.value.trim(); if (r && v) { r.name = v; save(); } },

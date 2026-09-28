@@ -191,6 +191,18 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .appbar .tb{display:flex;align-items:center;padding:0 14px;border:none;border-bottom:3px solid transparent;background:transparent;color:var(--muted);font-weight:500;font-size:15px;min-height:56px}
 .appbar .tb[aria-current="page"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
 .appbar .grow{flex:1}
+.appbar > .btn{align-self:center}
+@media (max-width:700px){
+  .appbar{flex-wrap:nowrap;overflow-x:auto;padding:0 8px;scrollbar-width:none}
+  .appbar::-webkit-scrollbar{display:none}
+  .appbar .brand{display:none}
+  .appbar .tb{padding:0 10px;font-size:14px;white-space:nowrap}
+  .appbar .grow{display:none}
+  .appbar .eye{padding:0 10px;font-size:0;gap:0;flex:none}
+  .appbar .syncpill{flex:none;order:-1;margin-right:4px;padding:0 9px}
+  .appbar .eye{order:-2;margin-right:4px}
+  .appbar .syncpill .sl{display:none}
+}
 .eye{align-self:center}
 .eye[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .gchip{min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--line);background:var(--surface);font-size:15px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
@@ -289,6 +301,22 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .proj .board{font-size:clamp(10px,1.1vw,15px)}
 /* Semaine */
 .chip.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.syncpill{min-height:40px;padding:0 12px;font-size:13px;font-weight:600;gap:6px;white-space:nowrap}
+.syncpill svg{width:16px;height:16px}
+.syncpill .ss{display:none}
+@media (max-width:700px){.syncpill .ss{display:inline}}
+.syncpill.ok{color:var(--pos-ink);background:var(--pos-soft);border-color:var(--pos-line)}
+.syncpill.warn{color:var(--warn-ink);background:var(--warn-soft);border-color:var(--warn-line)}
+.syncpill.bad{color:var(--neg-ink);background:var(--neg-soft);border-color:var(--neg-line)}
+.syncpill.run svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.syncbox{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;padding:12px 14px;border-radius:12px;border:1px solid var(--pos-line);background:var(--pos-soft);color:var(--pos-ink)}
+.syncbox.warn{border-color:var(--warn-line);background:var(--warn-soft);color:var(--warn-ink)}
+.syncbox.bad{border-color:var(--neg-line);background:var(--neg-soft);color:var(--neg-ink)}
+.synclast{font-family:var(--serif);font-size:20px;font-weight:600}
+.guide{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--surface-2)}
+.guide summary{font-weight:600;cursor:pointer;min-height:32px}
+.guide ol{margin:8px 0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
 /* devoirs (jaune) et appréciation de classe */
 .chip.dv{background:#F6D45A;color:#3D3000}
 .chip.appr-dyn{background:var(--pos);color:var(--on-pos)}
@@ -509,10 +537,11 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.1', d: '2026-09-27'};
+const APP_VERSION = {n: '2.2', d: '2026-09-28'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
+  sync:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9M4 13a8 8 0 0 0 14.3 4.9"/><path d="M20 4v5h-5M4 20v-5h5"/></svg>',
   back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',
   next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>',
@@ -629,7 +658,7 @@ const Store = {
     await this.saveCore();
   }
 };
-function save() { if (!STORAGE_OK) return; Store.saveCore().catch(() => toast("Enregistrement impossible sur cet appareil. Faites une sauvegarde dès que possible.")); }
+function save() { syncSoon(); if (!STORAGE_OK) return; Store.saveCore().catch(() => toast("Enregistrement impossible sur cet appareil. Faites une sauvegarde dès que possible.")); }
 
 const cls = id => DB.classes.find(c => c.id === id);
 const stu = id => DB.students.find(s => s.id === id);
@@ -773,6 +802,7 @@ function toastRaw(msg, action) {
 /* ---------- bannières ---------- */
 function backupDue() {
   if (!DB.classes.length) return null;
+  if (typeof syncConnected === 'function' && syncConnected() && SM.last && Date.now() - SM.last < 7 * 864e5) return null; // copie à jour dans OneDrive
   const lb = DB.settings.lastBackup, t = todayStr();
   if (!lb) return DB.obs.length ? 'never' : null;
   if ((parseD(t) - parseD(lb)) / 864e5 >= 7) return 'week';
@@ -1047,12 +1077,13 @@ function viewFiche() {
 /* ---------- vue : réglages ---------- */
 function viewSettings() {
   const tab = V.tab || 'classes';
-  const tabs = [['classes','Classes et élèves'],['edt','Emploi du temps'],['periodes','Périodes et vacances'],['sauvegarde','Sauvegarde']];
+  const tabs = [['classes','Classes et élèves'],['edt','Emploi du temps'],['periodes','Périodes et vacances'],['sauvegarde','Sauvegarde'],['sync','Synchronisation']];
   let body = '';
   if (tab === 'classes') body = setClasses();
   if (tab === 'edt') body = setEdt();
   if (tab === 'periodes') body = setPeriodes();
   if (tab === 'sauvegarde') body = setBackup();
+  if (tab === 'sync') body = setSync2();
   return `
   <header class="bar"><button class="btn ghost" data-act="home">${ICON.back}Accueil</button><div class="ttl"><h1>Réglages</h1></div><span class="grow"></span><span class="small muted">${versionLabel()}</span></header>
   <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${k === tab}" data-act="tab" data-tab="${k}">${l}</button>`).join('')}</nav>
@@ -1187,7 +1218,9 @@ function setBackup() {
       <p style="margin:0">Dernière sauvegarde : <strong>${lb ? fmtLong(lb) : 'jamais'}</strong></p>
       <p class="small muted" style="margin:0">Le fichier contient les listes, les photos, l'emploi du temps et toutes les observations. Rangez-le dans le OneDrive de l'établissement.</p>
       <div class="row"><button class="btn ink" data-act="backup">${ICON.save}Sauvegarder maintenant</button>
-      <span class="btn filebtn">Restaurer une sauvegarde<input type="file" accept=".txt,.json,text/plain,application/json" data-chg="restore" aria-label="Restaurer une sauvegarde"></span></div>
+      <span class="btn filebtn">Restaurer une sauvegarde<input type="file" accept=".txt,.json,text/plain,application/json" data-chg="restore" aria-label="Restaurer une sauvegarde"></span>
+      <span class="btn filebtn">Fusionner une sauvegarde<input type="file" accept=".txt,.json,text/plain,application/json" data-chg="merge-file" aria-label="Fusionner une sauvegarde"></span></div>
+      <p class="small muted" style="margin:0">« Fusionner » ajoute ce que contient le fichier (par exemple la sauvegarde de l'autre appareil) sans rien effacer ici. « Restaurer » remplace tout.</p>
       <p class="small muted" style="margin:0" id="persist-status">Protection du stockage : vérification…</p>
     </section>
     <section class="card danger-zone" style="display:flex;flex-direction:column;gap:10px">
@@ -1285,7 +1318,7 @@ function resizePhoto(file) {
   });
 }
 async function setPhoto(sid, file) {
-  try { const d = await resizePhoto(file); PHOTOS[sid] = d; if (STORAGE_OK) await Store.putPhoto(sid, d); return true; }
+  try { const d = await resizePhoto(file); PHOTOS[sid] = d; if (STORAGE_OK) await Store.putPhoto(sid, d); syncSoon(); return true; }
   catch (e) { return false; }
 }
 
@@ -1485,7 +1518,7 @@ async function commitTrombi() {
 }
 
 /* ---------- sauvegarde / restauration ---------- */
-const backupText = () => JSON.stringify({app:'suivi-classe', v:1, at: new Date().toISOString(), db: DB, photos: PHOTOS});
+const backupText = () => { syncTrack(); return JSON.stringify({app:'suivi-classe', v:1, at: new Date().toISOString(), db: DB, photos: PHOTOS, sync: SM.m}); };
 async function doBackup(mode) {
   const ok = await deliver(`suivi-classe-sauvegarde-${todayStr()}.txt`, backupText(), 'text/plain', mode);
   if (ok) { DB.settings.lastBackup = todayStr(); save(); closeModal(); render(); toast('Sauvegarde créée.'); }
@@ -1923,7 +1956,7 @@ function eyeBtn(compact) {
 }
 function tabBar(active) {
   const t = (k, l) => `<button class="tb" data-act="htab" data-t="${k}" ${active === k ? 'aria-current="page"' : ''}>${l}</button>`;
-  return `<nav class="appbar" aria-label="Onglets"><span class="brand" title="${versionLabel()}">Suivi de classe</span>${t('edt', 'Emploi du temps')}${t('suivi', 'Suivi')}${t('prog', 'Progression')}${t('salles', 'Salles')}<button class="tb" data-act="settings" data-tab="classes">Réglages</button><span class="grow"></span>${eyeBtn(false)}</nav>`;
+  return `<nav class="appbar" aria-label="Onglets"><span class="brand" title="${versionLabel()}">Suivi de classe</span>${t('edt', 'Emploi du temps')}${t('suivi', 'Suivi')}${t('prog', 'Progression')}${t('salles', 'Salles')}<button class="tb" data-act="settings" data-tab="classes">Réglages</button><span class="grow"></span>${syncPill()}${eyeBtn(false)}</nav>`;
 }
 
 /* panneau « à modifier » sur un îlot / une paillasse */
@@ -2500,7 +2533,7 @@ const ACT = {
   'om-grp': el => otherModal(el.dataset.cid, el.dataset.g),
   'om-go': el => { const d = otherDate(); closeModal(); openSession(sesOther(d, el.dataset.cid, el.dataset.g)); },
   'm-close': () => closeModal(),
-  demo: () => { loadDemo(); STORAGE_OK && Store.replaceAll(); render(); toast('Élèves fictifs chargés. Réglages › Sauvegarde › Tout effacer pour repartir de zéro.'); },
+  demo: () => { loadDemo(); if (syncConnected()) syncLogout(); resetSM(); STORAGE_OK && Store.replaceAll(); render(); toast('Élèves fictifs chargés. Réglages › Sauvegarde › Tout effacer pour repartir de zéro.'); },
   tile: el => openPanel(el.dataset.sid),
   'p-close': () => closeLayer(),
   'p-fiche': () => { const sid = P.sid; closeLayer(); go({name:'fiche', sid}); },
@@ -2568,6 +2601,7 @@ const ACT = {
     const data = PENDING_RESTORE; if (!data) return;
     DB = migrate(data.db); PHOTOS = data.photos || {}; PENDING_RESTORE = null;
     try { if (STORAGE_OK) await Store.replaceAll(); } catch (e) { toast('La restauration a échoué sur cet appareil.'); return; }
+    { const last = SM.last; resetSM(); SM.last = last; SM.dirty = true; persistSM(); syncSoon(500); }
     closeModal(); STACK = []; V = homeV(); render(); toast('Sauvegarde restaurée.');
   },
   wipe: () => openModal(`<h2>Tout effacer ?</h2><p>Classes, élèves, photos, emploi du temps et observations seront supprimés de cet appareil. Cette action est définitive.</p>
@@ -2576,6 +2610,7 @@ const ACT = {
   'wipe-go': async () => {
     if ($('#wipe-conf').value.trim().toUpperCase() !== 'EFFACER') { $('#wipe-conf').focus(); toast('Tapez EFFACER pour confirmer.'); return; }
     DB = freshDB(); PHOTOS = {}; if (STORAGE_OK) await Store.replaceAll();
+    if (syncConnected()) syncLogout(); resetSM();
     closeModal(); STACK = []; V = homeV(); render(); toast('Toutes les données ont été effacées.');
   },
   'sel-class': el => { V.cid = el.dataset.cid; V.imp = false; IMP = null; render(); },
@@ -2788,6 +2823,23 @@ const ACT = {
   'chap-open': el => chapModal(el.dataset.lvl),
   'chap-add': el => { const list = chaptersOf(el.dataset.lvl); list.push({n: list.reduce((m, x) => Math.max(m, x.n), 0) + 1, t: ''}); save(); chapModal(el.dataset.lvl); },
   'chap-del': el => { const lvl = el.dataset.lvl; DB.chapters[lvl] = chaptersOf(lvl).filter(x => x.n !== +el.dataset.n); save(); chapModal(lvl); render(); },
+  'sync-now': () => syncNow(true),
+  'sync-login': () => msLogin(false),
+  'sync-logout': () => { syncLogout(); render(); toast('Déconnecté de OneDrive. Les données restent sur cet appareil.'); },
+  'sy-copy': () => { const v = redirectUri(); (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => toast('Adresse copiée'), () => { $('#sy-uri').select(); toast('Sélectionnez puis copiez l\'adresse.'); }); },
+  'sy-save': () => {
+    const client = $('#sy-client').value.trim(), tenant = $('#sy-tenant').value.trim();
+    if (!/^[0-9a-f-]{36}$/i.test(client)) { toast("L'ID d'application doit ressembler à 3f2a1b4c-…- (36 caractères)."); $('#sy-client').focus(); return; }
+    if (!tenant || /\s/.test(tenant)) { toast("Indiquez l'ID de l'annuaire."); $('#sy-tenant').focus(); return; }
+    const old = syncCfg(); lsSet(SYNC_CFG_KEY, {client, tenant});
+    if (old && (old.client !== client || old.tenant !== tenant)) { TOK = {}; saveTok(); }
+    if (!syncConnected()) msLogin(false); else { render(); toast('Réglage enregistré.'); }
+  },
+  'sync-share': async () => {
+    const c = syncCfg(); if (!c) return; const url = redirectUri() + '#sync=' + encodeURIComponent(c.client + '~' + c.tenant);
+    try { if (navigator.share) { await navigator.share({title: 'Suivi de classe : configuration OneDrive', text: 'Ouvrir sur l\'autre appareil (dans Chrome) :', url}); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(url); toast('Lien copié : envoyez-le-vous (mail, message) et ouvrez-le sur l\'autre appareil.'); } catch (e) { toast(url); }
+  },
   stab: el => { V.stab = el.dataset.s; V.edit = false; V.selSid = null; closeLayer(); render(); $('.main')?.scrollTo(0, 0); },
   'dv-tap': el => {
     const sid = el.dataset.sid;
@@ -2841,6 +2893,7 @@ const CHG = {
   hol: el => { const h = DB.settings.holidays[+el.dataset.i]; const v = el.value.trim(); if (!v) return; h[el.dataset.f] = v; if (h.s && h.e && h.e < h.s) h.e = h.s; save(); },
   'period-date': el => { const p = DB.settings.periods[el.dataset.k][+el.dataset.i]; if (el.value) { p[el.dataset.f] = el.value; save(); } },
   restore: el => { const f = el.files[0]; if (f) restoreFrom(f); el.value = ''; },
+  'merge-file': el => { const f = el.files[0]; if (f) mergeBackupFile(f); el.value = ''; },
   'imp-file': el => { const f = el.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { let t = r.result; if (/\uFFFD/.test(t)) { const r2 = new FileReader(); r2.onload = () => { IMP = {text: r2.result, ...parseList(r2.result, V.cid)}; render(); }; r2.readAsText(f, 'windows-1252'); return; } IMP = {text: t, ...parseList(t, V.cid)}; render(); }; r.readAsText(f, 'utf-8'); },
   'ex-cid': el => exportModal(el.value),
   'hw-kind': el => { syncInputs(); CT.hw.kind = el.value; CT.hw.allq = true; renderContent(); },
@@ -2918,6 +2971,367 @@ async function showPersist() {
   catch (e) { el.textContent = ''; }
 }
 
+
+/* ---------- synchronisation : suivi des modifications, fusion, OneDrive ---------- */
+/* Chaque enregistrement (élève, observation, contenu de séance…) porte une date de modification.
+   Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
+   Les suppressions sont mémorisées pour ne pas réapparaître. */
+const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup'];
+const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters'];
+const SYNC_SET = ['evenIsA', 'holidays', 'periods'];
+let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
+const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});
+let SYNC = {state: 'off', busy: false, again: false, msg: '', rootOk: false};
+
+function fnv(str) {
+  let h1 = 0x811c9dc5, h2 = 0x01000193 ^ str.length;
+  for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h1 = Math.imul(h1 ^ c, 16777619); h2 = Math.imul(h2 ^ c, 2246822507); }
+  return (h1 >>> 0).toString(36) + (h2 >>> 0).toString(36);
+}
+const PH = new Map();
+function recHash(p, v) {
+  if (typeof v === 'string' && p.startsWith('photo:')) { const c = PH.get(p); if (c && c[0] === v) return c[1]; const h = fnv(v); PH.set(p, [v, h]); return h; }
+  return fnv(JSON.stringify(v));
+}
+function recordsOf(db, photos) {
+  const R = new Map();
+  SYNC_ARR.forEach(c => (db[c] || []).forEach(x => { if (x && x.id) R.set(c + ':' + x.id, x); }));
+  SYNC_MAP.forEach(c => Object.entries(db[c] || {}).forEach(([k, v]) => { if (v != null && !(Array.isArray(v) && !v.length)) R.set(c + ':' + k, v); }));
+  SYNC_SET.forEach(k => { if (db.settings && db.settings[k] !== undefined) R.set('settings:' + k, db.settings[k]); });
+  Object.entries(photos || {}).forEach(([k, v]) => R.set('photo:' + k, v));
+  return R;
+}
+function putRec(p, v) {
+  const i = p.indexOf(':'), c = p.slice(0, i), id = p.slice(i + 1);
+  if (SYNC_ARR.includes(c)) {
+    const a = DB[c] || (DB[c] = []); const j = a.findIndex(x => x && x.id === id);
+    if (v === undefined) { if (j >= 0) a.splice(j, 1); } else if (j >= 0) a[j] = v; else a.push(v);
+  } else if (SYNC_MAP.includes(c)) { const o = DB[c] || (DB[c] = {}); if (v === undefined) delete o[id]; else o[id] = v; }
+  else if (c === 'settings') { if (v !== undefined && SYNC_SET.includes(id)) DB.settings[id] = v; }
+  else if (c === 'photo') {
+    if (v === undefined) { delete PHOTOS[id]; if (STORAGE_OK) Store.delPhoto(id).catch(() => {}); }
+    else { PHOTOS[id] = v; if (STORAGE_OK) Store.putPhoto(id, v).catch(() => {}); }
+  }
+}
+/* relève les modifications depuis la dernière fois ; renvoie true s'il y en a */
+function syncTrack() {
+  const R = recordsOf(DB, PHOTOS), m = SM.m, now = Date.now(), base = !SM.init; let ch = false;
+  for (const [p, v] of R) { const h = recHash(p, v), x = m[p]; if (!x || x.d || x.h !== h) { m[p] = {t: base ? 1 : now, h}; ch = true; } }
+  for (const p in m) if (!m[p].d && !R.has(p)) { m[p] = {t: now, d: 1}; ch = true; }
+  if (base) { SM.init = true; ch = false; }
+  return ch;
+}
+const persistSM = () => STORAGE_OK && !IS_DEMO ? Store.run('kv', 'readwrite', s => s.put(JSON.parse(JSON.stringify(SM)), 'sync')).catch(() => {}) : Promise.resolve();
+function resetSM() { SM = freshSM(); PH.clear(); syncTrack(); persistSM(); }
+
+/* fusion avec l'état « distant » (fichier OneDrive ou sauvegarde) ; `got` : photos téléchargées {sid: dataURL} */
+function photosToFetch(remote) {
+  const out = [], fresh = !SM.last && !DB.classes.length;
+  Object.entries(remote.meta || {}).forEach(([p, rm]) => {
+    if (!p.startsWith('photo:') || rm.d) return; const lm = SM.m[p];
+    if (lm && lm.h === rm.h && !lm.d) return;
+    if (fresh || !lm || rm.t >= lm.t) out.push(p.slice(6));
+  });
+  return out;
+}
+function mergeWith(remote, got, opts = {}) {
+  if (syncTrack()) SM.dirty = true;
+  const R = recordsOf(DB, PHOTOS), L = SM.m, M = (remote && remote.meta) || {}, RR = (remote && remote.recs) || {};
+  const fresh = !!remote && !DB.classes.length && (!SM.last || !!opts.keepLocal);
+  const outMeta = {}, outRecs = {}, pushPhotos = [], delPhotos = [];
+  let changed = 0, needPush = !remote;
+  const paths = new Set([...Object.keys(L), ...Object.keys(M)]);
+  for (const p of paths) {
+    const lm = L[p], rm = M[p], isPhoto = p.startsWith('photo:');
+    let win;
+    if (fresh) win = rm ? 'R' : 'X';
+    else if (!rm) win = 'L';
+    else if (!lm) win = 'R';
+    else win = rm.t > lm.t ? 'R' : lm.t > rm.t ? 'L' : (opts.keepLocal ? 'L' : 'R');
+    if (win === 'X') { if (!lm.d) { putRec(p, undefined); changed++; } delete L[p]; continue; }
+    if (win === 'R') {
+      const same = lm && lm.h === rm.h && !!lm.d === !!rm.d;
+      if (!same) {
+        if (isPhoto && !rm.d) {
+          const v = got && got[p.slice(6)];
+          if (v == null) { outMeta[p] = rm; continue; } // photo pas encore téléchargée : on réessaiera
+          putRec(p, v);
+        } else putRec(p, rm.d ? undefined : RR[p]);
+        changed++;
+      }
+      L[p] = rm; outMeta[p] = rm; if (!rm.d && !isPhoto) outRecs[p] = RR[p];
+    } else {
+      outMeta[p] = lm; if (!lm.d && !isPhoto) outRecs[p] = R.get(p);
+      if (!rm || rm.t !== lm.t || rm.h !== lm.h || !!rm.d !== !!lm.d) {
+        needPush = true;
+        if (isPhoto && !lm.d) pushPhotos.push(p.slice(6));
+        if (isPhoto && lm.d && rm && !rm.d) delPhotos.push(p.slice(6));
+      }
+    }
+  }
+  if (changed) { SESS_CACHE = {}; if (!DB.rooms.length) DB.rooms = defaultRooms(); }
+  syncTrack(); // aligne les empreintes après application
+  return {changed, push: needPush ? {app: 'suivi-classe-sync', v: 1, at: Date.now(), recs: outRecs, meta: outMeta} : null, pushPhotos, delPhotos};
+}
+function afterApply(n) {
+  if (STORAGE_OK) Store.saveCore().catch(() => {});
+  if (!navValid(V)) { STACK = []; V = homeV(); }
+  if (!$('#modal').innerHTML && !$('#layer').innerHTML && !DRAG) renderKeep();
+  if (n && $('#toast').hidden) toast(`Mis à jour depuis l'autre appareil (${plural(n, 'modification')}).`);
+}
+
+/* ---------- compte Microsoft (connexion sans mot de passe stocké, PKCE) ---------- */
+const SYNC_CFG_KEY = 'suivi-classe-sync', TOK_KEY = 'suivi-classe-tok', PKCE_KEY = 'suivi-classe-pkce', SILENT_KEY = 'suivi-classe-silent';
+const SCOPES = 'https://graph.microsoft.com/Files.ReadWrite.AppFolder https://graph.microsoft.com/User.Read offline_access openid profile';
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const syncCfg = () => { const c = lsGet(SYNC_CFG_KEY); return c && c.client && c.tenant ? c : null; };
+let TOK = lsGet(TOK_KEY) || {};
+const saveTok = () => lsSet(TOK_KEY, TOK);
+const syncConnected = () => !IS_DEMO && !!syncCfg() && !!TOK.user;
+const redirectUri = () => location.origin + location.pathname.replace(/index\.html$/, '');
+const tokenUrl = () => `https://login.microsoftonline.com/${encodeURIComponent(syncCfg().tenant)}/oauth2/v2.0/token`;
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const randStr = n => b64u(crypto.getRandomValues(new Uint8Array(n)));
+function syncErr(kind, status, msg) { const e = new Error(msg || kind); e.kind = kind; e.status = status; return e; }
+
+async function msLogin(silent) {
+  const cfg = syncCfg(); if (!cfg) return;
+  if (!window.crypto || !crypto.subtle) { toast('Connexion impossible : ouvrez l\'app depuis son adresse https.'); return; }
+  const verifier = randStr(32), state = randStr(16);
+  const challenge = b64u(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+  lsSet(PKCE_KEY, {verifier, state, silent: !!silent, t: Date.now()});
+  const p = new URLSearchParams({client_id: cfg.client, response_type: 'code', redirect_uri: redirectUri(), response_mode: 'query', scope: SCOPES, state, code_challenge: challenge, code_challenge_method: 'S256'});
+  if (silent) { p.set('prompt', 'none'); if (TOK.user) p.set('login_hint', TOK.user); }
+  else { p.set('prompt', 'select_account'); }
+  saveNav();
+  location.assign(`https://login.microsoftonline.com/${encodeURIComponent(cfg.tenant)}/oauth2/v2.0/authorize?${p}`);
+}
+function authErrorText(err, desc) {
+  const d = String(desc || '');
+  if (/AADSTS90094|AADSTS65001|admin/i.test(d)) return "L'établissement demande l'accord d'un administrateur pour cette application. Transmettez la demande au service informatique.";
+  if (/AADSTS50011/.test(d)) return "L'adresse de retour ne correspond pas : vérifiez l'« URI de redirection » déclarée (Réglages › Synchronisation).";
+  if (/AADSTS700016|AADSTS90002|AADSTS900023/.test(d)) return "ID de l'application ou de l'annuaire introuvable : vérifiez-les dans Réglages › Synchronisation.";
+  if (/AADSTS9002326|AADSTS9002327/.test(d)) return "L'application doit être déclarée comme « Application monopage (SPA) » dans Microsoft Entra.";
+  if (err === 'access_denied') return 'Connexion annulée.';
+  return 'Connexion à OneDrive impossible' + (d ? ' : ' + d.split(/\r?\n/)[0].slice(0, 160) : '.');
+}
+function setTokens(j) {
+  const now = Date.now();
+  TOK.at = j.access_token; TOK.exp = now + (j.expires_in || 3600) * 1000;
+  if (j.refresh_token) { TOK.rt = j.refresh_token; TOK.rtExp = now + (j.refresh_token_expires_in || 86400) * 1000; }
+  if (j.id_token) {
+    try { const b = j.id_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); const pl = JSON.parse(decodeURIComponent(escape(atob(b)))); TOK.user = pl.preferred_username || pl.email || TOK.user || 'compte'; TOK.name = pl.name || TOK.name; }
+    catch (e) { TOK.user = TOK.user || 'compte'; }
+  }
+  if (!TOK.user) TOK.user = 'compte';
+  saveTok();
+}
+async function handleAuthRedirect() {
+  const q = new URLSearchParams(location.search);
+  if (!q.has('state') || !(q.has('code') || q.has('error'))) return false;
+  history.replaceState(null, '', location.pathname + location.hash);
+  const pk = lsGet(PKCE_KEY); lsSet(PKCE_KEY, null);
+  if (!pk || pk.state !== q.get('state') || !syncCfg()) return false;
+  if (q.has('error')) {
+    if (pk.silent) setSync('relogin'); else setTimeout(() => toast(authErrorText(q.get('error'), q.get('error_description'))), 300);
+    return false;
+  }
+  try {
+    const body = new URLSearchParams({client_id: syncCfg().client, grant_type: 'authorization_code', code: q.get('code'), redirect_uri: redirectUri(), code_verifier: pk.verifier, scope: SCOPES});
+    const r = await fetch(tokenUrl(), {method: 'POST', body}); const j = await r.json().catch(() => ({}));
+    if (!r.ok) { setTimeout(() => toast(authErrorText(j.error, j.error_description)), 300); return false; }
+    setTokens(j); lsSet(SILENT_KEY, null);
+    if (!pk.silent) setTimeout(() => toast('Connecté à OneDrive. Première synchronisation…'), 300);
+    return true;
+  } catch (e) { setTimeout(() => toast('Connexion impossible : pas de réseau.'), 300); return false; }
+}
+const tokenUsable = () => (TOK.at && Date.now() < TOK.exp - 60000) || (TOK.rt && Date.now() < (TOK.rtExp || 0) - 60000);
+async function getToken() {
+  if (TOK.at && Date.now() < TOK.exp - 60000) return TOK.at;
+  if (TOK.rt && Date.now() < (TOK.rtExp || 0) - 60000) {
+    const r = await fetch(tokenUrl(), {method: 'POST', body: new URLSearchParams({client_id: syncCfg().client, grant_type: 'refresh_token', refresh_token: TOK.rt, scope: SCOPES})});
+    const j = await r.json().catch(() => ({}));
+    if (r.ok) { setTokens(j); return TOK.at; }
+    if (j.error === 'invalid_grant' || j.error === 'interaction_required') { TOK.rt = null; saveTok(); }
+    else throw syncErr('http', r.status);
+  }
+  throw syncErr('relogin');
+}
+function syncLogout() { TOK = {}; saveTok(); SYNC.rootOk = false; SM.etag = null; persistSM(); setSync('off'); }
+
+/* ---------- OneDrive : dossier réservé à l'app (Applications › nom de l'app) ---------- */
+const AR = 'https://graph.microsoft.com/v1.0/me/drive/special/approot';
+const SYNC_FILE = 'suivi-classe.json.gz';
+async function gfetch(url, opt = {}) {
+  const tok = await getToken();
+  const r = await fetch(url, {...opt, headers: {...(opt.headers || {}), Authorization: 'Bearer ' + tok}});
+  if (r.status === 401) { TOK.at = null; saveTok(); throw syncErr('relogin'); }
+  return r;
+}
+async function remoteItem(name) {
+  const r = await gfetch(`${AR}:/${encodeURIComponent(name)}`);
+  if (r.status === 404) return null;
+  if (!r.ok) throw syncErr('http', r.status);
+  return r.json();
+}
+async function remoteBlob(item) { const r = await fetch(item['@microsoft.graph.downloadUrl']); if (!r.ok) throw syncErr('http', r.status); return r.blob(); }
+async function remotePut(name, blob, etag, force) {
+  const url = `${AR}:/${encodeURIComponent(name)}:/content` + (etag || force ? '' : '?@microsoft.graph.conflictBehavior=fail');
+  const h = {'Content-Type': 'application/octet-stream'}; if (etag && !force) h['If-Match'] = etag;
+  const r = await gfetch(url, {method: 'PUT', headers: h, body: blob});
+  if (r.status === 412 || r.status === 409) return null;
+  if (!r.ok) throw syncErr('http', r.status);
+  return r.json();
+}
+const gz = async str => new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).blob();
+const gunz = async blob => new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).text();
+async function pool(list, n, fn) { const q = list.slice(); await Promise.all(Array.from({length: Math.min(n, q.length)}, async () => { while (q.length) await fn(q.shift()); })); }
+
+async function syncNow(manual) {
+  if (IS_DEMO || !syncConnected()) { if (manual) toast('Connectez d\'abord OneDrive (Réglages › Synchronisation).'); return; }
+  if (SYNC.busy) { SYNC.again = true; return; }
+  if (!navigator.onLine) { setSync('offline'); if (manual) toast('Pas de réseau : la synchronisation se fera au retour de la connexion.'); return; }
+  if (!tokenUsable()) { setSync('relogin'); if (manual) msLogin(false); return; }
+  SYNC.busy = true; setSync('run');
+  try {
+    if (!SYNC.rootOk) { const r = await gfetch(AR); if (!r.ok) throw syncErr('http', r.status); SYNC.rootOk = true; }
+    let total = 0;
+    for (let k = 0; k < 4; k++) {
+      if (syncTrack()) SM.dirty = true;
+      const item = await remoteItem(SYNC_FILE);
+      if (item && item.eTag === SM.etag && !SM.dirty) break;
+      let remote = null, got = {};
+      if (item) {
+        remote = JSON.parse(await gunz(await remoteBlob(item)));
+        if (!remote || remote.app !== 'suivi-classe-sync') throw syncErr('format');
+        await pool(photosToFetch(remote), 4, async sid => {
+          const it = await remoteItem('p-' + sid + '.txt'); if (it) got[sid] = await (await remoteBlob(it)).text();
+        });
+      }
+      const res = mergeWith(remote, got);
+      if (res.changed) { total += res.changed; afterApply(0); }
+      if (res.push) {
+        await pool(res.pushPhotos.filter(sid => PHOTOS[sid]), 3, sid => remotePut('p-' + sid + '.txt', new Blob([PHOTOS[sid]], {type: 'text/plain'}), null, true));
+        await pool(res.delPhotos, 3, sid => gfetch(`${AR}:/${encodeURIComponent('p-' + sid + '.txt')}`, {method: 'DELETE'}).catch(() => {}));
+        const out = await remotePut(SYNC_FILE, await gz(JSON.stringify(res.push)), item && item.eTag);
+        if (!out) continue; // l'autre appareil a écrit entre-temps : on recommence
+        SM.etag = out.eTag;
+      } else SM.etag = item ? item.eTag : null;
+      SM.dirty = false; break;
+    }
+    const wasDue = !!backupDue();
+    SM.last = Date.now(); await persistSM();
+    setSync('ok');
+    if (wasDue && V.name === 'today' && !$('#modal').innerHTML && !$('#layer').innerHTML) renderKeep();
+    if (total && $('#toast').hidden) toast(`Mis à jour depuis l'autre appareil (${plural(total, 'modification')}).`);
+    else if (manual) toast('Synchronisation terminée.');
+  } catch (e) {
+    persistSM();
+    if (e.kind === 'relogin') setSync('relogin');
+    else if (!e.kind || !navigator.onLine) setSync('offline');
+    else setSync('err', e.kind === 'format' ? 'Fichier de synchronisation illisible.' : e.status === 403 ? 'Accès refusé par OneDrive.' : e.status === 507 ? 'OneDrive est plein.' : 'Erreur OneDrive' + (e.status ? ' (' + e.status + ')' : '') + '.');
+    if (manual) toast(SYNC.state === 'relogin' ? 'Reconnexion à OneDrive nécessaire.' : SYNC.state === 'offline' ? 'Pas de réseau : nouvel essai plus tard.' : SYNC.msg);
+  } finally {
+    SYNC.busy = false;
+    if (SYNC.again) { SYNC.again = false; setTimeout(() => syncNow(), 800); }
+  }
+}
+let syncT = null;
+function syncSoon(delay = 2500) {
+  if (IS_DEMO) return; clearTimeout(syncT);
+  syncT = setTimeout(() => { const ch = syncTrack(); if (ch) { SM.dirty = true; persistSM(); } if ((ch || SM.dirty) && syncConnected()) syncNow(); }, delay);
+}
+
+/* ---------- affichage de l'état ---------- */
+const hm = t => { const d = new Date(t); return d.getHours() + ' h ' + pad(d.getMinutes()); };
+function fmtSync(t) {
+  if (!t) return 'jamais';
+  const d = new Date(t), same = dstr(d) === todayStr();
+  return same ? hm(t) : d.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'}) + ', ' + hm(t);
+}
+const fmtSyncLong = t => t ? cap(new Date(t).toLocaleDateString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long'})) + ' à ' + hm(t) : 'jamais';
+function setSync(state, msg) {
+  SYNC.state = state; SYNC.msg = msg || '';
+  const p = $('#sync-pill'); if (p) p.outerHTML = syncPill();
+  const s = $('#sync-status'); if (s) s.outerHTML = syncStatusHTML();
+}
+function syncPill() {
+  if (IS_DEMO || !syncCfg()) return '<span id="sync-pill" hidden></span>';
+  if (!TOK.user) return `<button id="sync-pill" class="btn syncpill warn" data-act="settings" data-tab="sync">${ICON.sync}OneDrive non connecté</button>`;
+  const st = SYNC.state, l = fmtSync(SM.last);
+  const [cl, txt, act] = st === 'run' ? ['run', 'Synchronisation…', 'sync-now']
+    : st === 'relogin' ? ['warn', 'Reconnecter OneDrive', 'sync-login']
+    : st === 'offline' ? ['warn', 'Hors ligne · synchro ' + l, 'sync-now']
+    : st === 'err' ? ['bad', 'Synchro en échec · ' + l, 'sync-now']
+    : ['ok', 'Synchronisé · ' + l, 'sync-now'];
+  const short = st === 'run' ? '…' : st === 'relogin' ? 'Reconnecter' : fmtSync(SM.last);
+  return `<button id="sync-pill" class="btn syncpill ${cl}" data-act="${act}" title="Dernière synchronisation : ${esc(fmtSyncLong(SM.last))}">${ICON.sync}<span class="sl">${esc(txt)}</span><span class="ss">${esc(short)}</span></button>`;
+}
+function syncStatusHTML() {
+  if (!syncConnected()) return '<div id="sync-status"></div>';
+  const st = SYNC.state;
+  const line = st === 'run' ? 'Synchronisation en cours…' : st === 'relogin' ? 'La connexion à OneDrive doit être renouvelée.' : st === 'offline' ? 'Pas de réseau pour le moment : les modifications seront envoyées au retour de la connexion.' : st === 'err' ? SYNC.msg : 'À jour.';
+  return `<div id="sync-status" class="syncbox ${st === 'err' ? 'bad' : st === 'relogin' || st === 'offline' ? 'warn' : 'ok'}">
+    <div><div class="lbl">Dernière synchronisation</div><div class="synclast">${esc(fmtSyncLong(SM.last))}</div><div class="small">${esc(line)}</div></div>
+    <div class="row">${st === 'relogin' ? '<button class="btn ink" data-act="sync-login">Se reconnecter</button>' : `<button class="btn ink" data-act="sync-now" ${st === 'run' ? 'disabled' : ''}>${ICON.sync}Synchroniser maintenant</button>`}</div></div>`;
+}
+function setSync2() {
+  if (IS_DEMO) return `<section class="card"><h3 style="font-size:17px">Synchronisation</h3><p class="muted">Indisponible dans la démo.</p></section>`;
+  const cfg = syncCfg() || {}, con = syncConnected();
+  const guide = `<details class="guide" ${cfg.client ? '' : 'open'}><summary>Première mise en place (une seule fois, environ 10 minutes)</summary><ol>
+      <li>Sur l'ordinateur ou la tablette, ouvrez <strong>entra.microsoft.com</strong> et connectez-vous avec votre compte de l'établissement.</li>
+      <li>Menu <strong>Applications › Inscriptions d'applications › Nouvelle inscription</strong>.</li>
+      <li>Nom : <strong>Suivi de classe</strong>. Types de comptes : <strong>Comptes dans cet annuaire d'organisation uniquement</strong>.</li>
+      <li>URI de redirection : choisissez <strong>Application monopage (SPA)</strong> et collez l'adresse ci-dessous. Cliquez sur <strong>Inscrire</strong>.</li>
+      <li>Menu <strong>API autorisées › Ajouter une autorisation › Microsoft Graph › Autorisations déléguées</strong> : cochez <strong>Files.ReadWrite.AppFolder</strong>, puis « Ajouter des autorisations ».</li>
+      <li>Revenez sur <strong>Vue d'ensemble</strong> : copiez l'<strong>ID d'application (client)</strong> et l'<strong>ID de l'annuaire (locataire)</strong> dans les deux cases ci-dessous.</li>
+      <li>Touchez <strong>Se connecter à OneDrive</strong> et acceptez. Sur le téléphone : « Envoyer la configuration », puis connectez-vous.</li></ol>
+      <p class="small muted">L'app n'a accès qu'à son propre dossier : <em>OneDrive › Applications › Suivi de classe</em>. Rien d'autre dans votre OneDrive.</p></details>`;
+  return `<section class="card" style="display:flex;flex-direction:column;gap:12px">
+      <h3 style="font-size:17px">Synchronisation OneDrive</h3>
+      ${con ? `<p style="margin:0">Connecté : <strong>${esc(TOK.name || TOK.user)}</strong> <span class="small muted">${esc(TOK.name ? TOK.user : '')}</span></p>${syncStatusHTML()}
+        <p class="small muted" style="margin:0">La synchronisation se fait à l'ouverture, quelques secondes après chaque modification et toutes les deux minutes. Ce qui est noté sur les deux appareils est additionné : rien n'est écrasé.</p>
+        <div class="row"><button class="btn" data-act="sync-share">Envoyer la configuration à un autre appareil</button><button class="btn ghost" data-act="sync-logout">Se déconnecter</button></div>`
+      : `<p style="margin:0" class="muted">Tablette et téléphone partagent les mêmes données, automatiquement, via votre OneDrive de l'établissement.</p>`}
+    </section>
+    <section class="card" style="display:flex;flex-direction:column;gap:10px">
+      <h3 style="font-size:17px">Réglage</h3>
+      ${guide}
+      <label class="f">Adresse de retour (URI de redirection) à déclarer
+        <span class="row" style="gap:8px;flex-wrap:nowrap"><input type="text" readonly value="${esc(redirectUri())}" id="sy-uri"><button class="btn" data-act="sy-copy">Copier</button></span></label>
+      <label class="f" for="sy-client">ID d'application (client)<input type="text" id="sy-client" value="${esc(cfg.client || '')}" placeholder="ex. 3f2a…-…" autocomplete="off" spellcheck="false"></label>
+      <label class="f" for="sy-tenant">ID de l'annuaire (locataire)<input type="text" id="sy-tenant" value="${esc(cfg.tenant || '')}" placeholder="ex. 8b1c…-…" autocomplete="off" spellcheck="false"></label>
+      <div class="row"><button class="btn ink" data-act="sy-save">${con ? 'Enregistrer' : 'Se connecter à OneDrive'}</button>${cfg.client && !con ? '<button class="btn" data-act="sync-share">Envoyer la configuration à un autre appareil</button>' : ''}</div>
+    </section>`;
+}
+/* lien de configuration reçu d'un autre appareil : …#sync=client.tenant */
+function readSyncLink() {
+  const m = /[#&]sync=([^&]+)/.exec(location.hash); if (!m) return false;
+  const [client, tenant] = decodeURIComponent(m[1]).split('~');
+  history.replaceState(null, '', location.pathname);
+  if (client && tenant) { lsSet(SYNC_CFG_KEY, {client, tenant}); return true; }
+  return false;
+}
+/* sauvegarde → fusion (sans rien écraser) */
+function mergeBackupFile(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    let data; try { data = JSON.parse(r.result); } catch (e) { data = null; }
+    if (!data || data.app !== 'suivi-classe' || !data.db) { toast("Ce fichier n'est pas une sauvegarde de Suivi de classe."); return; }
+    const d = migrate(data.db), ph = data.photos || {}, R = recordsOf(d, ph), recs = {}, meta = {}, got = {};
+    const sm = data.sync || {};
+    for (const [p, v] of R) { const h = recHash(p, v); const x = sm[p]; meta[p] = x && !x.d && x.h === h ? x : {t: 0, h}; if (p.startsWith('photo:')) got[p.slice(6)] = v; else recs[p] = v; }
+    Object.entries(sm).forEach(([p, x]) => { if (x.d && !meta[p]) meta[p] = x; });
+    const before = JSON.stringify([DB.obs.length, DB.students.length]);
+    const res = mergeWith({recs, meta}, got, {keepLocal: true});
+    SM.dirty = true; if (STORAGE_OK) Store.saveCore().catch(() => {}); persistSM(); render();
+    toast(res.changed ? `Sauvegarde fusionnée : ${plural(res.changed, 'élément')} ajouté${res.changed > 1 ? 's' : ''} ou mis à jour.` : 'Rien de nouveau dans cette sauvegarde.');
+    if (syncConnected()) syncSoon(500);
+  };
+  r.readAsText(file);
+}
+
 /* ---------- démarrage ---------- */
 async function init() {
   STORAGE_OK = await Store.open();
@@ -2925,6 +3339,16 @@ async function init() {
   if (IS_DEMO && !DB.classes.length) { loadDemo(); if (STORAGE_OK) Store.replaceAll().catch(() => {}); }
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
   if (!IS_DEMO && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (!IS_DEMO && STORAGE_OK) { try { const sm = await Store.run('kv', 'readonly', s => s.get('sync')); if (sm && sm.m) SM = Object.assign(freshSM(), sm); } catch (e) {} }
+  if (!IS_DEMO) syncTrack() && (SM.dirty = true), persistSM();
+  const gotLink = !IS_DEMO && readSyncLink();
+  /* connexion Microsoft à renouveler : on le fait discrètement à l'ouverture */
+  if (syncConnected() && !tokenUsable() && navigator.onLine && !/[?&](code|error)=/.test(location.search)) {
+    const last = lsGet(SILENT_KEY) || 0;
+    if (Date.now() - last > 30 * 60e3) { lsSet(SILENT_KEY, Date.now()); if (!IS_DEMO) restoreNav(); msLogin(true); return; }
+    SYNC.state = 'relogin';
+  }
+  const loggedNow = !IS_DEMO && await handleAuthRedirect();
   if (!DB.settings.catchInit && DB.classes.length) { backfillCatchups(); save(); }
   if (!IS_DEMO) restoreNav();
   render();
@@ -2934,6 +3358,16 @@ async function init() {
     if (!first && !IS_DEMO) toast(`Mise à jour installée : ${versionLabel().toLowerCase()}`);
   }
   setInterval(() => { if (V.name === 'today' && !$('#modal').innerHTML && document.visibilityState === 'visible') render(); }, 60000);
+  if (gotLink) { STACK = []; V = {name: 'settings', tab: 'sync'}; render(); toast('Configuration OneDrive reçue : touchez « Se connecter à OneDrive ».'); }
+  if (loggedNow && V.name === 'settings') render();
+  if (syncConnected()) {
+    if (SYNC.state === 'off') setSync('idle');
+    syncNow();
+    setInterval(() => { if (document.visibilityState === 'visible' && syncConnected()) syncNow(); }, 120000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && syncConnected() && Date.now() - SM.last > 20000) syncNow(); });
+    window.addEventListener('online', () => { if (syncConnected()) syncNow(); });
+    window.addEventListener('offline', () => { if (syncConnected()) setSync('offline'); });
+  }
 }
 init();
 </script>

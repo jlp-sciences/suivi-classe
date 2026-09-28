@@ -372,6 +372,17 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .blk{position:absolute;padding:8px 8px 6px;border-radius:9px;border:1px solid color-mix(in srgb,var(--cc) 40%,transparent);background:color-mix(in srgb,var(--cc) 17%,var(--surface));box-shadow:inset 0 4px 0 var(--cc);text-align:left;display:flex;flex-direction:column;gap:2px;overflow:hidden;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 .blk .bc{font-weight:700;font-size:15px;line-height:1.15;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .blk .bg{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blk .bch{font-weight:600;font-size:13px;color:var(--ink)}
+.blk.short .bch{font-size:12px}
+.blk.past .bch{color:var(--muted)}
+.hwb{display:inline-block;margin-right:5px;padding:0 6px;border-radius:5px;background:#F6D45A;color:#3D3000;font-size:11px;font-weight:700;vertical-align:1px;white-space:nowrap}
+.slot .hwb{font-size:12px;padding:1px 8px}
+#hovercard{position:fixed;z-index:60;width:330px;max-height:70vh;overflow:hidden;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.2);padding:12px 14px;pointer-events:none;font-size:14px;display:flex;flex-direction:column;gap:6px}
+#hovercard[hidden]{display:none}
+#hovercard .hvh{display:flex;align-items:center;gap:8px;font-size:16px}
+#hovercard .hvch{font-weight:600}
+#hovercard .hvsec ul{margin:4px 0 0;padding-left:18px}
+#hovercard .pglist{margin:0}
 .blk .chip{align-self:flex-start;font-size:12px;padding:1px 7px;margin-top:auto}
 .blk.short{padding:5px 7px 4px;gap:0}
 .blk.short .bc{font-size:14px}
@@ -541,7 +552,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.3', d: '2026-09-28'};
+const APP_VERSION = {n: '2.4', d: '2026-09-28'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -744,7 +755,7 @@ function go(v) { STACK.push(V); V = v; closeLayer(); render(); $('.main')?.scrol
 function back() { V = STACK.pop() || homeV(); closeLayer(); render(); }
 
 function render() {
-  const app = $('#app'); SESS_CACHE = {};
+  const app = $('#app'); SESS_CACHE = {}; if (typeof hideHover === 'function') { hideHover(); hovEl = null; }
   if (V.name === 'today') app.innerHTML = V.tab === 'prog' ? viewProg() : V.tab === 'suivi' ? viewSuivi() : V.tab === 'salles' ? viewSalles() : (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
   else if (V.name === 'grid') app.innerHTML = viewSession();
   else if (V.name === 'plan') app.innerHTML = viewPlan();
@@ -858,7 +869,7 @@ function slotCard(d, s, FM) {
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span></span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${st.k !== 'cancel' && hwDueAt(sesFromSlot(d, s)).length ? '<span class="hwb">Devoir à vérifier</span>' : ''}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
     ${right}</button></li>`;
 }
 
@@ -898,7 +909,7 @@ function viewWeek() {
       const w = 100 / nl;
       const g = x.group === 'all' ? 'Classe entière' : 'Demi-groupe ' + x.group;
       return `<button class="blk ${hasEval(DB.content[d + '|' + x.id]) ? 'has-eval' : ''} ${d < t ? 'past' : ''} ${isNow ? 'now' : ''} ${st.k === 'cancel' ? 'cancel' : ''} ${h < 58 ? 'short' : ''}" style="top:${top}px;height:${h}px;left:calc(${x._lane * w}% + 2px);width:calc(${w}% - 4px);--cc:${ccol(c)}" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + g + ', ' + fmtT(x.start))}">
-        <span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}</span><span class="bg">${(() => { const ct = DB.content[d + '|' + x.id]; const sm = contentSummary(ct, levelOf(c), true); return sm ? esc(sm) : fmtT(x.start) + ' – ' + fmtT(x.end); })()}</span>${hasEval(DB.content[d + '|' + x.id]) ? '<span class="evb">Évaluation</span>' : ''}${stateChip(st)}</button>`;
+        <span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${(() => { const ct = DB.content[d + '|' + x.id]; return ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''; })()}</span><span class="bg">${st.k !== 'cancel' && hwDueAt(sesFromSlot(d, x)).length ? '<span class="hwb">Devoir</span>' : ''}${(() => { const ct = DB.content[d + '|' + x.id]; const ty = ct && ct.items.length ? [...new Set(ct.items.map(i => (ITYPE[i.type] || ITYPE.autre).l.replace(' / bilan', '')))].join(', ') : ''; return ty ? esc(ty) : fmtT(x.start) + ' – ' + fmtT(x.end); })()}</span>${hasEval(DB.content[d + '|' + x.id]) ? '<span class="evb">Évaluation</span>' : ''}${stateChip(st)}</button>`;
     }).join('');
     return {head, body: `<div class="tt-col ${hi ? 'hi' : ''}" style="height:${H}px">${pastShade}${blocks}${nowLine}</div>`};
   });
@@ -2042,6 +2053,7 @@ function mergeChapters(a, b) {
   return out.sort((p, q) => p.n - q.n);
 }
 const chapScope = lvl => { const l = DB.classes.filter(c => levelOf(c) === lvl).map(c => c.name).sort((a, b) => a.localeCompare(b, 'fr', {numeric: true})); return l.length > 1 ? 'commune à ' + l.join(', ') : 'propre à ' + (l[0] || lvl); };
+const chapShort = (lvl, n) => { const c = chaptersOf(lvl).find(x => x.n === n); return 'Ch. ' + n + (c && c.t ? ' : ' + c.t : ''); };
 const levelOf = c => (c && (c.level || detectLevel(c.name))) || '';
 const chaptersOf = lvl => DB.chapters[lvl] || (DB.chapters[lvl] = []);
 const chapterLabel = (lvl, n) => { const c = chaptersOf(lvl).find(x => x.n === n); return 'Chapitre ' + n + (c && c.t ? ' · ' + c.t : ''); };
@@ -3386,6 +3398,42 @@ function mergeBackupFile(file) {
   };
   r.readAsText(file);
 }
+
+/* ---------- aperçu d'une séance au survol (ordinateur) ---------- */
+const CAN_HOVER = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
+let hovT = null, hovEl = null;
+function hideHover() { clearTimeout(hovT); hovT = null; const el = $('#hovercard'); if (el) el.hidden = true; }
+function sesPreviewHTML(d, x) {
+  const c = cls(x.cid); if (!c) return '';
+  const ses = {...sesFromSlot(d, x), start: x.start}, key = ses.key, ct = DB.content[key], lvl = levelOf(c);
+  const cancelled = !!DB.cancelled[key], started = sesStarted({date: d, start: x.start});
+  const items = itemsHTML(ct, started), due = cancelled ? [] : hwDueAt(ses);
+  let h = `<div class="hvh">${dot(c)}<strong>${esc(c.name)}${x.group !== 'all' ? ' · ' + x.group : ''}</strong><span class="grow"></span>${apprChip(key)}</div>
+    <div class="small muted">${cap(fmtDay(d))} · ${fmtT(x.start)} – ${fmtT(x.end)}${cancelled ? ' · <strong>annulé</strong>' : ''}</div>`;
+  if (ct && ct.ch != null) h += `<div class="hvch">${esc(chapShort(lvl, ct.ch))}</div>`;
+  if (items) h += `<ul class="pglist">${items}</ul>`;
+  if (due.length) h += `<div class="hvsec"><span class="hwb">À vérifier</span><ul>${due.map(q => `<li>${esc(hwText(q.h))} <span class="small muted">(donné le ${esc(dayShort(q.from.date))})</span></li>`).join('')}</ul></div>`;
+  if (ct && ct.hw.length) h += `<div class="hvsec"><span class="lbl" style="margin:0">Travail donné</span><ul>${ct.hw.map(q => `<li>${esc(hwText(q))} <span class="small muted">(${esc(hwDueLabel(q, ses, c.id, x.group))})</span></li>`).join('')}</ul></div>`;
+  if (ct && ct.note) h += `<p class="pgnote">${esc(ct.note)}</p>`;
+  if (!items && !(ct && ct.ch != null) && !due.length && !(ct && (ct.hw.length || ct.note))) h += '<p class="small muted" style="margin:6px 0 0">Rien de renseigné pour cette séance.</p>';
+  return h;
+}
+function showHover(b) {
+  if (!b.isConnected || $('#modal').innerHTML || $('#layer').innerHTML) return;
+  const x = DB.slots.find(s => s.id === b.dataset.slot); if (!x) return;
+  let el = $('#hovercard'); if (!el) { el = document.createElement('div'); el.id = 'hovercard'; el.setAttribute('role', 'tooltip'); document.body.appendChild(el); }
+  el.innerHTML = sesPreviewHTML(b.dataset.date, x); el.hidden = false;
+  const r = b.getBoundingClientRect(), w = el.offsetWidth, hh = el.offsetHeight;
+  const left = r.right + 10 + w < window.innerWidth ? r.right + 10 : Math.max(8, r.left - 10 - w);
+  el.style.left = left + 'px'; el.style.top = Math.max(8, Math.min(r.top, window.innerHeight - hh - 8)) + 'px';
+}
+document.addEventListener('mouseover', e => {
+  if (!CAN_HOVER) return;
+  const b = e.target.closest && e.target.closest('.blk[data-slot], .slot[data-slot]');
+  if (b === hovEl) return;
+  hideHover(); hovEl = b; if (b) hovT = setTimeout(() => showHover(b), 700);
+});
+['scroll', 'pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { hovEl = null; hideHover(); }, true));
 
 /* ---------- démarrage ---------- */
 async function init() {

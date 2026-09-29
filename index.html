@@ -386,6 +386,30 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .readybtn .dg{box-shadow:none;background:var(--line)}
 .readybtn[aria-pressed="true"]{background:#E4F4EA;border-color:#2E9E5B;color:#1D6B3D;font-weight:600}
 .readybtn[aria-pressed="true"] .dg{background:#2E9E5B}
+.pdot{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;font-style:normal;font-size:11px;font-weight:800;line-height:1;vertical-align:-3px;flex:none}
+.pdot.pr{background:rgba(217,48,37,.16);color:#B3261E;box-shadow:inset 0 0 0 1px rgba(217,48,37,.35)}
+.pdot.pg{background:rgba(46,158,91,.18);color:#1E7A45;box-shadow:inset 0 0 0 1px rgba(46,158,91,.4)}
+.pdot.py{width:12px;height:12px;background:rgba(242,193,46,.55);box-shadow:inset 0 0 0 1px rgba(200,150,20,.45);vertical-align:-1px}
+.blk.past .pdot{opacity:.75}
+.legend .pdot{margin:0 3px 0 5px}
+.readybtn .pdot{margin-right:2px}
+.hwitem.editing{outline:2px solid var(--ink);outline-offset:1px;border-radius:8px}
+.amens{display:inline-flex;gap:4px;margin-left:8px;vertical-align:middle}
+.amen{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;cursor:pointer;flex:none}
+.amen svg{width:15px;height:15px}
+.amen.pap{background:rgba(47,109,181,.12);color:#2F5E9E}
+.amen.pai{background:rgba(217,48,37,.10);color:#C0392B}
+.amen.pai svg{width:12px;height:12px}
+h1 .amen,h2 .amen{width:26px;height:26px}
+#amenpop{position:fixed;z-index:70;width:300px;max-width:calc(100vw - 16px);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.2);padding:10px 14px;font-size:15px}
+#amenpop[hidden]{display:none}
+#amenpop p{margin:8px 0 2px;white-space:pre-wrap}
+.amchip{gap:5px}.amchip svg{width:13px;height:13px}
+.amchip.pap{background:rgba(47,109,181,.12);color:#2F5E9E}.amchip.pai{background:rgba(217,48,37,.10);color:#C0392B}
+.amtg{display:inline-flex;gap:3px}
+.mini-tg{min-height:32px;padding:0 7px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.03em}
+.mini-tg.pap[aria-pressed="true"]{background:rgba(47,109,181,.14);color:#2F5E9E;border-color:rgba(47,109,181,.4)}
+.mini-tg.pai[aria-pressed="true"]{background:rgba(217,48,37,.12);color:#C0392B;border-color:rgba(217,48,37,.4)}
 .hwb{display:inline-block;margin-right:5px;padding:0 6px;border-radius:5px;background:#F6D45A;color:#3D3000;font-size:11px;font-weight:700;vertical-align:1px;white-space:nowrap}
 .slot .hwb{font-size:12px;padding:1px 8px}
 #hovercard{position:fixed;z-index:60;width:330px;max-height:70vh;overflow:hidden;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.2);padding:12px 14px;pointer-events:none;font-size:14px;display:flex;flex-direction:column;gap:6px}
@@ -563,10 +587,13 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.5', d: '2026-09-29'};
+const APP_VERSION = {n: '2.6', d: '2026-09-29'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.5C4.5 4.2 8 4 12 6c4-2 7.5-1.8 10-.5V19c-2.5-1.3-6-1.5-10 .5-4-2-7.5-1.8-10-.5z"/><path d="M12 6v13.5"/></svg>',
+  cross:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>',
   sync:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.3-4.9M4 13a8 8 0 0 0 14.3 4.9"/><path d="M20 4v5h-5M4 20v-5h5"/></svg>',
   back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',
   next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
@@ -694,6 +721,21 @@ const byName = (a, b) => (a.last + ' ' + a.first).localeCompare(b.last + ' ' + b
 const studentsOf = (cid, group = 'all') => DB.students.filter(s => s.cid === cid && (group === 'all' || s.group === group)).sort(byName);
 const hasGroups = cid => DB.students.some(s => s.cid === cid && (s.group === 'G1' || s.group === 'G2'));
 const groupLabel = g => g === 'all' ? 'Classe entière' : 'Demi-groupe ' + g;
+/* PAP (apprentissage) / PAI (santé) : symboles discrets, bulle avec le commentaire */
+const amenIcons = s => !s || (!s.pap && !s.pai) ? '' : `<span class="amens">${s.pap ? `<span class="amen pap" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAP : voir les aménagements" title="PAP">${ICON.book}</span>` : ''}${s.pai ? `<span class="amen pai" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAI : voir les informations" title="PAI">${ICON.cross}</span>` : ''}</span>`;
+function amenPop(el) {
+  const s = stu(el.dataset.sid); if (!s) return;
+  let b = $('#amenpop'); if (!b) { b = document.createElement('div'); b.id = 'amenpop'; b.setAttribute('role', 'dialog'); document.body.appendChild(b); }
+  if (!b.hidden && b.dataset.sid === s.id) { b.hidden = true; return; }
+  b.dataset.sid = s.id;
+  b.innerHTML = `<div class="row" style="gap:6px">${s.pap ? `<span class="chip amchip pap">${ICON.book}PAP</span>` : ''}${s.pai ? `<span class="chip amchip pai">${ICON.cross}PAI</span>` : ''}<span class="grow"></span><strong class="small">${esc(s.first)}</strong></div>
+    <p>${s.amen ? esc(s.amen) : '<span class="muted">Aucun commentaire. Ajoutez-le avec le crayon de la fiche ou des Réglages.</span>'}</p>`;
+  b.hidden = false;
+  const r = el.getBoundingClientRect(), w = b.offsetWidth, h = b.offsetHeight;
+  b.style.left = Math.max(8, Math.min(r.left - 10, window.innerWidth - w - 8)) + 'px';
+  b.style.top = (r.bottom + 8 + h < window.innerHeight ? r.bottom + 8 : Math.max(8, r.top - h - 8)) + 'px';
+}
+const hideAmen = () => { const b = $('#amenpop'); if (b) b.hidden = true; };
 const initials = s => ((s.first || '')[0] || '') + ((s.last || '')[0] || '');
 const photoHTML = s => PHOTOS[s.id] && !DB.settings.hidePhotos ? `<img src="${PHOTOS[s.id]}" alt="" draggable="false">` : `<span class="ini">${esc(initials(s))}</span>`;
 
@@ -766,7 +808,7 @@ function go(v) { STACK.push(V); V = v; closeLayer(); render(); $('.main')?.scrol
 function back() { V = STACK.pop() || homeV(); closeLayer(); render(); }
 
 function render() {
-  const app = $('#app'); SESS_CACHE = {}; if (typeof hideHover === 'function') { hideHover(); hovEl = null; }
+  const app = $('#app'); SESS_CACHE = {}; hideAmen(); if (typeof hideHover === 'function') { hideHover(); hovEl = null; }
   if (V.name === 'today') app.innerHTML = V.tab === 'prog' ? viewProg() : V.tab === 'suivi' ? viewSuivi() : V.tab === 'salles' ? viewSalles() : (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
   else if (V.name === 'grid') app.innerHTML = viewSession();
   else if (V.name === 'plan') app.innerHTML = viewPlan();
@@ -880,16 +922,17 @@ function slotCard(d, s, FM) {
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${st.k !== 'cancel' && hwDueAt(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="dy"></i>Devoir</span>' : ''}${st.k !== 'cancel' && DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready ? '<span class="dlab"><i class="dg"></i>Prête</span>' : ''}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwDueAt(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
     ${right}</button></li>`;
 }
 
-/* points en bas à droite d'un créneau : vert = séance prête, jaune = devoir à vérifier */
+/* pastilles en bas à droite d'un créneau : ! rouge = pas prête (à venir), ✓ vert = prête, jaune = devoir à vérifier */
 function slotDots(d, x, st) {
   if (st && st.k === 'cancel') return '';
   const ct = DB.content[d + '|' + x.id], ready = !!(ct && ct.ready), hw = hwDueAt(sesFromSlot(d, x)).length > 0;
-  if (!ready && !hw) return '';
-  return `<span class="bdots">${hw ? '<i class="dy" title="Devoir à vérifier"></i>' : ''}${ready ? '<i class="dg" title="Séance prête"></i>' : ''}</span>`;
+  const pend = !ready && !sesStarted({date: d, start: x.start});
+  if (!ready && !hw && !pend) return '';
+  return `<span class="bdots">${hw ? '<i class="pdot py" title="Devoir à vérifier"></i>' : ''}${ready ? '<i class="pdot pg" title="Séance prête">✓</i>' : pend ? '<i class="pdot pr" title="Séance pas encore prête">!</i>' : ''}</span>`;
 }
 /* ---------- vue : semaine ---------- */
 function viewWeek() {
@@ -943,7 +986,7 @@ function viewWeek() {
       <div></div>${cols.map(c => c.head).join('')}
       <div class="tt-times" style="height:${H}px">${hours.join('')}</div>${cols.map(c => c.body).join('')}
     </div></div>
-    <p class="small muted legend" style="margin:0">Toucher un créneau : ouvrir la séance · Appui long : le marquer comme annulé · <i class="dg"></i> séance prête · <i class="dy"></i> devoir à vérifier</p>`;
+    <p class="small muted legend" style="margin:0">Toucher un créneau : ouvrir la séance · Appui long : le marquer comme annulé · <i class="pdot pr">!</i> à préparer · <i class="pdot pg">✓</i> prête · <i class="pdot py"></i> devoir à vérifier</p>`;
   return `${tabBar('edt')}
   <header class="bar">
     <button class="btn icon-btn" data-act="week" data-n="-7" aria-label="Semaine précédente">${ICON.back}</button>
@@ -1021,7 +1064,7 @@ function renderPanel() {
     <div class="scroll">
       <div class="hd">
         <div class="avatar">${photoHTML(s)}</div>
-        <div style="flex:1 1 140px;min-width:0"><h2 id="p-name">${esc(s.first + ' ' + s.last)}</h2><div class="small muted">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
+        <div style="flex:1 1 140px;min-width:0"><h2 id="p-name">${esc(s.first + ' ' + s.last)}${amenIcons(s)}</h2><div class="small muted">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
         ${bilanMode() ? (() => { const pv = bilanStep(s.id, -1), nx = bilanStep(s.id, 1); const all = studentsOf(ses.cid, ses.group).filter(x => x.id === s.id || !isAbsentIn(ses.key, x.id)); const i = all.findIndex(x => x.id === s.id);
           return `<div class="pnav"><button class="btn icon-btn" data-act="p-step" data-d="-1" ${pv ? '' : 'disabled'} aria-label="Élève précédent">${ICON.back}</button><span class="small muted">${i + 1} / ${all.length}</span><button class="btn icon-btn" data-act="p-step" data-d="1" ${nx ? '' : 'disabled'} aria-label="Élève suivant">${ICON.next}</button></div>`; })() : ''}
         <button class="btn" data-act="p-fiche">Fiche</button>
@@ -1082,10 +1125,10 @@ function viewFiche() {
   return `
   <header class="bar">
     <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
-    <div class="ttl"><h1>${esc(s.first + ' ' + s.last)}</h1><div class="sub">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
+    <div class="ttl"><h1>${esc(s.first + ' ' + s.last)}${amenIcons(s)}</h1><div class="sub">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
     <span class="grow"></span>
     <div class="seg" role="group" aria-label="Période">${seg}</div>
-    <button class="btn" data-act="stu-edit" data-sid="${s.id}">Modifier</button>
+    <button class="btn icon-btn" data-act="stu-edit" data-sid="${s.id}" aria-label="Modifier l'élève" title="Modifier">${ICON.edit}</button>
     <button class="btn" data-act="export-stu">${ICON.down}Exporter</button>
   </header>
   <main class="main"><div class="fiche">
@@ -1138,9 +1181,10 @@ function setClasses() {
   const g1 = list.filter(s => s.group === 'G1').length, g2 = list.filter(s => s.group === 'G2').length;
   const rows = list.map(s => `<li><span class="thumb">${photoHTML(s)}</span>
       <span class="nm">${esc(s.last.toUpperCase())} ${esc(s.first)}</span>
+      <span class="amtg"><button type="button" class="mini-tg pap" data-act="stu-flag" data-f="pap" data-sid="${s.id}" aria-pressed="${!!s.pap}" title="PAP">PAP</button><button type="button" class="mini-tg pai" data-act="stu-flag" data-f="pai" data-sid="${s.id}" aria-pressed="${!!s.pai}" title="PAI">PAI</button></span>
       <select data-chg="group" data-sid="${s.id}" aria-label="Demi-groupe de ${esc(s.first)}"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select>
       <span class="btn filebtn" style="min-height:40px">Photo<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de ${esc(s.first)}"></span>
-      <button class="btn" style="min-height:40px" data-act="stu-edit" data-sid="${s.id}">Modifier</button>
+      <button class="btn icon-btn" style="min-height:40px;min-width:40px" data-act="stu-edit" data-sid="${s.id}" aria-label="Modifier ${esc(s.first)}" title="Modifier">${ICON.edit}</button>
       <button class="btn ghost" style="min-height:40px" data-act="del-stu" data-sid="${s.id}">Retirer</button></li>`).join('');
   const imp = V.imp ? importPanel(c) : '';
   return `<div class="split"><div>${left}</div><div style="display:flex;flex-direction:column;gap:14px;min-width:0">
@@ -1777,7 +1821,7 @@ function flagsBanner(pl, room, withLater) {
   if (!list.length) return '';
   const word = room.kind === 'ilots' ? 'Îlot' : 'Paillasse';
   const txt = list.map(([n, f]) => `<strong>${word} ${n} à modifier</strong>${f.r ? ' — ' + esc(f.r) : ''} <span class="small">(noté le ${fmtShort(f.d)})</span>`).join(' · ');
-  return `<div class="banner"><p>${txt}</p>${withLater ? '<button class="btn" data-act="plan-edit">Modifier le placement</button><button class="btn ghost" data-act="flags-later">Plus tard</button>' : ''}</div>`;
+  return `<div class="banner"><p>${txt}</p>${withLater ? '<button class="btn icon-btn" data-act="plan-edit" aria-label="Modifier le placement" title="Modifier le placement">' + ICON.edit + '</button><button class="btn ghost" data-act="flags-later">Plus tard</button>' : ''}</div>`;
 }
 function viewPlan() {
   const ctx = planCtx(), c = cls(ctx.cid), room = roomById(ctx.rid);
@@ -1967,7 +2011,7 @@ function viewSuivi() {
   const seg = (k, items, cur) => `<div class="seg" role="group">${items.map(([v, l]) => `<button type="button" data-act="${k}" data-v="${v}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join('')}</div>`;
   const body = rows.map(r => `<button class="srow" data-act="fiche-open" data-sid="${r.s.id}">
       <span class="thumb">${photoHTML(r.s)}</span>
-      <span class="nm">${esc(r.s.first)} <span class="muted">${esc(r.s.last)}</span></span>
+      <span class="nm">${esc(r.s.first)} <span class="muted">${esc(r.s.last)}</span>${amenIcons(r.s)}</span>
       <span class="muted small">${r.s.group || '—'}</span>
       <span class="num pos">+${r.pos}</span><span class="num neg">−${r.neg}</span><span class="num">${r.ras}</span><span class="num">${r.abs}</span>
       <span class="last small">${esc(r.last)}</span>
@@ -2176,7 +2220,7 @@ function renderContent() {
       <button type="button" class="btn icon-btn ghost" data-act="ct-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></div>
       <div class="row" style="gap:8px">${stSeg}</div>${rep}</li>`;
   }).join('');
-  const hws = d.hw.map((h, i) => `<li class="hwitem"><span>${esc(hwText(h))}</span><span class="small muted">${hwDueLabel(h, s, s.cid, s.group)}</span><button type="button" class="btn icon-btn ghost" data-act="hw-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></li>`).join('');
+  const hws = d.hw.map((h, i) => `<li class="hwitem ${CT.hw.edit === i ? 'editing' : ''}"><span>${esc(hwText(h))}</span><span class="small muted">${hwDueLabel(h, s, s.cid, s.group)}</span><button type="button" class="btn icon-btn ghost" data-act="hw-edit" data-i="${i}" aria-label="Modifier le devoir" title="Modifier">${ICON.edit}</button><button type="button" class="btn icon-btn ghost" data-act="hw-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></li>`).join('');
   const k = CT.hw.kind;
   const fld = (id, ph, w) => `<input type="text" id="${id}" placeholder="${ph}" style="${w ? 'max-width:' + w : ''}">`;
   let fields = '';
@@ -2212,9 +2256,9 @@ function renderContent() {
             const list = classSessions(s.cid), k = list.findIndex(x => x.key === s.key);
             const after = (k >= 0 ? list.slice(k + 1) : list.filter(x => x.date > s.date)).filter(x => !x.cancelled && compat(x.group, s.group)).slice(0, 16);
             if (!after.length) return '<option value="next">Pour la séance suivante</option>';
-            return after.map((x, n) => `<option value="${n ? x.key : 'next'}" ${CT.hw.due === (n ? x.key : 'next') ? 'selected' : ''}>${n ? '' : 'Séance suivante : '}${cap(dayShort(x.date))}${x.start !== '99:99' ? ', ' + fmtT(x.start) : ''}${x.group !== 'all' && x.group !== s.group ? '' : ''}${x.group === 'all' && s.group !== 'all' ? ' (classe entière)' : ''}</option>`).join('');
+            return after.map((x, n) => `<option value="${n ? x.key : 'next'}" ${CT.hw.due === (n ? x.key : 'next') || (!n && CT.hw.due === x.key) ? 'selected' : ''}>${n ? '' : 'Séance suivante : '}${cap(dayShort(x.date))}${x.start !== '99:99' ? ', ' + fmtT(x.start) : ''}${x.group !== 'all' && x.group !== s.group ? '' : ''}${x.group === 'all' && s.group !== 'all' ? ' (classe entière)' : ''}</option>`).join('');
           })()}</select>
-          <button type="button" class="btn" data-act="hw-add">Ajouter le devoir</button></div></div>
+          ${CT.hw.edit != null ? '<button type="button" class="btn ink" data-act="hw-add">Enregistrer le devoir</button><button type="button" class="btn ghost" data-act="hw-cancel">Annuler</button>' : '<button type="button" class="btn" data-act="hw-add">Ajouter le devoir</button>'}</div></div>
       <div><label class="lbl" for="ct-note" style="display:block">Commentaire <span style="text-transform:none;letter-spacing:0;font-weight:400">· visible par vous seul</span></label>
         <textarea id="ct-note" rows="3" data-inp="ct-note" placeholder="ex. Manqué de temps, bilan à reprendre · groupe agité après la récréation" style="margin-top:6px">${esc(d.note || '')}</textarea></div>
       ${other ? `<label class="check other"><input type="checkbox" id="ct-other" ${CT.other ? 'checked' : ''} data-act="ct-other"> Même contenu pour le ${other.group} (${fmtShort(other.date)}, ${fmtT(other.start)})</label>` : ''}
@@ -2434,7 +2478,7 @@ function detailHTML(ses) {
       <div class="pgdt"><span class="small muted">${rel}${s.group !== 'all' ? ' · ' + s.group : ''}</span><strong>${cap(fmtDay(s.date))}</strong><span class="small muted">${esc(s.label || '')}${s.cancelled ? ' · annulée' : ''}</span></div>
       <button class="btn icon-btn" data-act="pg-step" data-key="${nx ? nx.key : ''}" ${nx ? '' : 'disabled'} aria-label="Séance suivante">${ICON.next}</button>
       <span class="grow"></span>${apprChip(s.key)}
-      <button class="btn" data-act="pg-edit" data-key="${s.key}">Modifier</button>
+      <button class="btn icon-btn" data-act="pg-edit" data-key="${s.key}" aria-label="Modifier cette séance" title="Modifier">${ICON.edit}</button>
       <button class="btn icon-btn ghost" data-act="pg-close" aria-label="Fermer">${ICON.close}</button></div>
     <div class="lbl">Chapitre</div><p style="margin:0">${ct && ct.ch != null ? esc(chapterLabel(lvl, ct.ch)) : '<span class="muted">—</span>'}</p>
     <div class="lbl">Déroulé</div>${items ? `<ul class="pglist big">${items}</ul>` : '<p class="small muted" style="margin:0">Rien de renseigné.</p>'}
@@ -2479,7 +2523,7 @@ function viewHub() {
   const ses = V.ses;
   const ck = checkItems(ses);
   const rdy = !!(DB.content[ses.key] && DB.content[ses.key].ready);
-  return `${sesHeader(ses, `<button class="btn readybtn" data-act="ready-toggle" aria-pressed="${rdy}"><i class="dg"></i>${rdy ? 'Séance prête' : 'Marquer comme prête'}</button><button class="btn primary" data-act="hub-content">Modifier le contenu</button>`)}
+  return `${sesHeader(ses, `<button class="btn readybtn" data-act="ready-toggle" aria-pressed="${rdy}">${rdy ? '<i class="pdot pg">✓</i>Séance prête' : '<i class="pdot pr">!</i>Marquer comme prête'}</button><button class="btn primary icon-btn" data-act="hub-content" aria-label="Modifier le contenu de la séance" title="Modifier le contenu">${ICON.edit}</button>`)}
   <main class="main"><div class="wrap hub" style="max-width:1300px">
     <section class="card"><h2 class="h2s">Progression</h2>${progressHTML(ses)}</section>
     <div class="hubcol"><section class="card"><h2 class="h2s">À vérifier${ck.n ? ` <span class="chip warn">${ck.n}</span>` : ''}</h2>${checkListHTML(ses, ck)}</section>
@@ -2723,6 +2767,9 @@ const ACT = {
         <label class="f" for="se-group">Demi-groupe<select id="se-group"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select></label>
         <label class="f" for="se-cid">Classe<select id="se-cid">${opts}</select></label>
       </div>
+      <div class="row" style="gap:16px"><label class="check"><input type="checkbox" id="se-pap" ${s.pap ? 'checked' : ''}> <span class="amen pap">${ICON.book}</span> PAP <span class="small muted">(apprentissage)</span></label>
+        <label class="check"><input type="checkbox" id="se-pai" ${s.pai ? 'checked' : ''}> <span class="amen pai">${ICON.cross}</span> PAI <span class="small muted">(santé)</span></label></div>
+      <label class="f" for="se-amen">Commentaire PAP / PAI <span class="muted" style="font-weight:400">(visible par vous seul)</span><textarea id="se-amen" rows="3" placeholder="ex. dyslexie : ne pas pénaliser l'orthographe, tiers-temps · asthme : Ventoline dans le sac">${esc(s.amen || '')}</textarea></label>
       <p class="err" id="se-err" hidden></p>
       <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn ink" data-act="stu-save" data-sid="${s.id}">Enregistrer</button></div>`);
   },
@@ -2732,6 +2779,9 @@ const ACT = {
     if (!first || !last) { const e = $('#se-err'); e.textContent = 'Le prénom et le nom sont obligatoires.'; e.hidden = false; return; }
     const cid = $('#se-cid').value;
     s.first = first; s.last = last; s.group = $('#se-group').value;
+    if ($('#se-pap').checked) s.pap = true; else delete s.pap;
+    if ($('#se-pai').checked) s.pai = true; else delete s.pai;
+    const am = $('#se-amen').value.trim(); if (am) s.amen = am; else delete s.amen;
     if (cid && cid !== s.cid) { s.cid = cid; DB.obs.forEach(o => { if (o.sid === s.id) o.cid = cid; }); }
     save(); closeModal(); render(); toast('Élève modifié');
   },
@@ -2870,8 +2920,20 @@ const ACT = {
   'ct-st': el => { syncInputs(); const it = CT.data.items[+el.dataset.i]; it.st = it.st === el.dataset.v ? 'prev' : el.dataset.v; renderContent(); },
   'ct-other': el => { CT.other = el.checked; },
   'hw-allq': el => { syncInputs(); const nm = $('#hw-name') ? $('#hw-name').value : ''; CT.hw.allq = el.checked; renderContent(); if ($('#hw-name')) $('#hw-name').value = nm; },
-  'hw-add': () => { syncInputs(); const h = readHwForm(); if (!h) { toast('Complétez le devoir (page, numéros ou texte).'); return; } CT.data.hw.push(h); CT.hw.allq = true; CT.hw.due = 'next'; renderContent(); },
-  'hw-del': el => { syncInputs(); CT.data.hw.splice(+el.dataset.i, 1); renderContent(); },
+  'hw-add': () => { syncInputs(); const h = readHwForm(); if (!h) { toast('Complétez le devoir (page, numéros ou texte).'); return; }
+    if (CT.hw.edit != null && CT.data.hw[CT.hw.edit]) { h.id = CT.data.hw[CT.hw.edit].id; CT.data.hw[CT.hw.edit] = h; } else CT.data.hw.push(h);
+    CT.hw.edit = null; CT.hw.allq = true; CT.hw.due = 'next'; renderContent(); },
+  'hw-edit': el => {
+    syncInputs(); const i = +el.dataset.i, h = CT.data.hw[i]; if (!h) return;
+    CT.hw.edit = i; CT.hw.kind = h.kind; CT.hw.allq = h.all !== false;
+    CT.hw.due = h.dueKey || (h.due ? ((classSessions(CT.ses.cid).find(x => x.date === h.due && !x.cancelled && compat(x.group, CT.ses.group)) || {}).key || 'next') : 'next');
+    renderContent();
+    const f = {'hw-page': h.page, 'hw-nums': h.nums, 'hw-name': h.name, 'hw-from': h.from, 'hw-to': h.to, 'hw-what': h.what, 'hw-detail': h.detail, 'hw-text': h.text};
+    Object.entries(f).forEach(([id, v]) => { const e = $('#' + id); if (e && v != null) e.value = v; });
+    $('.hwform')?.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+  },
+  'hw-cancel': () => { syncInputs(); CT.hw.edit = null; CT.hw.due = 'next'; CT.hw.allq = true; renderContent(); },
+  'hw-del': el => { syncInputs(); CT.hw.edit = null; CT.data.hw.splice(+el.dataset.i, 1); renderContent(); },
   'ct-save': () => {
     syncInputs();
     const pending = $('#hw-kind') && readHwForm();
@@ -2911,6 +2973,8 @@ const ACT = {
   'chap-open': el => chapModal(el.dataset.lvl),
   'chap-add': el => { const list = chaptersOf(el.dataset.lvl); list.push({n: list.reduce((m, x) => Math.max(m, x.n), 0) + 1, t: ''}); save(); chapModal(el.dataset.lvl); },
   'chap-del': el => { const lvl = el.dataset.lvl; DB.chapters[lvl] = chaptersOf(lvl).filter(x => x.n !== +el.dataset.n); save(); chapModal(lvl); render(); },
+  'amen-pop': el => amenPop(el),
+  'stu-flag': el => { const x = stu(el.dataset.sid); if (!x) return; const f = el.dataset.f; if (x[f]) delete x[f]; else x[f] = true; save(); renderKeep(); },
   'ready-toggle': () => { const k = V.ses.key, ct = DB.content[k] || (DB.content[k] = {ch: null, items: [], hw: []}); if (ct.ready) { delete ct.ready; if (!ct.items.length && !ct.hw.length && ct.ch == null && !ct.note) delete DB.content[k]; } else ct.ready = true; SESS_CACHE = {}; save(); renderKeep(); toast(DB.content[k] && DB.content[k].ready ? 'Séance marquée prête' : 'Séance à nouveau en préparation'); },
   'sync-now': () => syncNow(true),
   'sync-login': () => msLogin(false),
@@ -3005,7 +3069,9 @@ const FORMS = {
 
 document.addEventListener('click', e => {
   if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopPropagation(); return; }
-  const el = e.target.closest('[data-act]'); if (!el) return;
+  const el = e.target.closest('[data-act]');
+  if (!e.target.closest('#amenpop') && (!el || el.dataset.act !== 'amen-pop')) hideAmen();
+  if (!el) return;
   const fn = ACT[el.dataset.act]; if (fn) fn(el, e);
 });
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
@@ -3455,6 +3521,7 @@ document.addEventListener('mouseover', e => {
   hideHover(); hovEl = b; if (b) hovT = setTimeout(() => showHover(b), 700);
 });
 ['scroll', 'pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { hovEl = null; hideHover(); }, true));
+document.addEventListener('scroll', () => hideAmen(), true);
 
 /* ---------- démarrage ---------- */
 async function init() {

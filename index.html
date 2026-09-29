@@ -375,6 +375,17 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .blk .bch{font-weight:600;font-size:13px;color:var(--ink)}
 .blk.short .bch{font-size:12px}
 .blk.past .bch{color:var(--muted)}
+.bdots{position:absolute;right:6px;bottom:6px;display:flex;gap:4px}
+.blk.short .bdots{bottom:4px;right:5px}
+.dg,.dy{display:inline-block;width:11px;height:11px;border-radius:50%;box-shadow:0 0 0 2px var(--surface);vertical-align:-1px}
+.dg{background:#2E9E5B}.dy{background:#F2C12E}
+.legend .dg,.legend .dy{margin:0 2px 0 4px;box-shadow:none}
+.dlab{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.readybox{min-height:44px;gap:8px}
+.readybtn{gap:8px}
+.readybtn .dg{box-shadow:none;background:var(--line)}
+.readybtn[aria-pressed="true"]{background:#E4F4EA;border-color:#2E9E5B;color:#1D6B3D;font-weight:600}
+.readybtn[aria-pressed="true"] .dg{background:#2E9E5B}
 .hwb{display:inline-block;margin-right:5px;padding:0 6px;border-radius:5px;background:#F6D45A;color:#3D3000;font-size:11px;font-weight:700;vertical-align:1px;white-space:nowrap}
 .slot .hwb{font-size:12px;padding:1px 8px}
 #hovercard{position:fixed;z-index:60;width:330px;max-height:70vh;overflow:hidden;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.2);padding:12px 14px;pointer-events:none;font-size:14px;display:flex;flex-direction:column;gap:6px}
@@ -552,7 +563,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.4', d: '2026-09-28'};
+const APP_VERSION = {n: '2.5', d: '2026-09-29'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -869,10 +880,17 @@ function slotCard(d, s, FM) {
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${st.k !== 'cancel' && hwDueAt(sesFromSlot(d, s)).length ? '<span class="hwb">Devoir à vérifier</span>' : ''}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${st.k !== 'cancel' && hwDueAt(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="dy"></i>Devoir</span>' : ''}${st.k !== 'cancel' && DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready ? '<span class="dlab"><i class="dg"></i>Prête</span>' : ''}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
     ${right}</button></li>`;
 }
 
+/* points en bas à droite d'un créneau : vert = séance prête, jaune = devoir à vérifier */
+function slotDots(d, x, st) {
+  if (st && st.k === 'cancel') return '';
+  const ct = DB.content[d + '|' + x.id], ready = !!(ct && ct.ready), hw = hwDueAt(sesFromSlot(d, x)).length > 0;
+  if (!ready && !hw) return '';
+  return `<span class="bdots">${hw ? '<i class="dy" title="Devoir à vérifier"></i>' : ''}${ready ? '<i class="dg" title="Séance prête"></i>' : ''}</span>`;
+}
 /* ---------- vue : semaine ---------- */
 function viewWeek() {
   const t = todayStr(), mon = mondayOf(V.date), FM = fillMap(), fd = focusDay();
@@ -909,7 +927,7 @@ function viewWeek() {
       const w = 100 / nl;
       const g = x.group === 'all' ? 'Classe entière' : 'Demi-groupe ' + x.group;
       return `<button class="blk ${hasEval(DB.content[d + '|' + x.id]) ? 'has-eval' : ''} ${d < t ? 'past' : ''} ${isNow ? 'now' : ''} ${st.k === 'cancel' ? 'cancel' : ''} ${h < 58 ? 'short' : ''}" style="top:${top}px;height:${h}px;left:calc(${x._lane * w}% + 2px);width:calc(${w}% - 4px);--cc:${ccol(c)}" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + g + ', ' + fmtT(x.start))}">
-        <span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${(() => { const ct = DB.content[d + '|' + x.id]; return ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''; })()}</span><span class="bg">${st.k !== 'cancel' && hwDueAt(sesFromSlot(d, x)).length ? '<span class="hwb">Devoir</span>' : ''}${(() => { const ct = DB.content[d + '|' + x.id]; const ty = ct && ct.items.length ? [...new Set(ct.items.map(i => (ITYPE[i.type] || ITYPE.autre).l.replace(' / bilan', '')))].join(', ') : ''; return ty ? esc(ty) : fmtT(x.start) + ' – ' + fmtT(x.end); })()}</span>${hasEval(DB.content[d + '|' + x.id]) ? '<span class="evb">Évaluation</span>' : ''}${stateChip(st)}</button>`;
+        <span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${(() => { const ct = DB.content[d + '|' + x.id]; return ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''; })()}</span><span class="bg">${(() => { const ct = DB.content[d + '|' + x.id]; const ty = ct && ct.items.length ? [...new Set(ct.items.map(i => (ITYPE[i.type] || ITYPE.autre).l.replace(' / bilan', '')))].join(', ') : ''; return ty ? esc(ty) : fmtT(x.start) + ' – ' + fmtT(x.end); })()}</span>${hasEval(DB.content[d + '|' + x.id]) ? '<span class="evb">Évaluation</span>' : ''}${stateChip(st)}${slotDots(d, x, st)}</button>`;
     }).join('');
     return {head, body: `<div class="tt-col ${hi ? 'hi' : ''}" style="height:${H}px">${pastShade}${blocks}${nowLine}</div>`};
   });
@@ -925,7 +943,7 @@ function viewWeek() {
       <div></div>${cols.map(c => c.head).join('')}
       <div class="tt-times" style="height:${H}px">${hours.join('')}</div>${cols.map(c => c.body).join('')}
     </div></div>
-    <p class="small muted" style="margin:0">Toucher un créneau : ouvrir la séance · Appui long : le marquer comme annulé.</p>`;
+    <p class="small muted legend" style="margin:0">Toucher un créneau : ouvrir la séance · Appui long : le marquer comme annulé · <i class="dg"></i> séance prête · <i class="dy"></i> devoir à vérifier</p>`;
   return `${tabBar('edt')}
   <header class="bar">
     <button class="btn icon-btn" data-act="week" data-n="-7" aria-label="Semaine précédente">${ICON.back}</button>
@@ -2202,7 +2220,7 @@ function renderContent() {
       ${other ? `<label class="check other"><input type="checkbox" id="ct-other" ${CT.other ? 'checked' : ''} data-act="ct-other"> Même contenu pour le ${other.group} (${fmtShort(other.date)}, ${fmtT(other.start)})</label>` : ''}
       <p class="err" id="ct-err" hidden></p>
     </div>
-    <div class="ft"><button class="btn" data-act="ct-close">Annuler</button><button class="btn ink" data-act="ct-save">Enregistrer</button></div>
+    <div class="ft"><label class="check readybox"><input type="checkbox" id="ct-ready" ${d.ready ? 'checked' : ''}> Séance prête <span class="small muted">(plus rien à ajouter)</span></label><span class="grow"></span><button class="btn" data-act="ct-close">Annuler</button><button class="btn ink" data-act="ct-save">Enregistrer</button></div>
   </aside>`;
 }
 function readHwForm() {
@@ -2222,12 +2240,13 @@ function syncInputs() {
   document.querySelectorAll('#layer [data-inp="ct-label"]').forEach(el => { const it = CT.data.items[+el.dataset.i]; if (it) it.label = el.value.trim(); });
   const t = $('#ct-title'); if (t && CT.data.ch != null) CT.titles[CT.data.ch] = t.value.trim();
   const hd = $('#hw-due'); if (hd) CT.hw.due = hd.value;
+  const rd = $('#ct-ready'); if (rd) { if (rd.checked) CT.data.ready = true; else delete CT.data.ready; }
   const n = $('#ct-note'); if (n) { const v = n.value.trim(); if (v) CT.data.note = v; else delete CT.data.note; }
 }
 function saveContent(fromCT) {
   const s = CT.ses, d = CT.data, lvl = levelOf(cls(s.cid));
   Object.entries(CT.titles).forEach(([n, t]) => { const ch = chaptersOf(lvl).find(x => x.n === +n); if (ch) ch.t = t; });
-  const empty = !d.items.length && !d.hw.length && d.ch == null && !d.note;
+  const empty = !d.items.length && !d.hw.length && d.ch == null && !d.note && !d.ready;
   if (empty) delete DB.content[s.key]; else DB.content[s.key] = d;
   const other = otherGroupSession(s);
   if (other && CT.other && !empty) {
@@ -2276,7 +2295,7 @@ function viewProg() {
     let status = '', cl = 'muted';
     if (s.cancelled) status = 'Annulé';
     else if (!ct || !ct.items.length) status = st ? 'Non renseigné' : 'Non préparé';
-    else if (!st) status = s.date === t ? "Aujourd'hui" : 'Prévu';
+    else if (!st) { status = ct.ready ? 'Prête' : s.date === t ? "Aujourd'hui" : 'Prévu'; if (ct.ready) cl = 'pos'; }
     else { const sts = ct.items.map(i => i.st); status = sts.every(x => x === 'done') ? 'Fait' : sts.some(x => x === 'not' || x === 'part') ? (sts.every(x => x === 'not') ? 'Pas fait' : 'En partie') : 'À renseigner'; cl = status === 'Fait' ? 'pos' : status === 'À renseigner' ? 'muted' : 'warn'; }
     const items = ct ? ct.items.map(it => `${ityChip(it.type)}${it.label ? ' <span>' + esc(it.label) + '</span>' : ''}${st && it.st && it.st !== 'done' && it.st !== 'prev' ? ` <span class="small st-${it.st}">(${it.st === 'part' ? 'en partie' : 'pas fait'})</span>` : ''}`).join(' ') : '';
     const given = ct && ct.hw.length ? ct.hw.map(h => `<span class="hwl"><b>${cap(esc(hwDueLabel(h, s, c.id, s.group)))}</b> : ${esc(hwText(h))}</span>`).join('') : '';
@@ -2459,7 +2478,8 @@ function sesHeader(ses, actions) {
 function viewHub() {
   const ses = V.ses;
   const ck = checkItems(ses);
-  return `${sesHeader(ses, `<button class="btn primary" data-act="hub-content">Modifier le contenu</button>`)}
+  const rdy = !!(DB.content[ses.key] && DB.content[ses.key].ready);
+  return `${sesHeader(ses, `<button class="btn readybtn" data-act="ready-toggle" aria-pressed="${rdy}"><i class="dg"></i>${rdy ? 'Séance prête' : 'Marquer comme prête'}</button><button class="btn primary" data-act="hub-content">Modifier le contenu</button>`)}
   <main class="main"><div class="wrap hub" style="max-width:1300px">
     <section class="card"><h2 class="h2s">Progression</h2>${progressHTML(ses)}</section>
     <div class="hubcol"><section class="card"><h2 class="h2s">À vérifier${ck.n ? ` <span class="chip warn">${ck.n}</span>` : ''}</h2>${checkListHTML(ses, ck)}</section>
@@ -2891,6 +2911,7 @@ const ACT = {
   'chap-open': el => chapModal(el.dataset.lvl),
   'chap-add': el => { const list = chaptersOf(el.dataset.lvl); list.push({n: list.reduce((m, x) => Math.max(m, x.n), 0) + 1, t: ''}); save(); chapModal(el.dataset.lvl); },
   'chap-del': el => { const lvl = el.dataset.lvl; DB.chapters[lvl] = chaptersOf(lvl).filter(x => x.n !== +el.dataset.n); save(); chapModal(lvl); render(); },
+  'ready-toggle': () => { const k = V.ses.key, ct = DB.content[k] || (DB.content[k] = {ch: null, items: [], hw: []}); if (ct.ready) { delete ct.ready; if (!ct.items.length && !ct.hw.length && ct.ch == null && !ct.note) delete DB.content[k]; } else ct.ready = true; SESS_CACHE = {}; save(); renderKeep(); toast(DB.content[k] && DB.content[k].ready ? 'Séance marquée prête' : 'Séance à nouveau en préparation'); },
   'sync-now': () => syncNow(true),
   'sync-login': () => msLogin(false),
   'sync-logout': () => { syncLogout(); render(); toast('Déconnecté de OneDrive. Les données restent sur cet appareil.'); },
@@ -3408,7 +3429,7 @@ function sesPreviewHTML(d, x) {
   const ses = {...sesFromSlot(d, x), start: x.start}, key = ses.key, ct = DB.content[key], lvl = levelOf(c);
   const cancelled = !!DB.cancelled[key], started = sesStarted({date: d, start: x.start});
   const items = itemsHTML(ct, started), due = cancelled ? [] : hwDueAt(ses);
-  let h = `<div class="hvh">${dot(c)}<strong>${esc(c.name)}${x.group !== 'all' ? ' · ' + x.group : ''}</strong><span class="grow"></span>${apprChip(key)}</div>
+  let h = `<div class="hvh">${dot(c)}<strong>${esc(c.name)}${x.group !== 'all' ? ' · ' + x.group : ''}</strong><span class="grow"></span>${ct && ct.ready && !cancelled ? '<span class="chip pos">Prête</span>' : ''}${apprChip(key)}</div>
     <div class="small muted">${cap(fmtDay(d))} · ${fmtT(x.start)} – ${fmtT(x.end)}${cancelled ? ' · <strong>annulé</strong>' : ''}</div>`;
   if (ct && ct.ch != null) h += `<div class="hvch">${esc(chapShort(lvl, ct.ch))}</div>`;
   if (items) h += `<ul class="pglist">${items}</ul>`;

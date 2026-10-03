@@ -249,6 +249,12 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .it.ilot .seats::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--line-2);pointer-events:none}
 .it.rot.ilot .seats{grid-auto-flow:column;row-gap:3px;column-gap:7px}
 .it.rot.ilot .seats::after{left:50%;right:auto;top:0;bottom:0;width:2px;height:auto;margin:0 0 0 -1px}
+.it.ilot6 .seats{grid-template-columns:1fr .65fr .65fr 1fr;grid-template-rows:1fr 1fr 1fr;grid-template-areas:"a t t d" "b t t e" "c c f f";gap:3px}
+.it.ilot6 .seats::before{content:"";grid-area:t;border-radius:6px;background:repeating-linear-gradient(45deg,var(--surface-2) 0 6px,transparent 6px 12px);border:1px dashed var(--line-2)}
+.it.ilot6 .seats > :nth-child(1){grid-area:a}.it.ilot6 .seats > :nth-child(2){grid-area:b}.it.ilot6 .seats > :nth-child(3){grid-area:d}
+.it.ilot6 .seats > :nth-child(4){grid-area:e}.it.ilot6 .seats > :nth-child(5){grid-area:c}.it.ilot6 .seats > :nth-child(6){grid-area:f}
+.it.rot.ilot6 .seats{grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr .65fr .65fr 1fr;grid-template-areas:"a b ." "t t c" "t t f" "d e ."}
+.it.rot.ilot6 .seats > :nth-child(3){grid-area:d}.it.rot.ilot6 .seats > :nth-child(4){grid-area:e}.it.rot.ilot6 .seats > :nth-child(5){grid-area:c}.it.rot.ilot6 .seats > :nth-child(6){grid-area:f}
 .it.simple .seats{grid-template-rows:1fr}
 .it.rot.simple .seats,.it.rot.double .seats{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
 .seat{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:0;display:flex;align-items:center;gap:4px;overflow:hidden;text-align:left;min-width:0;min-height:0;color:var(--ink);-webkit-touch-callout:none;user-select:none}
@@ -331,6 +337,13 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .tile.dv-on .nm{color:#3D3000}
 .dv-tag{position:absolute;left:6px;bottom:6px;padding:3px 9px;border-radius:8px;background:#F6D45A;color:#3D3000;font-weight:700;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .dv-tiles .tile{padding-bottom:8px}
+.tile.dv-done{border:3px solid rgba(46,158,91,.55);background:rgba(46,158,91,.08)}
+.dv-tag.ok{background:rgba(46,158,91,.85);color:#fff}
+.hwokbtn{gap:8px;background:var(--surface)}
+.hwokbtn[aria-pressed="true"]{border-color:rgba(46,158,91,.6);color:#1E7A45;font-weight:600}
+.srow.head .sh{border:none;background:none;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer;text-align:inherit;display:inline-flex;align-items:center;gap:3px}
+.srow.head .num.sh{justify-content:flex-end}
+.srow.head .sh.on{color:var(--ink)}
 .dvpick .dvb{min-height:56px;font-size:16px}
 .dvpick .dvb[aria-pressed="true"]{background:#F6D45A;color:#3D3000;border-color:#E2B41B}
 .stabs{gap:6px}
@@ -587,7 +600,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.6', d: '2026-09-29'};
+const APP_VERSION = {n: '2.7', d: '2026-10-02'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -612,7 +625,7 @@ const ICON = {
 const CATS = [
   ['participe','Participe','pos'],['moteur','Moteur/rice','pos'],['actif','Actif/ve','pos'],['question','Bonne question','pos'],
   ['aide','Aide un camarade','pos'],['soigne','Travail soigné','pos'],['progres','Progrès / effort','pos'],
-  ['materiel','Oubli de matériel','neg'],['devoir','Devoir non fait','neg'],['bavarde','Bavard/e','neg'],['samuse',"S'amuse",'neg'],
+  ['materiel','Oubli de matériel','neg'],['devoir','Devoir non fait','neg'],['bavarde','Bavard/e','neg'],['samuse',"S'amuse",'neg'],['agite','Agité/e','neg'],
   ['passif','Passif/ve','neg'],['retard','Retard','neg'],['securite','Sécurité TP','neg'],['comportement','Comportement','neg'],
   ['devoir_inc','Devoir incomplet','neg'],['devoir_bac','Devoir bâclé','neg'],
   ['ras','RAS','neu'],['absent','Absent/e','abs']
@@ -653,7 +666,7 @@ function defaultSettings() {
     }
   };
 }
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, hwOk:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 let STORAGE_OK = false;
@@ -664,8 +677,9 @@ function migrate(core) {
   ['classes','students','slots','obs'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
   if (!d.cancelled || typeof d.cancelled !== 'object') d.cancelled = {};
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
+  upgradeLabs(d.rooms);
   if (!Array.isArray(d.catchup)) d.catchup = [];
-  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
   /* nouvelle détection du niveau : on regroupe les listes de chapitres existantes */
@@ -1040,6 +1054,7 @@ function viewGrid() {
     : `<div class="empty"><p>Aucun élève dans ${ses.group === 'all' ? 'cette classe' : 'ce demi-groupe'}.</p><button class="btn" data-act="settings" data-tab="classes" data-cid="${c.id}">Ajouter des élèves</button></div>`;
   return `${sesHeader(ses, `${eyeBtn(true)}
     <button class="btn" data-act="export" data-cid="${c.id}">${ICON.down}Export</button>
+    <button class="btn" data-act="allactive">Tous actifs</button>
     <button class="btn primary" data-act="rasrest">${ICON.check}Reste de la classe : RAS</button>`)}
   <main class="main">${apprCard(ses)}${body}</main>
   <footer class="foot"><span>Toucher une photo : noter une observation (puis élève suivant)</span><span>Appui long : fiche de l'élève</span><span class="grow"></span><span>${present} présents · ${plural(abs, 'absent')} · ${Math.max(0, present - seen)} non observés</span></footer>`;
@@ -1649,7 +1664,7 @@ function loadDemo() {
     });
   }
   // plans d'exemple
-  const il = DB.rooms.find(r => r.kind === 'ilots'), pc5 = DB.rooms.find(r => r.name === 'PC 5');
+  const il = DB.rooms.find(r => sharedIlots(r)), pc5 = DB.rooms.find(r => r.name === 'PC 5');
   const p1 = getPlace(c5.id, 'G2', il, true); const r1 = randomPlacement(c5.id, 'G2', il); p1.g = r1.g; p1.upd = addDays(today, -7);
   p1.flags['3'] = {r: 'Bavardages', d: addDays(today, -5)};
   const s5 = studentsOf(c5.id, 'G2'); if (s5.length > 3) DB.sep[c5.id] = [[s5[1].id, s5[3].id]];
@@ -1677,8 +1692,20 @@ function loadDemo() {
 
 /* ---------- salles, plans, projection ---------- */
 const ROOM_W = 1000, ROOM_H = 620;
-const ITEM_DIM = {ilot: [190, 130], double: [240, 170], simple: [190, 78]};
-const ITEM_LABEL = {ilot: 'Îlot de 4', double: 'Paillasses face à face (vitre)', simple: 'Paillasse face au tableau'};
+const ITEM_DIM = {ilot: [184, 126], ilot6: [250, 175], double: [240, 170], simple: [190, 78]};
+const ITEM_LABEL = {ilot: 'Îlot de 4', ilot6: 'Îlot de 6 (personne dos au tableau)', double: 'Paillasses face à face (vitre)', simple: 'Paillasse face au tableau'};
+/* PC 1 : 4 îlots de 6 ; PC 2 à 4 : îlots de 4 « de côté » (tableau à gauche ou à droite des élèves) */
+function upgradeLabs(rooms) {
+  function ilots4Side(mkIt) { const a = []; [45, 240, 435].forEach(y => [100, 435, 770].forEach(x => a.push(mkIt('ilot', x, y, 1)))); return a; }
+  function ilots6(mkIt) { const a = []; [70, 370].forEach(y => [170, 580].forEach(x => a.push(mkIt('ilot6', x, y, 0)))); return a; }
+  rooms.forEach(r => {
+    if (r.labV2 || r.kind !== 'ilots') return;
+    let n = 0; const mkIt = (type, x, y, rot) => ({id: uid(), type, x, y, rot, nums: [++n]});
+    if (/^pc\s*1$/i.test(r.name.trim())) { r.items = ilots6(mkIt); r.labV2 = true; }
+    else if (/^pc\s*[234]$/i.test(r.name.trim())) { r.items = ilots4Side(mkIt); r.desk = {x: 250, y: 40}; r.labV2 = true; }
+  });
+}
+const sharedIlots = room => room.kind === 'ilots' && !room.items.some(it => it.type === 'ilot6');
 function defaultRooms() {
   let n;
   const mk = (name, kind, items) => ({id: uid(), name, kind, board: 'top', desk: {x: 840, y: 36}, items});
@@ -1686,17 +1713,18 @@ function defaultRooms() {
   const ilots = () => { n = 0; const a = []; [80, 265, 450].forEach(y => [70, 405, 740].forEach(x => a.push(it('ilot', x, y)))); return a; };
   const doubles = () => { n = 0; const a = []; [80, 350].forEach(y => [60, 380, 700].forEach(x => a.push(it('double', x, y)))); return a; };
   const simples = () => { n = 0; const a = []; [80, 230, 380].forEach(y => [30, 270, 510, 750].forEach(x => a.push(it('simple', x, y)))); return a; };
-  return [mk('PC 1', 'ilots', ilots()), mk('PC 2', 'ilots', ilots()), mk('PC 3', 'ilots', ilots()), mk('PC 4', 'ilots', ilots()),
+  const rooms = [mk('PC 1', 'ilots', ilots()), mk('PC 2', 'ilots', ilots()), mk('PC 3', 'ilots', ilots()), mk('PC 4', 'ilots', ilots()),
           mk('PC 5', 'paillasses', doubles()), mk('PC 6', 'paillasses', simples())];
+  upgradeLabs(rooms); return rooms;
 }
 const roomById = id => DB.rooms.find(r => r.id === id);
 const itemDims = it => { const [w, h] = ITEM_DIM[it.type]; return it.rot ? [h, w] : [w, h]; };
-const unitSize = it => it.type === 'ilot' ? 4 : 2;
-const unitWord = it => it.type === 'ilot' ? 'Îlot' : 'Paillasse';
+const unitSize = it => it.type === 'ilot6' ? 6 : it.type === 'ilot' ? 4 : 2;
+const unitWord = it => it.type === 'ilot' || it.type === 'ilot6' ? 'Îlot' : 'Paillasse';
 const kindLabel = r => r.kind === 'ilots' ? 'Îlots' : 'Paillasses';
 function roomUnits(room) { const u = []; room.items.forEach(it => it.nums.forEach(n => u.push({num: String(n), size: unitSize(it), it}))); return u.sort((a, b) => a.num - b.num); }
 const roomNums = room => new Set(roomUnits(room).map(u => u.num));
-const pkey = (cid, group, room) => `${cid}|${group}|${room.kind === 'ilots' ? 'ilots' : room.id}`;
+const pkey = (cid, group, room) => `${cid}|${group}|${sharedIlots(room) ? 'ilots' : room.id}`;
 function getPlace(cid, group, room, create) {
   const k = pkey(cid, group, room); let p = DB.place[k];
   if (!p && create) p = DB.place[k] = {g: {}, flags: {}, upd: null};
@@ -1728,7 +1756,7 @@ function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { co
 function randomPlacement(cid, group, room) {
   const ids = studentsOf(cid, group).map(s => s.id), units = roomUnits(room);
   if (!units.length) return null;
-  const size = room.kind === 'ilots' ? 4 : 2;
+  const size = units[0].size;
   let k = Math.min(units.length, Math.max(1, Math.ceil(ids.length / size)));
   while (k < units.length && units.slice(0, k).reduce((a, u) => a + u.size, 0) < ids.length) k++;
   const use = units.slice(0, k), cap = use.reduce((a, u) => a + u.size, 0), n = Math.min(ids.length, cap);
@@ -1767,7 +1795,7 @@ function unitHTML(room, it, num, o) {
   const conf = o.mode === 'plan' && o.conflicts && o.conflicts.has(num);
   const seats = []; let filled = 0;
   for (let i = 0; i < size; i++) { const s = validSid(members[i], o.cid, o.group); if (s) filled++; seats.push(seatHTML(s, num, i, o)); }
-  const noteBtn = o.mode === 'plan' && o.ses && !o.edit && filled > 1 ? `<button type="button" class="note" data-act="unit-note" data-num="${num}" aria-label="Noter ${it.type === 'ilot' ? "l'îlot" : 'le binôme'} ${num}">Noter</button>` : '';
+  const noteBtn = o.mode === 'plan' && o.ses && !o.edit && filled > 1 ? `<button type="button" class="note" data-act="unit-note" data-num="${num}" aria-label="Noter ${it.type !== 'double' && it.type !== 'simple' ? "l'îlot" : 'le binôme'} ${num}">Noter</button>` : '';
   const head = o.mode === 'proj' ? `<div class="uh">${word} ${num}</div>`
     : `<div class="uh" ${o.mode === 'plan' && !o.ro ? `data-long="unit" data-num="${num}"` : ''}>${word} ${num}${flag ? '<span class="fl">À modifier</span>' : ''}${conf ? '<span class="fl neg">À séparer</span>' : ''}${noteBtn}</div>`;
   return `<div class="un ${flag ? 'flag' : ''} ${conf ? 'conf' : ''}">${head}<div class="seats">${seats.join('')}</div></div>`;
@@ -1835,7 +1863,7 @@ function viewPlan() {
   let ban = '', nb = 0;
   if (!V.hideFlags) { const b = flagsBanner(pl, room, !!ctx.ses); if (b) { ban += b; nb++; } }
   if (conflicts.size) { ban += `<div class="banner bad"><p>Élèves à séparer placés ensemble : ${[...conflicts].map(n => (room.kind === 'ilots' ? 'îlot ' : 'paillasse ') + n).join(', ')}.</p></div>`; nb++; }
-  if (ctx.ses && room.kind !== 'ilots' && pl && pl.upd && pl.upd < ctx.ses.date && placed.size && !V.hideReuse) {
+  if (ctx.ses && !sharedIlots(room) && pl && pl.upd && pl.upd < ctx.ses.date && placed.size && !V.hideReuse) {
     ban += `<div class="banner ok"><p>Placement de la dernière séance repris (${fmtShort(pl.upd)}). Touchez « Placer » pour corriger.</p><button class="btn" data-act="plan-clear">Tout vider</button><button class="btn ghost" data-act="reuse-ok">OK</button></div>`; nb++;
   }
   if (!placed.size && studs.length && !edit) {
@@ -1867,7 +1895,7 @@ function viewPlan() {
   } else {
     head = `<header class="bar">
       <button class="btn ghost" data-act="back">${ICON.back}Salles</button>
-      <div class="ttl"><h1 class="row" style="gap:10px">${title}</h1><div class="sub">Placer les élèves · ${room.kind === 'ilots' ? 'composition commune à tous les labos à îlots' : 'placement propre à ce labo'}</div></div>
+      <div class="ttl"><h1 class="row" style="gap:10px">${title}</h1><div class="sub">Placer les élèves · ${sharedIlots(room) ? 'composition commune à tous les labos à îlots de 4' : 'placement propre à ce labo'}</div></div>
       <span class="grow"></span>${eyeBtn(true)}
       <button class="btn" data-act="proj-open">${ICON.proj}Projeter</button>
       <button class="btn ink" data-act="back">Terminé</button>
@@ -1905,7 +1933,7 @@ function viewRoomEdit() {
   <main class="main"><div class="wrap" style="max-width:1400px"><div class="plan-wrap">
     <aside class="unplaced" style="width:230px">
       <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:8px"><div class="lbl">Ajouter</div>
-        ${['ilot', 'double', 'simple'].map(t => `<button class="btn" style="justify-content:flex-start" data-act="room-add" data-type="${t}">+ ${ITEM_LABEL[t]}</button>`).join('')}</div>
+        ${['ilot', 'ilot6', 'double', 'simple'].map(t => `<button class="btn" style="justify-content:flex-start" data-act="room-add" data-type="${t}">+ ${ITEM_LABEL[t]}</button>`).join('')}</div>
       ${sel ? `<div class="card" style="padding:12px;display:flex;flex-direction:column;gap:8px"><div class="lbl">${unitWord(sel)} ${sel.nums.join(' et ')} sélectionné${sel.nums.length > 1 ? 'es' : ''}</div>
         <button class="btn" data-act="room-rot">Tourner de 90°</button><button class="btn danger" data-act="room-del-item">Supprimer</button></div>`
         : '<p class="small muted" style="margin:0">Touchez un élément pour le sélectionner.</p>'}
@@ -1913,7 +1941,7 @@ function viewRoomEdit() {
         <div class="seg" role="group" aria-label="Position du tableau" style="display:grid;grid-template-columns:1fr 1fr">${b('top', 'En haut')}${b('bottom', 'En bas')}${b('left', 'À gauche')}${b('right', 'À droite')}</div></div>
       <div class="card" style="padding:12px;display:flex;flex-direction:column;gap:8px"><div class="lbl">Type de labo</div>
         <div class="seg" role="group" aria-label="Type de labo"><button type="button" data-act="room-kind" data-k="ilots" aria-pressed="${room.kind === 'ilots'}">Îlots</button><button type="button" data-act="room-kind" data-k="paillasses" aria-pressed="${room.kind !== 'ilots'}">Paillasses</button></div>
-        <p class="small muted" style="margin:0">${room.kind === 'ilots' ? 'Les îlots composés pour un demi-groupe servent dans tous les labos à îlots.' : 'Les binômes sont placés pour ce labo seulement.'}</p></div>
+        <p class="small muted" style="margin:0">${sharedIlots(room) ? 'Les îlots de 4 composés pour un demi-groupe servent dans tous les labos à îlots de 4.' : room.kind === 'ilots' ? 'Ce labo a des îlots de 6 : il a sa propre composition.' : 'Les binômes sont placés pour ce labo seulement.'}</p></div>
       <button class="btn ghost" data-act="room-del" style="color:var(--neg)">Supprimer ce labo…</button>
     </aside>
     <div class="plan-main"><div id="room-canvas" ${roomBox(74 + 40, 'grid-bg')}>${renderRoom(room, {mode: 'edit', selItem: V.selItem})}</div></div>
@@ -1934,7 +1962,7 @@ const clampItem = it => { const [w, h] = itemDims(it); it.x = Math.max(0, Math.m
 function occupiedIn(room, nums) {
   nums = nums.map(String); let n = 0;
   Object.entries(DB.place).forEach(([k, pl]) => {
-    const suffix = room.kind === 'ilots' ? '|ilots' : '|' + room.id;
+    const suffix = sharedIlots(room) ? '|ilots' : '|' + room.id;
     if (!k.endsWith(suffix)) return;
     nums.forEach(num => (pl.g[num] || []).forEach(sid => { if (sid && stu(sid)) n++; }));
   });
@@ -1964,7 +1992,7 @@ function viewSalles() {
       ban = flagsBanner(pl, room, false);
       const conf = conflictNums(pl, sg.c.id, room);
       plan = renderRoom(room, {mode: 'plan', pl, cid: sg.c.id, group: sg.g, ro: true, conflicts: conf});
-      info = `${placed.size} placé${placed.size > 1 ? 's' : ''} sur ${n}` + (room.kind === 'ilots' ? ' · composition commune aux labos à îlots' : '');
+      info = `${placed.size} placé${placed.size > 1 ? 's' : ''} sur ${n}` + (sharedIlots(room) ? ' · composition commune aux labos à îlots de 4' : '');
     }
     right = `<div class="row" style="gap:10px"><h2 style="font-family:var(--serif);font-size:24px;margin-right:6px">${esc(room.name)}</h2><span class="chip neu">${kindLabel(room)}</span><span class="grow" style="flex:1"></span>
         <button class="btn" data-act="room-edit">Disposer la salle</button>
@@ -2004,9 +2032,9 @@ function viewSuivi() {
   });
   const nS = rows.filter(r => r.surv).length, nP = rows.filter(r => r.peu).length;
   if (V.sf === 'surv') rows = rows.filter(r => r.surv); else if (V.sf === 'peu') rows = rows.filter(r => r.peu);
-  const ss = V.ss || 'alpha';
-  if (ss === 'neg') rows.sort((a, b) => b.neg - a.neg || a.pos - b.pos || byName(a.s, b.s));
-  if (ss === 'least') rows.sort((a, b) => (a.pos + a.neg) - (b.pos + b.neg) || byName(a.s, b.s));
+  const sk = V.ssk || 'name', sd = V.ssd || (sk === 'name' ? 1 : -1);
+  rows.sort((a, b) => (sk === 'name' ? byName(a.s, b.s) : (a[sk] - b[sk])) * sd || byName(a.s, b.s));
+  const sh = (k, l, cl) => `<button type="button" class="sh ${cl || ''} ${sk === k ? 'on' : ''}" data-act="sui-sort" data-k="${k}" aria-label="Trier par ${l}">${l}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`;
   const chips = classes.map(x => `<button class="gchip" data-act="sui-c" data-cid="${x.id}" aria-pressed="${x.id === c.id}">${dot(x)}${esc(x.name)}</button>`).join('');
   const seg = (k, items, cur) => `<div class="seg" role="group">${items.map(([v, l]) => `<button type="button" data-act="${k}" data-v="${v}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join('')}</div>`;
   const body = rows.map(r => `<button class="srow" data-act="fiche-open" data-sid="${r.s.id}">
@@ -2019,12 +2047,12 @@ function viewSuivi() {
   return `${tabBar('suivi')}
   <main class="main"><div class="wrap" style="max-width:1300px">
     <div class="row" style="gap:6px">${chips}</div>
-    <div class="row">${seg('sui-p', periods.map((p, i) => [i, esc(p.n)]), V.sp)}${seg('sui-s', [['alpha', 'A → Z'], ['neg', 'Plus de négatifs'], ['least', 'Moins observés']], ss)}
+    <div class="row">${seg('sui-p', periods.map((p, i) => [i, esc(p.n)]), V.sp)}<span class="small muted">Touchez un titre de colonne pour trier.</span>
       <span class="grow" style="flex:1"></span>
       <button class="gchip" data-act="sui-f" data-v="surv" aria-pressed="${V.sf === 'surv'}"><span class="chip neg">${nS}</span> à surveiller</button>
       <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button></div>
     <section class="card stable-card">
-      <div class="srow head"><span></span><span>Élève</span><span>Gr.</span><span class="num">Positif</span><span class="num">Négatif</span><span class="num">RAS</span><span class="num">Abs.</span><span class="last">Dernière remarque</span><span></span></div>
+      <div class="srow head"><span></span>${sh('name', 'Élève')}<span>Gr.</span>${sh('pos', 'Positif', 'num')}${sh('neg', 'Négatif', 'num')}${sh('ras', 'RAS', 'num')}${sh('abs', 'Abs.', 'num')}<span class="last">Dernière remarque</span><span></span></div>
       ${body || '<p class="muted" style="padding:14px;margin:0">Aucun élève dans ce filtre.</p>'}
     </section>
     <p class="small muted" style="margin:0">À surveiller : 3 remarques négatives ou plus sur les 14 derniers jours. Peu observé : aucune remarque positive ou négative depuis 3 semaines. Toucher un élève : sa fiche.</p>
@@ -2157,7 +2185,7 @@ function hwDueAt(ses) {
     const ct = DB.content[p.key]; if (!ct || !ct.hw || !ct.hw.length) return;
     if (!compat(p.group, ses.group)) return;
     ct.hw.forEach(h => {
-      const target = hwTarget(h, p, ses.cid, ses.group);
+      const target = hwTarget(h, p, ses.cid, p.group === 'all' ? ses.group : p.group); // séance suivante du groupe qui a reçu le devoir
       if (target && target.key === ses.key) out.push({h, from: p});
     });
   });
@@ -2535,20 +2563,22 @@ function viewDevoirs() {
   const ses = V.ses, c = cls(ses.cid);
   const list = studentsOf(ses.cid, ses.group), compact = list.length > 24;
   const due = hwDueAt(ses);
-  const cnt = {devoir: 0, devoir_inc: 0, devoir_bac: 0}; let abs = 0;
+  const cnt = {devoir: 0, devoir_inc: 0, devoir_bac: 0}; let abs = 0, done = 0; const ok = !!DB.hwOk[ses.key];
+  const dg = new Set(due.map(d => d.from.group)), concerned = st => ses.group !== 'all' || !due.length || dg.has('all') || dg.has(st.group);
   const tiles = list.map(s => {
     const a = isAbsentIn(ses.key, s.id), dv = dvOf(ses.key, s.id);
-    if (a) abs++; if (dv) cnt[dv]++;
+    if (a) abs++; if (dv) cnt[dv]++; const fine = ok && !a && !dv && concerned(s); if (fine) done++;
     const name = compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`;
-    return `<button class="tile ${a ? 'is-absent' : ''} ${dv ? 'dv-on' : ''}" data-act="dv-tap" ${a ? '' : 'data-long="dv"'} data-sid="${s.id}" aria-pressed="${!!dv}" aria-label="${esc(s.first + ' ' + s.last)}${dv ? ' : ' + CAT[dv].l : ''}">
-      <span class="ph">${photoHTML(s)}${a ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${dv ? `<span class="dv-tag">${DV_SHORT[dv]}</span>` : ''}</span>
+    return `<button class="tile ${a ? 'is-absent' : ''} ${dv ? 'dv-on' : ''} ${fine ? 'dv-done' : ''}" data-act="dv-tap" ${a ? '' : 'data-long="dv"'} data-sid="${s.id}" aria-pressed="${!!dv}" aria-label="${esc(s.first + ' ' + s.last)}${dv ? ' : ' + CAT[dv].l : ''}">
+      <span class="ph">${photoHTML(s)}${a ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${dv ? `<span class="dv-tag">${DV_SHORT[dv]}</span>` : fine ? '<span class="dv-tag ok">Fait</span>' : ''}</span>
       <span class="nm">${name}</span></button>`;
   }).join('');
   const dates = [...new Set(due.map(d => fmtShort(d.from.date)))].join(', ');
-  const top = due.length ? `<div class="banner hw"><p><strong>Travail à vérifier :</strong> ${due.map(d => esc(hwText(d.h))).join(' · ')} <span class="small">(donné le ${dates})</span></p></div>`
-    : `<div class="banner ok"><p>Aucun travail n'était prévu pour cette séance. Vous pouvez tout de même noter un devoir non fait.</p></div>`;
+  const okBtn = `<button class="btn hwokbtn" data-act="hw-ok" aria-pressed="${ok}">${ok ? '<i class="pdot pg">✓</i>Le reste a fait ses devoirs' : 'Le reste a fait ses devoirs'}</button>`;
+  const top = due.length ? `<div class="banner hw"><p><strong>Travail à vérifier :</strong> ${due.map(d => esc(hwText(d.h))).join(' · ')} <span class="small">(donné le ${dates})</span></p>${okBtn}</div>`
+    : `<div class="banner ok"><p>Aucun travail n'était prévu pour cette séance. Vous pouvez tout de même noter un devoir non fait.</p>${ok ? okBtn : ''}</div>`;
   const tot = cnt.devoir + cnt.devoir_inc + cnt.devoir_bac;
-  const recap = tot ? [cnt.devoir && plural(cnt.devoir, 'non fait', 'non faits'), cnt.devoir_inc && plural(cnt.devoir_inc, 'incomplet'), cnt.devoir_bac && plural(cnt.devoir_bac, 'bâclé')].filter(Boolean).join(' · ') : 'Aucun devoir noté';
+  const recap = (done ? plural(done, 'fait', 'faits') + ' · ' : '') + (tot ? [cnt.devoir && plural(cnt.devoir, 'non fait', 'non faits'), cnt.devoir_inc && plural(cnt.devoir_inc, 'incomplet'), cnt.devoir_bac && plural(cnt.devoir_bac, 'bâclé')].filter(Boolean).join(' · ') : 'Aucun devoir non fait');
   const body = list.length ? `<div class="tiles dv-tiles ${compact ? 'compact' : ''}">${tiles}</div>` : `<div class="empty"><p>Aucun élève.</p></div>`;
   return `${sesHeader(ses, eyeBtn(true))}
   <main class="main">${top}${body}</main>
@@ -2702,10 +2732,22 @@ const ACT = {
     const key = V.ses.key, sid = P.sid;
     const isAbs = DB.obs.some(o => o.ses === key && o.sid === sid && o.cat === 'absent');
     if (isAbs) { removeObs(o => o.ses === key && o.sid === sid && o.cat === 'absent'); removeAutoCatch(sid, key); }
-    else { removeObs(o => o.ses === key && o.sid === sid && (o.cat === 'ras' || DV.has(o.cat))); addObs(sid, 'absent'); addAutoCatch(sid, V.ses); }
-    save(); closeLayer(); render();
+    else { removeObs(o => o.ses === key && o.sid === sid); addObs(sid, 'absent'); addAutoCatch(sid, V.ses); } // absent : exclusif
+    const nx = !isAbs && bilanMode() ? bilanStep(sid, 1) : null;
+    save(); closeLayer(); renderKeep(); if (nx) openPanel(nx);
   },
   'p-del': el => { removeObs(o => o.id === el.dataset.oid); save(); renderPanel(); render(); },
+  allactive: () => {
+    const ses = V.ses, key = ses.key, t = Date.now(); let n = 0;
+    studentsOf(ses.cid, ses.group).forEach(s => {
+      if (isAbsentIn(key, s.id) || DB.obs.some(o => o.ses === key && o.sid === s.id && o.cat === 'actif')) return;
+      removeObs(o => o.ses === key && o.sid === s.id && o.cat === 'ras'); addObs(s.id, 'actif', '', t); n++;
+    });
+    if (!n) { toast('Tous les présents sont déjà notés actifs.'); return; }
+    save(); renderKeep(); toast(plural(n, 'élève') + ' noté' + (n > 1 ? 's' : '') + ' Actif/ve');
+  },
+  'hw-ok': () => { const k = V.ses.key; if (DB.hwOk[k]) delete DB.hwOk[k]; else DB.hwOk[k] = true; save(); renderKeep(); },
+  'sui-sort': el => { const k = el.dataset.k, cur = V.ssk || 'name'; if (cur === k) V.ssd = -(V.ssd || (k === 'name' ? 1 : -1)); else { V.ssk = k; V.ssd = k === 'name' ? 1 : -1; } render(); },
   rasrest: () => {
     const ses = V.ses, sum = sesSummary(ses.key);
     const todo = studentsOf(ses.cid, ses.group).filter(s => { const r = sum[s.id]; return !r || !(r.pos || r.neg || r.ras || r.abs); });
@@ -2897,7 +2939,7 @@ const ACT = {
   },
   'room-del-item-go': () => {
     const room = roomById(V.rid), it = room.items.find(x => x.id === V.selItem); if (!it) return;
-    if (room.kind !== 'ilots') Object.entries(DB.place).forEach(([k, pl]) => { if (k.endsWith('|' + room.id)) it.nums.forEach(n => { delete pl.g[String(n)]; delete pl.flags[String(n)]; }); });
+    if (!sharedIlots(room)) Object.entries(DB.place).forEach(([k, pl]) => { if (k.endsWith('|' + room.id)) it.nums.forEach(n => { delete pl.g[String(n)]; delete pl.flags[String(n)]; }); });
     room.items = room.items.filter(x => x !== it); V.selItem = null; save(); closeModal(); render();
   },
   'room-board': el => { roomById(V.rid).board = el.dataset.b; save(); render(); },
@@ -3018,7 +3060,7 @@ const ACT = {
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
 /* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
-const UNDO_MSG = {'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+const UNDO_MSG = {'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
   'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'ch-share': 'Partage des chapitres modifié', 'sep-del': 'Paire retirée'};
@@ -3131,7 +3173,7 @@ async function showPersist() {
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
 const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup'];
-const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters'];
+const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk'];
 const SYNC_SET = ['evenIsA', 'holidays', 'periods'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
 const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});

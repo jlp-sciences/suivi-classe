@@ -587,6 +587,9 @@ table.prev td,table.prev th{padding:6px 8px;border-top:1px solid var(--line);tex
 .chkitem .hwm{font-weight:400}
 .repd{font-weight:700;color:var(--warn-ink)}
 .chkitem.is-rep{box-shadow:inset 3px 0 0 var(--sc-ck)}
+.chkitem.is-moved{opacity:.7;background:transparent !important;border:1px dashed var(--line-2)}
+.chkitem.is-moved .hwt{font-weight:500}
+.chkitem.is-moved .hwm{color:var(--ink-2);font-weight:600}
 .repbtn{min-height:36px;padding:0 12px;flex:none}
 .dvban{align-items:flex-start}
 .dvban .dvbl{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
@@ -664,7 +667,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.8', d: '2026-10-05'};
+const APP_VERSION = {n: '2.8.1', d: '2026-10-05'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -2319,12 +2322,13 @@ function hwDueAt(ses) {
     const ct = DB.content[p.key]; if (!ct) return;
     if (!compat(p.group, ses.group)) return;
     const g = p.group === 'all' ? ses.group : p.group; // groupe qui a reçu le devoir
+    /* groupes dont un report peut aboutir ici : un devoir donné en classe entière peut avoir été reporté par G1 ou G2 vers une séance en classe entière, et inversement */
+    const gs = p.group !== 'all' ? [p.group] : ses.group === 'all' ? ['all', 'G1', 'G2'] : [ses.group, 'all'];
     if (p.key !== ses.key) (ct.hw || []).forEach((h, i) => {
-      const id = h.id || p.key + '#' + i, mk = id + '@' + g, mv = moves[mk];
-      let t, rep = null;
-      if (mv) { t = resolve(mv.to, g); rep = mv.o; }
-      else { t = hwTargetRaw(h, p, ses.cid, g); if (t && t.cancelled) { rep = t.date; t = nextSession(ses.cid, t.key, g, false); } }
-      if (t && t.key === ses.key) out.push({h, from: p, id, mk, g, rep});
+      const id = h.id || p.key + '#' + i, hits = [];
+      gs.forEach(gg => { const mv = moves[id + '@' + gg]; if (!mv) return; const t = resolve(mv.to, gg); if (t && t.key === ses.key) hits.push({g: gg, rep: mv.o}); });
+      if (!moves[id + '@' + g]) { let t = hwTargetRaw(h, p, ses.cid, g), rep = null; if (t && t.cancelled) { rep = t.date; t = nextSession(ses.cid, t.key, g, false); } if (t && t.key === ses.key) hits.push({g, rep}); }
+      if (hits.length) out.push({h, from: p, id, mk: id + '@' + hits[0].g, mks: hits.map(x => id + '@' + x.g), g: hits[0].g, rep: hits.map(x => x.rep).filter(Boolean).sort()[0] || null});
     });
     (ct.chk || []).forEach(m => {
       const gm = p.group, mk = m.id + '@' + gm, mv = moves[mk];
@@ -2336,6 +2340,14 @@ function hwDueAt(ses) {
   });
   return out;
 }
+/* travail reporté depuis cette séance (reste affiché, grisé, avec « Annuler le report ») */
+function movedAway(ses) {
+  const out = [], seen = new Set(), moves = DB.hwMove || {};
+  const mine = Object.entries(moves).filter(([, mv]) => mv && mv.f === ses.key); if (!mine.length) return out;
+  const text = {}; classSessions(ses.cid).forEach(p => { const ct = DB.content[p.key]; if (!ct) return; (ct.hw || []).forEach((h, i) => { text[h.id || p.key + '#' + i] = hwText(h); }); (ct.chk || []).forEach(m => { text[m.id] = m.text; }); });
+  mine.forEach(([mk, mv]) => { const id = mk.slice(0, mk.lastIndexOf('@')); if (text[id] == null || seen.has(id)) return; seen.add(id); const t = classSessions(ses.cid).find(x => x.key === mv.to); out.push({mk, text: text[id], to: t ? t.date : null}); });
+  return out;
+}
 /* « donné le … » / « ajouté » · « reporté du … » */
 function dueMeta(d) {
   const a = d.man ? (d.src ? 'donné le ' + dayShort(d.src) : 'ajouté à la main') : 'donné le ' + dayShort(d.from.date);
@@ -2344,14 +2356,16 @@ function dueMeta(d) {
 /* liste du travail à vérifier, avec « Reporter » (onglets Contenu et Devoirs, fenêtre de contenu) */
 function dueListHTML(ses, due, opts) {
   opts = opts || {};
-  if (!due.length) return '';
+  const moved = movedAway(ses);
+  if (!due.length && !moved.length) return '';
   const dest = g => repDest(ses.cid, ses.key, g);
+  const mli = m => `<li class="hwitem chkitem is-moved"><span class="hwt">${esc(m.text)}<span class="small hwm">→ reporté${m.to ? ' au ' + esc(dayShort(m.to)) : ''}</span></span><button type="button" class="btn ghost repbtn" data-act="due-unrep" data-mk="${esc(m.mk)}">Annuler le report</button></li>`;
   const li = d => { const nx = dest(d.g);
     return `<li class="hwitem chkitem ${d.rep ? 'is-rep' : ''}"><span class="hwt">${esc(hwText(d.h))}<span class="small muted hwm">${dueMeta(d)}</span></span>
       ${nx ? `<button type="button" class="btn repbtn" data-act="due-rep" data-cid="${ses.cid}" data-key="${ses.key}" data-mk="${esc(d.mk)}" title="Reporter au ${esc(dayShort(nx.date))}">Reporter</button>` : ''}
       ${opts.del && d.man && d.from.key === ses.key ? `<button type="button" class="btn icon-btn ghost" data-act="chk-del" data-cid="${ses.cid}" data-key="${ses.key}" data-id="${esc(d.id)}" aria-label="Retirer">${ICON.close}</button>` : ''}</li>`; };
   const all = due.length > 1 && due.some(d => dest(d.g)) ? `<button type="button" class="btn repall" data-act="due-rep-all" data-cid="${ses.cid}" data-key="${ses.key}">Tout reporter</button>` : '';
-  return `<ul class="hwlist">${due.map(li).join('')}</ul>${all ? `<div class="row" style="justify-content:flex-end;margin-top:6px">${all}</div>` : ''}`;
+  return `<ul class="hwlist">${due.map(li).join('')}${moved.map(mli).join('')}</ul>${all ? `<div class="row" style="justify-content:flex-end;margin-top:6px">${all}</div>` : ''}`;
 }
 /* reporter une liste d'éléments (clés mk) de la séance ses ; confirmation si des élèves sont déjà pointés et que tout part */
 function doReport(ses, mks, confirmed) {
@@ -2365,7 +2379,7 @@ function doReport(ses, mks, confirmed) {
     return;
   }
   let last = null;
-  pick.forEach(d => { const nx = repDest(ses.cid, ses.key, d.g); if (!nx) return; DB.hwMove[d.mk] = {to: nx.key, o: d.rep || ses.date}; last = nx; });
+  pick.forEach(d => { const nx = repDest(ses.cid, ses.key, d.g); if (!nx) return; (d.mks || [d.mk]).forEach(mk => { const prev = DB.hwMove[mk]; DB.hwMove[mk] = {to: nx.key, o: d.rep || ses.date, f: ses.key, ...(prev ? {p: {to: prev.to, o: prev.o, f: prev.f}} : {})}; }); last = nx; });
   if (!last) { toast('Aucune séance suivante pour ce groupe.'); return; }
   if (!left) { removeObs(o => o.ses === ses.key && DV.has(o.cat)); delete DB.hwOk[ses.key]; }
   SESS_CACHE = {}; save();
@@ -2455,7 +2469,7 @@ function renderContent() {
   const sesF = {...(sesByKey(s.cid, s.key) || {}), key: s.key, cid: s.cid, group: s.group, date: s.date};
   const due = hwDueAt(sesF), past = pastHwOptions(sesF);
   const chkSec = `<section class="ctsec" style="--sc:var(--sc-ck)"><h3 class="sech">Travail à vérifier${due.length ? ` <span class="chip warn">${due.length}</span>` : ''} <span class="sub">· en début de séance</span></h3>
-        ${due.length ? dueListHTML(sesF, due, {del: true}) : '<p class="small muted" style="margin:0">Rien à vérifier pour l\'instant.</p>'}
+        ${dueListHTML(sesF, due, {del: true}) || '<p class="small muted" style="margin:0">Rien à vérifier pour l\'instant.</p>'}
         <div class="chkadd">
           ${past.length ? `<div class="row" style="gap:6px"><select id="chk-src" aria-label="Reprendre un devoir déjà donné" style="flex:1 1 260px;width:auto"><option value="">Reprendre un devoir déjà donné…</option>${past.map(o => `<option value="${esc(o.v)}">${esc(o.text)} · donné le ${esc(dayShort(o.date))}${o.group !== 'all' && o.group !== s.group ? ' (' + o.group + ')' : ''}</option>`).join('')}</select><button type="button" class="btn" data-act="chk-add" data-k="src">Ajouter</button></div>` : ''}
           <div class="row" style="gap:6px"><input type="text" id="chk-text" placeholder="Autre : classeur, correction signée, fiche à rendre…" style="flex:1 1 260px;width:auto" aria-label="Travail à vérifier (texte libre)"><button type="button" class="btn" data-act="chk-add" data-k="text">Ajouter</button></div>
@@ -2658,7 +2672,7 @@ function checkListHTML(ses, ck) {
   const sec = (title, items) => items ? `<div class="chksec"><div class="lbl">${title}</div><ul class="chklist">${items}</ul></div>` : '';
   const prevD = ck.prev ? fmtShort(ck.prev.date) : '';
   let h = '';
-  if (ck.hw.length) h += `<div class="chksec"><div class="lbl">Travail à vérifier</div>${dueListHTML(ses, ck.hw)}</div>`;
+  { const dl = dueListHTML(ses, ck.hw); if (dl) h += `<div class="chksec"><div class="lbl">Travail à vérifier</div>${dl}</div>`; }
   h += sec('Rattrapages en cours', ck.catch.map(c => line(stu(c.sid), esc(catchText(c)), `<button class="btn" data-act="catch-done" data-id="${c.id}">Rattrapé</button>`)).join(''));
   h += sec(`Devoirs le ${prevD}`, ck.dev.map(o => line(stu(o.sid), esc(CAT[o.cat].l) + (o.note ? ' · ' + esc(o.note) : ' · à vérifier aujourd\'hui'), `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
   h += sec(`Oubli de matériel le ${prevD}`, ck.mat.map(o => line(stu(o.sid), o.note ? esc(o.note) : 'À vérifier aujourd\'hui', `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
@@ -2783,7 +2797,9 @@ function viewDevoirs() {
       <span class="nm">${name}</span></button>`;
   }).join('');
   const okBtn = `<button class="btn hwokbtn" data-act="hw-ok" aria-pressed="${ok}">${ok ? '<i class="pdot pg">✓</i>Le reste a fait ses devoirs' : 'Le reste a fait ses devoirs'}</button>`;
-  const top = due.length ? `<div class="banner hw dvban"><div class="dvbl"><strong>Travail à vérifier</strong>${dueListHTML(ses, due)}</div>${okBtn}</div>`
+  const dl = dueListHTML(ses, due);
+  const top = due.length ? `<div class="banner hw dvban"><div class="dvbl"><strong>Travail à vérifier</strong>${dl}</div>${okBtn}</div>`
+    : dl ? `<div class="banner ok dvban"><div class="dvbl"><strong>Plus rien à vérifier aujourd'hui</strong>${dl}</div>${ok ? okBtn : ''}</div>`
     : `<div class="banner ok"><p>Aucun travail n'était prévu pour cette séance. Vous pouvez tout de même noter un devoir non fait.</p>${ok ? okBtn : ''}</div>`;
   const tot = cnt.devoir + cnt.devoir_inc + cnt.devoir_bac;
   const recap = (done ? plural(done, 'fait', 'faits') + ' · ' : '') + (tot ? [cnt.devoir && plural(cnt.devoir, 'non fait', 'non faits'), cnt.devoir_inc && plural(cnt.devoir_inc, 'incomplet'), cnt.devoir_bac && plural(cnt.devoir_bac, 'bâclé')].filter(Boolean).join(' · ') : 'Aucun devoir non fait');
@@ -3162,6 +3178,7 @@ const ACT = {
   'ct-open': () => openContent(V.ses),
   'due-rep': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (ses) doReport(ses, [el.dataset.mk]); },
   'due-rep-all': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (ses) doReport(ses, hwDueAt(ses).map(d => d.mk)); },
+  'due-unrep': el => { if (CT) syncInputs(); const mk = el.dataset.mk, mv = DB.hwMove[mk]; if (!mv) return; if (mv.p) DB.hwMove[mk] = mv.p; else delete DB.hwMove[mk]; SESS_CACHE = {}; save(); if (CT) renderContent(); renderKeep(); toast('Report annulé : le travail est de nouveau à vérifier ici'); },
   'due-rep-go': () => { const p = PENDREP; PENDREP = null; closeModal(); if (p) doReport(p.ses, p.mks, true); },
   'chk-add': el => {
     syncInputs(); const s = CT.ses;
@@ -3296,7 +3313,7 @@ const ACT = {
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
 /* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
-const UNDO_MSG = {'due-rep': 'Travail reporté', 'due-rep-all': 'Travail reporté', 'due-rep-go': 'Travail reporté', 'chk-add': 'Ajouté au travail à vérifier', 'chk-del': 'Retiré du travail à vérifier', 'cdt-toggle': 'Cahier de textes modifié', 'hv-ready': 'Séance modifiée', 'hv-cdt': 'Cahier de textes modifié', 'cdt-week': 'Cahier de textes modifié', 'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+const UNDO_MSG = {'due-unrep': 'Report annulé', 'due-rep': 'Travail reporté', 'due-rep-all': 'Travail reporté', 'due-rep-go': 'Travail reporté', 'chk-add': 'Ajouté au travail à vérifier', 'chk-del': 'Retiré du travail à vérifier', 'cdt-toggle': 'Cahier de textes modifié', 'hv-ready': 'Séance modifiée', 'hv-cdt': 'Cahier de textes modifié', 'cdt-week': 'Cahier de textes modifié', 'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
   'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'ch-share': 'Partage des chapitres modifié', 'sep-del': 'Paire retirée'};

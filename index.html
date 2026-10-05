@@ -587,6 +587,18 @@ table.prev td,table.prev th{padding:6px 8px;border-top:1px solid var(--line);tex
 .chkitem .hwm{font-weight:400}
 .repd{font-weight:700;color:var(--warn-ink)}
 .chkitem.is-rep{box-shadow:inset 3px 0 0 var(--sc-ck)}
+.vchk{display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;cursor:pointer;margin:-4px 0 -4px -4px}
+.vchk input{width:22px;height:22px;margin:0;accent-color:var(--pos);cursor:pointer}
+.chkitem.is-ok{opacity:.8}
+.chkitem.is-ok .hwt{font-weight:500}
+.okd{color:var(--pos-ink)}
+.sesttl{flex:1 1 220px}
+.obsd{color:var(--ink);font-weight:600}
+.chksec .lbl .rmlink{text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px}
+.rmlink{background:none;border:0;padding:4px 0;font:inherit;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.rmlist{margin-top:6px}
+.chkitem.is-rm{background:transparent !important;border:1px dashed var(--line-2);opacity:.85}
+.danger-t{color:var(--neg-ink);border-color:var(--neg-line)}
 .chkitem.is-moved{opacity:.7;background:transparent !important;border:1px dashed var(--line-2)}
 .chkitem.is-moved .hwt{font-weight:500}
 .chkitem.is-moved .hwm{color:var(--ink-2);font-weight:600}
@@ -667,7 +679,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.8.1', d: '2026-10-05'};
+const APP_VERSION = {n: '2.9', d: '2026-10-05'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -733,7 +745,7 @@ function defaultSettings() {
     }
   };
 }
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, hwOk:{}, hwMove:{}, cdt:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 let STORAGE_OK = false;
@@ -746,7 +758,7 @@ function migrate(core) {
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
   upgradeLabs(d.rooms);
   if (!Array.isArray(d.catchup)) d.catchup = [];
-  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'cdt'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
   /* nouvelle détection du niveau : on regroupe les listes de chapitres existantes */
@@ -1003,7 +1015,7 @@ function slotCard(d, s, FM) {
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwDueAt(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwPending(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
     ${right}</button></li>`;
 }
 
@@ -1017,7 +1029,7 @@ function cdtMissing() {
 }
 function slotDots(d, x, st) {
   if (st && st.k === 'cancel') return '';
-  const ct = DB.content[d + '|' + x.id], ready = !!(ct && ct.ready), hw = hwDueAt(sesFromSlot(d, x)).length > 0;
+  const ct = DB.content[d + '|' + x.id], ready = !!(ct && ct.ready), hw = hwPending(sesFromSlot(d, x)).length > 0;
   const pend = !ready && !sesStarted({date: d, start: x.start});
   return `<span class="bdots">${hw ? '<i class="pdot py" title="Devoir à vérifier"></i>' : ''}${cdtDot(d + '|' + x.id)}${ready ? '<i class="pdot pg" title="Séance prête">✓</i>' : pend ? '<i class="pdot pr" title="Séance pas encore prête">!</i>' : ''}</span>`;
 }
@@ -2314,7 +2326,7 @@ function hwTargetRaw(h, from, cid, group) {
 const repDest = (cid, key, g) => nextSession(cid, key, g, g === 'all');
 /* travail à vérifier à la séance `ses` : devoirs donnés avant, ajouts manuels, reports (DB.hwMove), séances annulées sautées.
    Chaque élément : {h, from, id, mk (clé de report), g (groupe), rep (date d'origine si reporté), man (ajout manuel), src} */
-function hwDueAt(ses) {
+function hwDueAt(ses, withRemoved) {
   const list = classSessions(ses.cid), out = [], moves = DB.hwMove || {};
   const resolve = (key, g) => { const t = list.find(x => x.key === key); if (!t) return null; return t.cancelled ? nextSession(ses.cid, t.key, g, g === 'all') : t; };
   list.forEach(p => {
@@ -2335,11 +2347,17 @@ function hwDueAt(ses) {
       let t, rep = null;
       if (mv) { t = resolve(mv.to, gm); rep = mv.o; }
       else { t = p; if (p.cancelled) { rep = p.date; t = nextSession(ses.cid, p.key, gm, gm === 'all'); } }
-      if (t && t.key === ses.key) out.push({h: {kind: 'autre', text: m.text}, from: p, id: m.id, mk, g: gm, rep, man: true, src: m.src || null});
+      if (t && t.key === ses.key) out.push({h: {kind: 'autre', text: m.text}, from: p, id: m.id, mk, mks: [mk], g: gm, rep, man: true, src: m.src || null});
     });
   });
-  return out;
+  /* états : vérifié (v) · retiré de la liste (x) · supprimé définitivement (d) */
+  const st = DB.hwSt || {};
+  out.forEach(d => { const k = d.mks.find(m => st[m]); const x = k ? st[k] : null; d.ok = !!(x && x.v); d.x = !!(x && x.x); d.gone = !!(x && x.d); });
+  return out.filter(d => !d.gone && (withRemoved || !d.x));
 }
+/* travail encore à vérifier (ni vérifié ni retiré) : pastille jaune, compteurs */
+const hwPending = ses => hwDueAt(ses).filter(d => !d.ok);
+function setHwSt(ses, mk, val) { const d = hwDueAt(ses, true).find(x => x.mk === mk); if (!d) return null; d.mks.forEach(k => { if (val) DB.hwSt[k] = val; else delete DB.hwSt[k]; }); return d; }
 /* travail reporté depuis cette séance (reste affiché, grisé, avec « Annuler le report ») */
 function movedAway(ses) {
   const out = [], seen = new Set(), moves = DB.hwMove || {};
@@ -2357,19 +2375,29 @@ function dueMeta(d) {
 function dueListHTML(ses, due, opts) {
   opts = opts || {};
   const moved = movedAway(ses);
-  if (!due.length && !moved.length) return '';
+  if (!due.length && !moved.length && !hwDueAt(ses, true).some(d => d.x)) return '';
   const dest = g => repDest(ses.cid, ses.key, g);
   const mli = m => `<li class="hwitem chkitem is-moved"><span class="hwt">${esc(m.text)}<span class="small hwm">→ reporté${m.to ? ' au ' + esc(dayShort(m.to)) : ''}</span></span><button type="button" class="btn ghost repbtn" data-act="due-unrep" data-mk="${esc(m.mk)}">Annuler le report</button></li>`;
-  const li = d => { const nx = dest(d.g);
-    return `<li class="hwitem chkitem ${d.rep ? 'is-rep' : ''}"><span class="hwt">${esc(hwText(d.h))}<span class="small muted hwm">${dueMeta(d)}</span></span>
-      ${nx ? `<button type="button" class="btn repbtn" data-act="due-rep" data-cid="${ses.cid}" data-key="${ses.key}" data-mk="${esc(d.mk)}" title="Reporter au ${esc(dayShort(nx.date))}">Reporter</button>` : ''}
-      ${opts.del && d.man && d.from.key === ses.key ? `<button type="button" class="btn icon-btn ghost" data-act="chk-del" data-cid="${ses.cid}" data-key="${ses.key}" data-id="${esc(d.id)}" aria-label="Retirer">${ICON.close}</button>` : ''}</li>`; };
-  const all = due.length > 1 && due.some(d => dest(d.g)) ? `<button type="button" class="btn repall" data-act="due-rep-all" data-cid="${ses.cid}" data-key="${ses.key}">Tout reporter</button>` : '';
-  return `<ul class="hwlist">${due.map(li).join('')}${moved.map(mli).join('')}</ul>${all ? `<div class="row" style="justify-content:flex-end;margin-top:6px">${all}</div>` : ''}`;
+  const at = `data-cid="${ses.cid}" data-key="${ses.key}"`;
+  const li = d => { const nx = !d.ok && dest(d.g);
+    return `<li class="hwitem chkitem ${d.rep ? 'is-rep' : ''} ${d.ok ? 'is-ok' : ''}"><label class="vchk" title="Vérifié"><input type="checkbox" data-act="due-ok" ${at} data-mk="${esc(d.mk)}" ${d.ok ? 'checked' : ''} aria-label="Vérifié"></label>
+      <span class="hwt">${esc(hwText(d.h))}<span class="small muted hwm">${d.ok ? '<b class="okd">Vérifié</b> · ' : ''}${dueMeta(d)}</span></span>
+      ${nx ? `<button type="button" class="btn repbtn" data-act="due-rep" ${at} data-mk="${esc(d.mk)}" title="Reporter au ${esc(dayShort(nx.date))}">Reporter</button>` : ''}
+      <button type="button" class="btn icon-btn ghost" data-act="due-x" ${at} data-mk="${esc(d.mk)}" aria-label="Retirer de la liste" title="Retirer de la liste (récupérable)">${ICON.close}</button></li>`; };
+  const open = due.filter(d => !d.ok);
+  const all = open.length > 1 && open.some(d => dest(d.g)) ? `<button type="button" class="btn repall" data-act="due-rep-all" ${at}>Tout reporter</button>` : '';
+  const rm = hwDueAt(ses, true).filter(d => d.x);
+  const rmLink = rm.length ? `<button type="button" class="rmlink" data-act="rm-toggle">${SHOWRM ? 'Masquer' : 'Afficher'} les devoirs retirés (${rm.length})</button>` : '';
+  const rmList = rm.length && SHOWRM ? `<ul class="hwlist rmlist">${rm.map(d => `<li class="hwitem chkitem is-rm"><span class="hwt">${esc(hwText(d.h))}<span class="small muted hwm">${dueMeta(d)}</span></span>
+      <button type="button" class="btn repbtn" data-act="due-restore" ${at} data-mk="${esc(d.mk)}">Remettre</button>
+      <button type="button" class="btn repbtn danger-t" data-act="due-purge" ${at} data-mk="${esc(d.mk)}">Supprimer définitivement</button></li>`).join('')}</ul>` : '';
+  const foot = all || rmLink ? `<div class="row" style="justify-content:space-between;margin-top:6px;gap:8px">${rmLink || '<span></span>'}${all}</div>` : '';
+  return `${due.length || moved.length ? `<ul class="hwlist">${due.map(li).join('')}${moved.map(mli).join('')}</ul>` : ''}${foot}${rmList}`;
 }
+let SHOWRM = false;
 /* reporter une liste d'éléments (clés mk) de la séance ses ; confirmation si des élèves sont déjà pointés et que tout part */
 function doReport(ses, mks, confirmed) {
-  const due = hwDueAt(ses), pick = due.filter(d => mks.includes(d.mk)); if (!pick.length) return;
+  const due = hwPending(ses), pick = due.filter(d => mks.includes(d.mk)); if (!pick.length) return;
   const left = due.length - pick.length;
   const marks = DB.obs.filter(o => o.ses === ses.key && DV.has(o.cat));
   if (!left && (marks.length || DB.hwOk[ses.key]) && !confirmed) {
@@ -2386,7 +2414,7 @@ function doReport(ses, mks, confirmed) {
   if (CT) renderContent(); renderKeep();
   toast(pick.length > 1 ? `Reporté au ${fmtShort(last.date)} (${pick.length} travaux)` : `Reporté au ${fmtShort(last.date)}`);
 }
-let PENDREP = null;
+let PENDREP = null, PENDPURGE = null;
 /* ajout manuel de travail à vérifier (enregistré tout de suite) */
 function addManualCheck(cid, key, text, src) {
   const ct = DB.content[key] || (DB.content[key] = {ch: null, items: [], hw: []});
@@ -2590,7 +2618,7 @@ function viewProg() {
     else { const sts = ct.items.map(i => i.st); status = sts.every(x => x === 'done') ? 'Fait' : sts.some(x => x === 'not' || x === 'part') ? (sts.every(x => x === 'not') ? 'Pas fait' : 'En partie') : 'À renseigner'; cl = status === 'Fait' ? 'pos' : status === 'À renseigner' ? 'muted' : 'warn'; }
     const items = ct ? ct.items.map(it => `${ityChip(it.type)}${it.label ? ' <span>' + esc(it.label) + '</span>' : ''}${st && it.st && it.st !== 'done' && it.st !== 'prev' ? ` <span class="small st-${it.st}">(${it.st === 'part' ? 'en partie' : 'pas fait'})</span>` : ''}`).join(' ') : '';
     const given = ct && ct.hw.length ? ct.hw.map(h => `<span class="hwl"><b>${cap(esc(hwDueLabel(h, s, c.id, s.group)))}</b> : ${esc(hwText(h))}</span>`).join('') : '';
-    const due = s.cancelled ? '' : hwDueAt({...s, cid: c.id}).map(d => `<span class="hwl hwv"><b>À vérifier</b> (${dueMeta(d)}) : ${esc(hwText(d.h))}</span>`).join('');
+    const due = s.cancelled ? '' : hwDueAt({...s, cid: c.id}).map(d => `<span class="hwl hwv"><b>${d.ok ? 'Vérifié ✓' : 'À vérifier'}</b> (${dueMeta(d)}) : ${esc(hwText(d.h))}</span>`).join('');
     const hw = given + due;
     const note = ct && ct.note ? `<span class="pnote">${esc(ct.note)}</span>` : '';
     const now = hi && s.key === hi.key;
@@ -2655,11 +2683,11 @@ function checkItems(ses) {
   const ids = new Set(studentsOf(ses.cid, ses.group).map(s => s.id));
   const out = {catch: [], mat: [], dev: [], hw: hwDueAt(ses), prev: prevSession(ses)};
   out.catch = DB.catchup.filter(c => !c.done && ids.has(c.sid) && c.date <= ses.date && c.ses !== ses.key).sort((a, b) => a.date.localeCompare(b.date));
-  if (out.prev) {
-    const obs = DB.obs.filter(o => o.ses === out.prev.key && ids.has(o.sid) && !o.seen);
-    out.mat = obs.filter(o => o.cat === 'materiel');
-    out.dev = obs.filter(o => DV.has(o.cat));
-  }
+  /* devoirs non faits et oublis de matériel des séances précédentes : maintenus tant que « Vu » n'est pas touché */
+  const obs = DB.obs.filter(o => o.ses && o.ses !== ses.key && o.date <= ses.date && ids.has(o.sid) && !o.seen && o.cid === ses.cid)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.t || 0) - (b.t || 0));
+  out.mat = obs.filter(o => o.cat === 'materiel');
+  out.dev = obs.filter(o => DV.has(o.cat));
   out.n = out.catch.length + out.mat.length + out.dev.length;
   return out;
 }
@@ -2674,8 +2702,10 @@ function checkListHTML(ses, ck) {
   let h = '';
   { const dl = dueListHTML(ses, ck.hw); if (dl) h += `<div class="chksec"><div class="lbl">Travail à vérifier</div>${dl}</div>`; }
   h += sec('Rattrapages en cours', ck.catch.map(c => line(stu(c.sid), esc(catchText(c)), `<button class="btn" data-act="catch-done" data-id="${c.id}">Rattrapé</button>`)).join(''));
-  h += sec(`Devoirs le ${prevD}`, ck.dev.map(o => line(stu(o.sid), esc(CAT[o.cat].l) + (o.note ? ' · ' + esc(o.note) : ' · à vérifier aujourd\'hui'), `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
-  h += sec(`Oubli de matériel le ${prevD}`, ck.mat.map(o => line(stu(o.sid), o.note ? esc(o.note) : 'À vérifier aujourd\'hui', `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
+  const allSeen = l => l.length > 1 ? ` <button type="button" class="rmlink" data-act="obs-seen-all" data-ids="${l.map(o => o.id).join(',')}">Tout marquer vu</button>` : '';
+  const dl = o => `<b class="obsd">le ${esc(dayShort(o.date))}</b>`;
+  h += sec(`Devoirs non faits${allSeen(ck.dev)}`, ck.dev.map(o => line(stu(o.sid), dl(o) + ' · ' + esc(CAT[o.cat].l) + (o.note ? ' · ' + esc(o.note) : ''), `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
+  h += sec(`Oubli de matériel${allSeen(ck.mat)}`, ck.mat.map(o => line(stu(o.sid), dl(o) + (o.note ? ' · ' + esc(o.note) : ''), `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
   return h || '<p class="muted" style="margin:0">Rien à vérifier pour cette séance.</p>';
 }
 const sesOfEl = el => { const s = sesByKey(el.dataset.cid, el.dataset.key); return s ? {...s, cid: el.dataset.cid} : (V.ses && V.ses.key === el.dataset.key ? V.ses : null); };
@@ -2749,7 +2779,7 @@ function viewSession() {
 function sesTabs(ses) {
   const ck = checkItems(ses);
   const ndv = DB.obs.filter(o => o.ses === ses.key && DV.has(o.cat)).length;
-  const hw = ck.hw.length;
+  const hw = ck.hw.filter(d => !d.ok).length;
   const t = (k, l, bd) => `<button type="button" role="tab" data-act="stab" data-s="${k}" aria-selected="${V.stab === k}">${l}${bd || ''}</button>`;
   return `<nav class="tabs stabs" role="tablist" aria-label="Séance">
     ${t('contenu', 'Contenu', ck.n ? `<span class="bd warn">${ck.n}</span>` : '')}
@@ -2760,10 +2790,10 @@ function sesTabs(ses) {
 }
 function sesHeader(ses, actions) {
   const c = cls(ses.cid);
-  const sub = `${groupLabel(ses.group)} · Semaine ${weekType(ses.date)} · ${ses.label}` + (ses.date !== todayStr() ? ' · ' + fmtLong(ses.date) : '');
+  const sub = `${ses.date === todayStr() ? "Aujourd'hui, " + fmtLong(ses.date).toLowerCase() : fmtLong(ses.date)} · ${ses.label} · ${groupLabel(ses.group)} · Semaine ${weekType(ses.date)}`;
   return `<header class="bar">
     <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
-    <div class="ttl"><h1 class="row" style="gap:10px">${dot(c)}${esc(c.name)}${ses.group !== 'all' ? ' · ' + ses.group : ''}</h1><div class="sub">${esc(sub)}</div></div>
+    <div class="ttl sesttl"><h1 class="row" style="gap:10px">${dot(c)}${esc(c.name)}${ses.group !== 'all' ? ' · ' + ses.group : ''}</h1><div class="sub">${esc(sub)}</div></div>
     <span class="grow"></span>${actions || ''}
   </header>${sesTabs(ses)}`;
 }
@@ -2798,8 +2828,8 @@ function viewDevoirs() {
   }).join('');
   const okBtn = `<button class="btn hwokbtn" data-act="hw-ok" aria-pressed="${ok}">${ok ? '<i class="pdot pg">✓</i>Le reste a fait ses devoirs' : 'Le reste a fait ses devoirs'}</button>`;
   const dl = dueListHTML(ses, due);
-  const top = due.length ? `<div class="banner hw dvban"><div class="dvbl"><strong>Travail à vérifier</strong>${dl}</div>${okBtn}</div>`
-    : dl ? `<div class="banner ok dvban"><div class="dvbl"><strong>Plus rien à vérifier aujourd'hui</strong>${dl}</div>${ok ? okBtn : ''}</div>`
+  const top = due.some(d => !d.ok) ? `<div class="banner hw dvban"><div class="dvbl"><strong>Travail à vérifier</strong>${dl}</div>${okBtn}</div>`
+    : dl ? `<div class="banner ok dvban"><div class="dvbl"><strong>${due.length ? 'Travail vérifié' : 'Plus rien à vérifier aujourd\'hui'}</strong>${dl}</div>${ok || due.length ? okBtn : ''}</div>`
     : `<div class="banner ok"><p>Aucun travail n'était prévu pour cette séance. Vous pouvez tout de même noter un devoir non fait.</p>${ok ? okBtn : ''}</div>`;
   const tot = cnt.devoir + cnt.devoir_inc + cnt.devoir_bac;
   const recap = (done ? plural(done, 'fait', 'faits') + ' · ' : '') + (tot ? [cnt.devoir && plural(cnt.devoir, 'non fait', 'non faits'), cnt.devoir_inc && plural(cnt.devoir_inc, 'incomplet'), cnt.devoir_bac && plural(cnt.devoir_bac, 'bâclé')].filter(Boolean).join(' · ') : 'Aucun devoir non fait');
@@ -3177,7 +3207,20 @@ const ACT = {
   },
   'ct-open': () => openContent(V.ses),
   'due-rep': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (ses) doReport(ses, [el.dataset.mk]); },
-  'due-rep-all': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (ses) doReport(ses, hwDueAt(ses).map(d => d.mk)); },
+  'due-rep-all': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (ses) doReport(ses, hwPending(ses).map(d => d.mk)); },
+  'due-ok': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (!ses) return; const d = hwDueAt(ses).find(x => x.mk === el.dataset.mk); if (!d) return; setHwSt(ses, d.mk, d.ok ? null : {v: ses.key, at: todayStr()}); SESS_CACHE = {}; save(); if (CT) renderContent(); renderKeep(); },
+  'due-x': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (!ses) return; setHwSt(ses, el.dataset.mk, {x: 1, k: ses.key, at: todayStr()}); save(); if (CT) renderContent(); renderKeep(); toast('Devoir retiré de la liste (récupérable : « Afficher les devoirs retirés »)'); },
+  'due-restore': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (!ses) return; setHwSt(ses, el.dataset.mk, null); save(); if (CT) renderContent(); renderKeep(); toast('Devoir remis dans la liste'); },
+  'due-purge': el => { const ses = sesOfEl(el); if (!ses) return; const d = hwDueAt(ses, true).find(x => x.mk === el.dataset.mk); if (!d) return;
+    PENDPURGE = {ses, mk: d.mk};
+    openModal(`<h2>Supprimer définitivement ?</h2><p>« ${esc(hwText(d.h))} » ne sera plus jamais proposé dans le travail à vérifier.${d.man ? '' : ' Il reste noté dans la séance où il a été donné (Travail à faire, Progression).'}</p><div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn danger" data-act="due-purge-go">Supprimer définitivement</button></div>`); },
+  'due-purge-go': () => { const p = PENDPURGE; PENDPURGE = null; closeModal(); if (!p) return; if (CT) syncInputs();
+    const d = hwDueAt(p.ses, true).find(x => x.mk === p.mk); if (!d) return;
+    if (d.man) { const ct = DB.content[d.from.key]; if (ct && ct.chk) { ct.chk = ct.chk.filter(m => m.id !== d.id); if (!ct.chk.length) delete ct.chk; if (ctEmpty(ct)) delete DB.content[d.from.key]; } Object.keys(DB.hwMove).forEach(k => { if (k.startsWith(d.id + '@')) delete DB.hwMove[k]; }); d.mks.forEach(k => delete DB.hwSt[k]); }
+    else setHwSt(p.ses, d.mk, {d: 1, at: todayStr()});
+    SESS_CACHE = {}; save(); if (CT) renderContent(); renderKeep(); toast('Supprimé définitivement'); },
+  'rm-toggle': () => { if (CT) syncInputs(); SHOWRM = !SHOWRM; if (CT) renderContent(); renderKeep(); },
+  'obs-seen-all': el => { const ids = new Set(el.dataset.ids.split(',')); DB.obs.forEach(o => { if (ids.has(o.id)) o.seen = true; }); save(); refreshChecks(); toast('Tout marqué comme vu'); },
   'due-unrep': el => { if (CT) syncInputs(); const mk = el.dataset.mk, mv = DB.hwMove[mk]; if (!mv) return; if (mv.p) DB.hwMove[mk] = mv.p; else delete DB.hwMove[mk]; SESS_CACHE = {}; save(); if (CT) renderContent(); renderKeep(); toast('Report annulé : le travail est de nouveau à vérifier ici'); },
   'due-rep-go': () => { const p = PENDREP; PENDREP = null; closeModal(); if (p) doReport(p.ses, p.mks, true); },
   'chk-add': el => {
@@ -3313,7 +3356,7 @@ const ACT = {
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
 /* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
-const UNDO_MSG = {'due-unrep': 'Report annulé', 'due-rep': 'Travail reporté', 'due-rep-all': 'Travail reporté', 'due-rep-go': 'Travail reporté', 'chk-add': 'Ajouté au travail à vérifier', 'chk-del': 'Retiré du travail à vérifier', 'cdt-toggle': 'Cahier de textes modifié', 'hv-ready': 'Séance modifiée', 'hv-cdt': 'Cahier de textes modifié', 'cdt-week': 'Cahier de textes modifié', 'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+const UNDO_MSG = {'due-ok': 'Vérification modifiée', 'due-x': 'Devoir retiré de la liste', 'due-restore': 'Devoir remis dans la liste', 'due-purge-go': 'Supprimé définitivement', 'obs-seen-all': 'Tout marqué comme vu', 'due-unrep': 'Report annulé', 'due-rep': 'Travail reporté', 'due-rep-all': 'Travail reporté', 'due-rep-go': 'Travail reporté', 'chk-add': 'Ajouté au travail à vérifier', 'chk-del': 'Retiré du travail à vérifier', 'cdt-toggle': 'Cahier de textes modifié', 'hv-ready': 'Séance modifiée', 'hv-cdt': 'Cahier de textes modifié', 'cdt-week': 'Cahier de textes modifié', 'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
   'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'ch-share': 'Partage des chapitres modifié', 'sep-del': 'Paire retirée'};
@@ -3426,7 +3469,7 @@ async function showPersist() {
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
 const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup'];
-const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'cdt'];
+const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt'];
 const SYNC_SET = ['evenIsA', 'holidays', 'periods'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
 const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});
@@ -3794,7 +3837,7 @@ function sesPreviewHTML(d, x) {
     <div class="small muted">${cap(fmtDay(d))} · ${fmtT(x.start)} – ${fmtT(x.end)}${cancelled ? ' · <strong>annulé</strong>' : ''}</div>`;
   if (ct && ct.ch != null) h += `<div class="hvch">${esc(chapShort(lvl, ct.ch))}</div>`;
   if (items) h += `<ul class="pglist">${items}</ul>`;
-  if (due.length) h += `<div class="hvsec"><span class="hwb">À vérifier</span><ul>${due.map(q => `<li>${esc(hwText(q.h))} <span class="small muted">(${dueMeta(q)})</span></li>`).join('')}</ul></div>`;
+  if (due.length) h += `<div class="hvsec"><span class="hwb">À vérifier</span><ul>${due.map(q => `<li>${q.ok ? '✓ ' : ''}${esc(hwText(q.h))} <span class="small muted">(${q.ok ? 'vérifié · ' : ''}${dueMeta(q)})</span></li>`).join('')}</ul></div>`;
   if (ct && ct.hw.length) h += `<div class="hvsec"><span class="lbl" style="margin:0">Travail donné</span><ul>${ct.hw.map(q => `<li>${esc(hwText(q))} <span class="small muted">(${esc(hwDueLabel(q, ses, c.id, x.group))})</span></li>`).join('')}</ul></div>`;
   if (ct && ct.note) h += `<p class="pgnote">${esc(ct.note)}</p>`;
   if (!items && !(ct && ct.ch != null) && !due.length && !(ct && (ct.hw.length || ct.note))) h += '<p class="small muted" style="margin:6px 0 0">Rien de renseigné pour cette séance.</p>';

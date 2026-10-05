@@ -566,6 +566,70 @@ table.prev td,table.prev th{padding:6px 8px;border-top:1px solid var(--line);tex
 .check{display:flex;align-items:center;gap:10px;min-height:44px}
 .check input{width:22px;height:22px}
 @media (max-width:600px){.bar{padding:10px 16px}.main{padding:16px}.slot{flex-wrap:wrap;gap:10px}.slot .time{width:auto}.foot{padding:10px 16px}.tabs{padding:0 8px}}
+
+/* ---- v2.8 : fenêtre de contenu en blocs, travail à vérifier, cahier de textes, bilans ---- */
+:root{--sc-ch:#5A6B7D;--sc-ck:#C9951C;--sc-de:#1E8C8C;--sc-hw:#7B4FB3;--sc-no:#8A8F96;--cdt:#2F6DB5;
+  --a-dyn:#1E6B5C;--a-bien:#7DBBA9;--a-passive:#D9A52B;--a-penible:#9A3F1B;--ras:#9AA0A8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sc-ch:#8FA0B3;--sc-ck:#E2B547;--sc-de:#4DB8B8;--sc-hw:#A985DA;--sc-no:#9AA0A8;--cdt:#6FA3E6;--a-dyn:#5FB7A2;--a-bien:#3E7A6C;--a-penible:#E08A63;--ras:#6E747C}}
+:root[data-theme="dark"]{--sc-ch:#8FA0B3;--sc-ck:#E2B547;--sc-de:#4DB8B8;--sc-hw:#A985DA;--sc-no:#9AA0A8;--cdt:#6FA3E6;--a-dyn:#5FB7A2;--a-bien:#3E7A6C;--a-penible:#E08A63;--ras:#6E747C}
+.ctsec{position:relative;border:1px solid var(--line);border-left:5px solid var(--sc);border-radius:12px;padding:12px 14px 14px;background:var(--surface-2);background:color-mix(in srgb,var(--sc) 7%,var(--surface));display:flex;flex-direction:column;gap:8px}
+.ctsec .sech{margin:0;font-size:16px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap;letter-spacing:0;text-transform:none}
+.ctsec .sech::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--sc);flex:none}
+.ctsec .sech .sub{font-size:13px;font-weight:400;color:var(--muted)}
+.ctsec .sech label{font:inherit;color:inherit}
+.ctsec .hwitem,.ctsec .ctitem{background:var(--surface)}
+.ctsec textarea{margin:0}
+.chkadd{display:flex;flex-direction:column;gap:6px}
+.chkadd .row{flex-wrap:nowrap}
+.chkadd select,.chkadd input{flex:1 1 auto !important;min-width:0;width:auto}
+.chkadd .btn{flex:none}
+.chkitem .hwt{flex:1;display:flex;flex-direction:column;gap:1px;font-weight:600;min-width:0}
+.chkitem .hwm{font-weight:400}
+.repd{font-weight:700;color:var(--warn-ink)}
+.chkitem.is-rep{box-shadow:inset 3px 0 0 var(--sc-ck)}
+.repbtn{min-height:36px;padding:0 12px;flex:none}
+.dvban{align-items:flex-start}
+.dvban .dvbl{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.dvban .hwitem{background:var(--surface)}
+.pdot.pb{background:rgba(47,109,181,.18);color:#2F6DB5;box-shadow:inset 0 0 0 1px rgba(47,109,181,.45)}
+.pdot.pbx{background:rgba(47,109,181,.10);color:#2F6DB5;box-shadow:inset 0 0 0 1px rgba(47,109,181,.35)}
+.cdtbtn .pdot{margin-right:2px}
+#hovercard{pointer-events:auto}
+#hovercard .hvtg{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;padding-top:8px;border-top:1px solid var(--line)}
+#hovercard .hvtg button{flex:1 1 120px;min-height:40px;white-space:nowrap;padding:0 8px;display:inline-flex;align-items:center;gap:6px;justify-content:center;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+#hovercard .hvtg button[aria-pressed="true"].g{background:rgba(46,158,91,.14);border-color:rgba(46,158,91,.5)}
+#hovercard .hvtg button[aria-pressed="true"].b{background:rgba(47,109,181,.12);border-color:rgba(47,109,181,.5)}
+.cdtcount{color:var(--cdt);font-weight:600;background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+/* bilans de la classe (Suivi) */
+.apprs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.apie{display:flex;flex-direction:column;gap:8px;min-width:0}
+.apie h3{margin:0;font-size:15px}
+.apie .pw{display:flex;align-items:center;gap:14px}
+.apie svg{width:120px;height:120px;flex:none}
+.apie svg .a-dyn{fill:var(--a-dyn)} .apie svg .a-bien{fill:var(--a-bien)} .apie svg .a-passive{fill:var(--a-passive)} .apie svg .a-penible{fill:var(--a-penible)}
+.apie svg .ctr{font:700 22px var(--sans);fill:var(--ink)} .apie svg .ctr2{font:12px var(--sans);fill:var(--muted)}
+.apie svg .emp{fill:none;stroke:var(--surface-2);stroke-width:16}
+.aleg{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13px;min-width:0}
+.aleg li{display:flex;align-items:center;gap:6px}
+.aleg i{width:10px;height:10px;border-radius:3px;flex:none}
+.aleg b{margin-left:auto;font-variant-numeric:tabular-nums;padding-left:8px}
+.aleg .pc{color:var(--muted);font-variant-numeric:tabular-nums;width:46px;text-align:right;white-space:nowrap}
+.i-dyn{background:var(--a-dyn)} .i-bien{background:var(--a-bien)} .i-passive{background:var(--a-passive)} .i-penible{background:var(--a-penible)}
+.frise{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.frise .fd{width:14px;height:14px;border-radius:50%;border:0;padding:0;cursor:pointer;flex:none}
+.frise .fd.none{background:transparent;box-shadow:inset 0 0 0 2px var(--line-2)}
+.frise span.fd{cursor:default}
+.frise .fsep{width:1px;height:14px;background:var(--line-2);margin:0 3px}
+.chip.disc{background:#E6ECF3;color:#34495E}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip.disc{background:#26303A;color:#B9C7D6}}
+:root[data-theme="dark"] .chip.disc{background:#26303A;color:#B9C7D6}
+.fl.ras{background:var(--ras)}
+.barrow.rasrow{border-top:1px dashed var(--line);padding-top:9px}
+.synth{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--surface-2);margin-bottom:6px}
+.synth span{height:100%}
+.synth .sp{background:var(--pos)} .synth .sr{background:var(--ras)} .synth .sn{background:var(--neg)}
+.synleg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:14px}
+.synleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 </style>
 </head>
 <body>
@@ -600,7 +664,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.7', d: '2026-10-02'};
+const APP_VERSION = {n: '2.8', d: '2026-10-05'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -666,7 +730,7 @@ function defaultSettings() {
     }
   };
 }
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, hwOk:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, hwOk:{}, hwMove:{}, cdt:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 let STORAGE_OK = false;
@@ -679,7 +743,7 @@ function migrate(core) {
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
   upgradeLabs(d.rooms);
   if (!Array.isArray(d.catchup)) d.catchup = [];
-  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'cdt'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
   /* nouvelle détection du niveau : on regroupe les listes de chapitres existantes */
@@ -936,17 +1000,23 @@ function slotCard(d, s, FM) {
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwDueAt(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwDueAt(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
     ${right}</button></li>`;
 }
 
-/* pastilles en bas à droite d'un créneau : ! rouge = pas prête (à venir), ✓ vert = prête, jaune = devoir à vérifier */
+/* pastilles en bas à droite d'un créneau : jaune = devoir à vérifier · bleue = cahier de textes (! à compléter, ✓ complété) · verte = prête (! rouge = pas prête) */
+const cdtDot = key => DB.cdt[key] ? '<i class="pdot pb" title="Cahier de textes complété">✓</i>' : '<i class="pdot pbx" title="Cahier de textes à compléter">!</i>';
+/* séances commencées (non annulées) sans cahier de textes coché */
+function cdtMissing() {
+  let n = 0, first = null;
+  DB.classes.forEach(c => classSessions(c.id).forEach(x => { if (x.extra || x.cancelled || !sesStarted(x) || DB.cdt[x.key]) return; n++; if (!first || x.date < first) first = x.date; }));
+  return {n, first};
+}
 function slotDots(d, x, st) {
   if (st && st.k === 'cancel') return '';
   const ct = DB.content[d + '|' + x.id], ready = !!(ct && ct.ready), hw = hwDueAt(sesFromSlot(d, x)).length > 0;
   const pend = !ready && !sesStarted({date: d, start: x.start});
-  if (!ready && !hw && !pend) return '';
-  return `<span class="bdots">${hw ? '<i class="pdot py" title="Devoir à vérifier"></i>' : ''}${ready ? '<i class="pdot pg" title="Séance prête">✓</i>' : pend ? '<i class="pdot pr" title="Séance pas encore prête">!</i>' : ''}</span>`;
+  return `<span class="bdots">${hw ? '<i class="pdot py" title="Devoir à vérifier"></i>' : ''}${cdtDot(d + '|' + x.id)}${ready ? '<i class="pdot pg" title="Séance prête">✓</i>' : pend ? '<i class="pdot pr" title="Séance pas encore prête">!</i>' : ''}</span>`;
 }
 /* ---------- vue : semaine ---------- */
 function viewWeek() {
@@ -990,7 +1060,12 @@ function viewWeek() {
   });
   const hours = []; for (let m = t0; m <= t1; m += 60) hours.push(`<span style="top:${(m - t0) * PPM}px">${m / 60} h</span>`);
   const isCur = mon === mondayOf(fd);
-  const sub = `Semaine ${wt} · ` + (todo ? `<strong class="todo">${plural(todo, 'séance')} à compléter</strong>` : started ? 'Tout est à jour' : 'Aucune séance commencée');
+  const miss = cdtMissing();
+  const sub = `Semaine ${wt} · ` + (todo ? `<strong class="todo">${plural(todo, 'séance')} à compléter</strong>` : started ? 'Tout est à jour' : 'Aucune séance commencée')
+    + `</div><div class="sub">` + (miss.n ? `<button type="button" class="cdtcount" data-act="cdt-first" data-date="${miss.first}" title="Aller à la première séance sans cahier de textes"><i class="pdot pbx">!</i> ${plural(miss.n, 'cahier de textes', 'cahiers de textes')} à compléter</button>` : '<span><i class="pdot pb">✓</i> Cahiers de textes à jour</span>');
+  const wk = []; shown.forEach(d => { if (!holidayOn(d)) slotsOn(d).forEach(x => { const k = d + '|' + x.id; if (cls(x.cid) && !DB.cancelled[k]) wk.push(k); }); });
+  const wkAll = wk.length && wk.every(k => DB.cdt[k]);
+  const wkBtn = wk.length ? ` · <button type="button" class="cdtcount" data-act="cdt-week" data-keys="${wk.join(',')}" data-on="${wkAll ? '0' : '1'}" title="${wkAll ? 'Décocher le cahier de textes pour toute la semaine' : 'Cocher le cahier de textes pour toutes les séances de cette semaine'}">${wkAll ? 'Semaine cochée (décocher)' : 'Tout cocher pour la semaine'}</button>` : '';
   const endD = parseD(shown[shown.length - 1]);
   const title = `Du ${parseD(mon).getDate()} ${parseD(mon).getMonth() === endD.getMonth() ? '' : parseD(mon).toLocaleDateString('fr-FR', {month:'short'}) + ' '}au ${endD.toLocaleDateString('fr-FR', {day:'numeric', month:'long'})}`;
   let body = banners();
@@ -1000,11 +1075,11 @@ function viewWeek() {
       <div></div>${cols.map(c => c.head).join('')}
       <div class="tt-times" style="height:${H}px">${hours.join('')}</div>${cols.map(c => c.body).join('')}
     </div></div>
-    <p class="small muted legend" style="margin:0">Toucher un créneau : ouvrir la séance · Appui long : le marquer comme annulé · <i class="pdot pr">!</i> à préparer · <i class="pdot pg">✓</i> prête · <i class="pdot py"></i> devoir à vérifier</p>`;
+    <p class="small muted legend" style="margin:0">Toucher un créneau : ouvrir la séance · Appui long : le marquer comme annulé · <i class="pdot py"></i> devoir à vérifier · <i class="pdot pbx">!</i><i class="pdot pb">✓</i> cahier de textes à compléter / complété · <i class="pdot pr">!</i> à préparer · <i class="pdot pg">✓</i> prête · Survol à la souris ou au stylet : aperçu, avec les cases à cocher</p>`;
   return `${tabBar('edt')}
   <header class="bar">
     <button class="btn icon-btn" data-act="week" data-n="-7" aria-label="Semaine précédente">${ICON.back}</button>
-    <div class="ttl"><h1>${title}</h1><div class="sub">${sub}</div></div>
+    <div class="ttl"><h1>${title}</h1><div class="sub">${sub}${wkBtn}</div></div>
     <button class="btn icon-btn" data-act="week" data-n="7" aria-label="Semaine suivante">${ICON.next}</button>
     ${isCur ? '' : '<button class="btn ghost" data-act="week" data-n="0">Cette semaine</button>'}
     <span class="grow"></span>
@@ -1133,7 +1208,11 @@ function viewFiche() {
   const cnt = {}; obs.forEach(o => cnt[o.cat] = (cnt[o.cat] || 0) + 1);
   const tot = t => obs.filter(o => CAT[o.cat]?.t === t).length;
   const bars = CATS.filter(x => (x.t === 'pos' || x.t === 'neg') && cnt[x.k]).sort((a, b) => cnt[b.k] - cnt[a.k]);
-  const max = Math.max(1, ...bars.map(b => cnt[b.k]));
+  const max = Math.max(1, cnt.ras || 0, ...bars.map(b => cnt[b.k]));
+  const nP = tot('pos'), nN = tot('neg'), nR = cnt.ras || 0, nT = nP + nN + nR, pc = v => nT ? Math.round(v / nT * 100) : 0;
+  const synth = nT ? `<div class="synth" role="img" aria-label="Positives ${pc(nP)} %, RAS ${pc(nR)} %, négatives ${pc(nN)} %"><span class="sp" style="width:${(nP / nT * 100).toFixed(1)}%"></span><span class="sr" style="width:${(nR / nT * 100).toFixed(1)}%"></span><span class="sn" style="width:${(nN / nT * 100).toFixed(1)}%"></span></div>
+    <div class="synleg"><span><i style="background:var(--pos)"></i>Positives ${nP} · ${pc(nP)} %</span><span><i style="background:var(--ras)"></i>RAS ${nR} · ${pc(nR)} %</span><span><i style="background:var(--neg)"></i>Négatives ${nN} · ${pc(nN)} %</span></div>` : '';
+  const rasRow = nR ? `<div class="barrow rasrow"><span>RAS (rien à signaler)</span><span class="tr"><span class="fl ras" style="display:block;width:${(nR / max * 100).toFixed(1)}%"></span></span><b>${nR}</b></div>` : '';
   const seg = periods.map((p, i) => `<button type="button" data-act="period" data-i="${i}" aria-pressed="${i === V.p}">${esc(p.n)}</button>`).join('');
   const log = obs.length ? `<ul class="log">${obs.map(o => `<li><span class="d">${fmtShort(o.date)}</span>${catChip(o.cat)}<span class="n">${esc(o.note)}${o.note ? '' : `<span class="muted small">${esc(o.lbl || '')}</span>`}</span><button type="button" class="x" data-act="o-del" data-oid="${o.id}">Supprimer</button></li>`).join('')}</ul>`
     : `<p class="muted">Aucune observation sur cette période.</p>`;
@@ -1159,7 +1238,7 @@ function viewFiche() {
       <p class="small muted" style="margin:0">${esc(per.n)} : du ${fmtShort(per.s)} au ${fmtShort(per.e)}</p>
     </aside>
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
-      <section class="card"><h2 style="font-size:16px;margin-bottom:12px">Répartition</h2>${bars.length ? `<div class="bars">${bars.map(b => `<div class="barrow"><span>${esc(b.l)}</span><span class="tr"><span class="fl ${b.t}" style="display:block;width:${(cnt[b.k] / max * 100).toFixed(1)}%"></span></span><b>${cnt[b.k]}</b></div>`).join('')}</div>` : '<p class="muted" style="margin:0">Rien à afficher pour l\'instant.</p>'}</section>
+      <section class="card"><h2 style="font-size:16px;margin-bottom:12px">Répartition</h2>${synth}${bars.length || rasRow ? `<div class="bars">${bars.map(b => `<div class="barrow"><span>${esc(b.l)}</span><span class="tr"><span class="fl ${b.t}" style="display:block;width:${(cnt[b.k] / max * 100).toFixed(1)}%"></span></span><b>${cnt[b.k]}</b></div>`).join('')}${rasRow}</div>` : '<p class="muted" style="margin:0">Rien à afficher pour l\'instant.</p>'}</section>
       ${(() => { const cs = DB.catchup.filter(x => x.sid === s.id).sort((a, b) => b.date.localeCompare(a.date)); if (!cs.length) return '';
         return `<section class="card"><h2 style="font-size:16px;margin-bottom:8px">Rattrapages</h2><ul class="log">${cs.map(x => `<li><span class="d">${fmtShort(x.date)}</span><span class="n">${esc(catchText(x))}</span>${x.done ? `<span class="chip pos">Rattrapé le ${fmtShort(x.done)}</span>` : '<span class="chip warn">En cours</span>'}<button type="button" class="x" data-act="catch-toggle" data-id="${x.id}">${x.done ? 'Rouvrir' : 'Rattrapé'}</button></li>`).join('')}</ul></section>`; })()}
       <section class="card"><h2 style="font-size:16px;margin-bottom:8px">Chronologie</h2>${log}</section>
@@ -2010,6 +2089,46 @@ function viewSalles() {
 }
 
 /* onglet Suivi */
+/* bilans de la classe : un camembert par groupe (classe entière, G1, G2) + frise chronologique */
+function apprPie(cnt, tot) {
+  const R = 52, r = 34, C = 60;
+  if (!tot) return `<svg viewBox="0 0 120 120" aria-hidden="true"><circle class="emp" cx="60" cy="60" r="43"/><text class="ctr2" x="60" y="64" text-anchor="middle">Aucun bilan</text></svg>`;
+  let a0 = -Math.PI / 2, paths = '';
+  APPR.forEach(([k]) => {
+    const n = cnt[k]; if (!n) return;
+    if (n === tot) { paths += `<path class="a-${k}" fill-rule="evenodd" d="M${C - R},${C}a${R},${R} 0 1,0 ${2 * R},0a${R},${R} 0 1,0 ${-2 * R},0ZM${C - r},${C}a${r},${r} 0 1,0 ${2 * r},0a${r},${r} 0 1,0 ${-2 * r},0Z"/>`; return; }
+    const a1 = a0 + n / tot * 2 * Math.PI, big = a1 - a0 > Math.PI ? 1 : 0;
+    const P = (rad, a) => `${(C + rad * Math.cos(a)).toFixed(2)},${(C + rad * Math.sin(a)).toFixed(2)}`;
+    paths += `<path class="a-${k}" d="M${P(R, a0)}A${R},${R} 0 ${big},1 ${P(R, a1)}L${P(r, a1)}A${r},${r} 0 ${big},0 ${P(r, a0)}Z"/>`;
+    a0 = a1;
+  });
+  return `<svg viewBox="0 0 120 120" role="img" aria-label="${APPR.map(([k, l]) => l + ' : ' + (cnt[k] || 0)).join(', ')}">${paths}<text class="ctr" x="60" y="62" text-anchor="middle">${tot}</text><text class="ctr2" x="60" y="78" text-anchor="middle">séance${tot > 1 ? 's' : ''}</text></svg>`;
+}
+function apprBlockHTML(c, per) {
+  const t = todayStr();
+  const all = classSessions(c.id).filter(x => !x.cancelled && !x.extra && x.date >= per.s && x.date <= per.e && sesStarted(x));
+  const groups = [...new Set(classSessions(c.id).map(x => x.group))];
+  const order = ['all', 'G1', 'G2'].filter(g => groups.includes(g)).concat(groups.filter(g => !['all', 'G1', 'G2'].includes(g)));
+  if (!order.length) return '';
+  const pies = order.map(g => {
+    const list = all.filter(x => x.group === g), cnt = {}; let tot = 0, miss = 0;
+    list.forEach(x => { const a = DB.appr[x.key]; if (a && APPR_L[a]) { cnt[a] = (cnt[a] || 0) + 1; tot++; } else miss++; });
+    const leg = APPR.map(([k, l]) => `<li><i class="i-${k}"></i>${l}<b>${cnt[k] || 0}</b><span class="pc">${tot ? Math.round((cnt[k] || 0) / tot * 100) + ' %' : ''}</span></li>`).join('');
+    let lastM = null;
+    const dots = list.map(x => {
+      const a = DB.appr[x.key], m = x.date.slice(0, 7), sep = lastM && m !== lastM ? '<span class="fsep" aria-hidden="true"></span>' : ''; lastM = m;
+      const tip = `${cap(dayShort(x.date))} : ${a && APPR_L[a] ? APPR_L[a] : 'pas de bilan'}`;
+      return sep + `<button type="button" class="fd ${a && APPR_L[a] ? 'i-' + a : 'none'}" data-act="sui-ses" data-slot="${x.slot}" data-date="${x.date}" title="${esc(tip)}" aria-label="${esc(tip)}"></button>`;
+    }).join('');
+    return `<div class="apie"><h3>${g === 'all' ? 'Classe entière' : 'Demi-groupe ' + esc(g)}</h3>
+      <div class="pw">${apprPie(cnt, tot)}<ul class="aleg">${leg}</ul></div>
+      ${miss ? `<p class="small muted" style="margin:0">${plural(miss, 'séance sans bilan', 'séances sans bilan')} (non comptée${miss > 1 ? 's' : ''})</p>` : ''}
+      ${list.length ? `<div class="frise" aria-label="Évolution, séance par séance">${dots}</div>` : '<p class="small muted" style="margin:0">Aucune séance sur cette période.</p>'}</div>`;
+  }).join('');
+  return `<section class="card"><h2 class="h2s">Bilans de la classe <span class="small muted" style="font-weight:400">· ${esc(per.n)}</span></h2>
+    <div class="apprs">${pies}</div>
+    <p class="small muted" style="margin:10px 0 0">Frise : une pastille par séance, de la plus ancienne à la plus récente (cercle vide : pas de bilan). Toucher une pastille : ouvrir la séance sur l'onglet Bilan.</p></section>`;
+}
 function viewSuivi() {
   const classes = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
   if (!V.scid || !cls(V.scid)) V.scid = classes[0] && classes[0].id;
@@ -2026,12 +2145,13 @@ function viewSuivi() {
     const n = t2 => inP.filter(o => CAT[o.cat].t === t2).length;
     const lastO = mine.filter(isPN).sort((a, b) => b.date.localeCompare(a.date) || b.t - a.t)[0];
     const surv = mine.filter(o => CAT[o.cat].t === 'neg' && o.date >= d14).length >= 3;
-    const peu = recent && !mine.some(o => isPN(o) && o.date >= d21);
+    const noPN = recent && !mine.some(o => isPN(o) && o.date >= d21), rasR = mine.some(o => o.cat === 'ras' && o.date >= d21);
+    const disc = noPN && rasR, peu = noPN && !rasR; // discret : vu (RAS) sans se faire remarquer · peu observé : aucune observation
     return {s, pos: n('pos'), neg: n('neg'), ras: inP.filter(o => o.cat === 'ras').length, abs: inP.filter(o => o.cat === 'absent').length,
-      last: lastO ? `${fmtShort(lastO.date)} · ${CAT[lastO.cat].l}${lastO.note ? ' — ' + lastO.note : ''}` : '—', surv, peu};
+      last: lastO ? `${fmtShort(lastO.date)} · ${CAT[lastO.cat].l}${lastO.note ? ' — ' + lastO.note : ''}` : '—', surv, peu, disc};
   });
-  const nS = rows.filter(r => r.surv).length, nP = rows.filter(r => r.peu).length;
-  if (V.sf === 'surv') rows = rows.filter(r => r.surv); else if (V.sf === 'peu') rows = rows.filter(r => r.peu);
+  const nS = rows.filter(r => r.surv).length, nP = rows.filter(r => r.peu).length, nD = rows.filter(r => r.disc).length;
+  if (V.sf === 'surv') rows = rows.filter(r => r.surv); else if (V.sf === 'peu') rows = rows.filter(r => r.peu); else if (V.sf === 'disc') rows = rows.filter(r => r.disc);
   const sk = V.ssk || 'name', sd = V.ssd || (sk === 'name' ? 1 : -1);
   rows.sort((a, b) => (sk === 'name' ? byName(a.s, b.s) : (a[sk] - b[sk])) * sd || byName(a.s, b.s));
   const sh = (k, l, cl) => `<button type="button" class="sh ${cl || ''} ${sk === k ? 'on' : ''}" data-act="sui-sort" data-k="${k}" aria-label="Trier par ${l}">${l}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`;
@@ -2043,19 +2163,21 @@ function viewSuivi() {
       <span class="muted small">${r.s.group || '—'}</span>
       <span class="num pos">+${r.pos}</span><span class="num neg">−${r.neg}</span><span class="num">${r.ras}</span><span class="num">${r.abs}</span>
       <span class="last small">${esc(r.last)}</span>
-      <span class="bdg">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}</span></button>`).join('');
+      <span class="bdg">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></button>`).join('');
   return `${tabBar('suivi')}
   <main class="main"><div class="wrap" style="max-width:1300px">
     <div class="row" style="gap:6px">${chips}</div>
     <div class="row">${seg('sui-p', periods.map((p, i) => [i, esc(p.n)]), V.sp)}<span class="small muted">Touchez un titre de colonne pour trier.</span>
       <span class="grow" style="flex:1"></span>
       <button class="gchip" data-act="sui-f" data-v="surv" aria-pressed="${V.sf === 'surv'}"><span class="chip neg">${nS}</span> à surveiller</button>
-      <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button></div>
+      <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button>
+      <button class="gchip" data-act="sui-f" data-v="disc" aria-pressed="${V.sf === 'disc'}"><span class="chip disc">${nD}</span> discret${nD > 1 ? 's' : ''}</button></div>
+    ${apprBlockHTML(c, per)}
     <section class="card stable-card">
       <div class="srow head"><span></span>${sh('name', 'Élève')}<span>Gr.</span>${sh('pos', 'Positif', 'num')}${sh('neg', 'Négatif', 'num')}${sh('ras', 'RAS', 'num')}${sh('abs', 'Abs.', 'num')}<span class="last">Dernière remarque</span><span></span></div>
       ${body || '<p class="muted" style="padding:14px;margin:0">Aucun élève dans ce filtre.</p>'}
     </section>
-    <p class="small muted" style="margin:0">À surveiller : 3 remarques négatives ou plus sur les 14 derniers jours. Peu observé : aucune remarque positive ou négative depuis 3 semaines. Toucher un élève : sa fiche.</p>
+    <p class="small muted" style="margin:0">À surveiller : 3 remarques négatives ou plus sur les 14 derniers jours. Discret : seulement des RAS depuis 3 semaines (vu, sans se faire remarquer). Peu observé : aucune observation, RAS compris, depuis 3 semaines. Toucher un élève : sa fiche.</p>
   </div></main>`;
 }
 
@@ -2177,25 +2299,95 @@ function hwTarget(h, from, cid, group) {
 }
 const dayShort = d => parseD(d).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'});
 function hwDueLabel(h, from, cid, group) { const t = hwTarget(h, from, cid, group); return t ? 'pour le ' + dayShort(t.date) : h.due ? 'pour le ' + dayShort(h.due) : 'pour la séance suivante'; }
-/* devoirs à vérifier à la séance `ses` */
+/* séance prévue pour un devoir, sans tenir compte des annulations (pour savoir s'il a été décalé) */
+function hwTargetRaw(h, from, cid, group) {
+  const list = classSessions(cid);
+  if (h.dueKey) { const t = list.find(x => x.key === h.dueKey); if (t && compat(t.group, group)) return t; }
+  if (h.due) return list.find(x => x.date >= h.due && compat(x.group, group)) || null;
+  const i = list.findIndex(x => x.key === from.key); if (i < 0) return null;
+  return list.slice(i + 1).find(x => compat(x.group, group)) || null;
+}
+/* destination d'un report : prochaine séance du même groupe (classe entière → prochaine classe entière) */
+const repDest = (cid, key, g) => nextSession(cid, key, g, g === 'all');
+/* travail à vérifier à la séance `ses` : devoirs donnés avant, ajouts manuels, reports (DB.hwMove), séances annulées sautées.
+   Chaque élément : {h, from, id, mk (clé de report), g (groupe), rep (date d'origine si reporté), man (ajout manuel), src} */
 function hwDueAt(ses) {
-  const list = classSessions(ses.cid), out = [];
+  const list = classSessions(ses.cid), out = [], moves = DB.hwMove || {};
+  const resolve = (key, g) => { const t = list.find(x => x.key === key); if (!t) return null; return t.cancelled ? nextSession(ses.cid, t.key, g, g === 'all') : t; };
   list.forEach(p => {
-    if (p.key === ses.key || p.date > ses.date) return;
-    const ct = DB.content[p.key]; if (!ct || !ct.hw || !ct.hw.length) return;
+    if (p.date > ses.date) return;
+    const ct = DB.content[p.key]; if (!ct) return;
     if (!compat(p.group, ses.group)) return;
-    ct.hw.forEach(h => {
-      const target = hwTarget(h, p, ses.cid, p.group === 'all' ? ses.group : p.group); // séance suivante du groupe qui a reçu le devoir
-      if (target && target.key === ses.key) out.push({h, from: p});
+    const g = p.group === 'all' ? ses.group : p.group; // groupe qui a reçu le devoir
+    if (p.key !== ses.key) (ct.hw || []).forEach((h, i) => {
+      const id = h.id || p.key + '#' + i, mk = id + '@' + g, mv = moves[mk];
+      let t, rep = null;
+      if (mv) { t = resolve(mv.to, g); rep = mv.o; }
+      else { t = hwTargetRaw(h, p, ses.cid, g); if (t && t.cancelled) { rep = t.date; t = nextSession(ses.cid, t.key, g, false); } }
+      if (t && t.key === ses.key) out.push({h, from: p, id, mk, g, rep});
+    });
+    (ct.chk || []).forEach(m => {
+      const gm = p.group, mk = m.id + '@' + gm, mv = moves[mk];
+      let t, rep = null;
+      if (mv) { t = resolve(mv.to, gm); rep = mv.o; }
+      else { t = p; if (p.cancelled) { rep = p.date; t = nextSession(ses.cid, p.key, gm, gm === 'all'); } }
+      if (t && t.key === ses.key) out.push({h: {kind: 'autre', text: m.text}, from: p, id: m.id, mk, g: gm, rep, man: true, src: m.src || null});
     });
   });
   return out;
 }
-function hwBanner(ses) {
-  if (!ses) return '';
-  const due = hwDueAt(ses); if (!due.length) return '';
-  const dates = [...new Set(due.map(d => fmtShort(d.from.date)))].join(', ');
-  return `<div class="banner hw"><p><strong>À vérifier :</strong> ${due.map(d => esc(hwText(d.h))).join(' · ')} <span class="small">(donné le ${dates})</span></p><span class="small">Touchez un élève → « Devoir non fait »</span></div>`;
+/* « donné le … » / « ajouté » · « reporté du … » */
+function dueMeta(d) {
+  const a = d.man ? (d.src ? 'donné le ' + dayShort(d.src) : 'ajouté à la main') : 'donné le ' + dayShort(d.from.date);
+  return a + (d.rep ? ' · <b class="repd">reporté du ' + dayShort(d.rep) + '</b>' : '');
+}
+/* liste du travail à vérifier, avec « Reporter » (onglets Contenu et Devoirs, fenêtre de contenu) */
+function dueListHTML(ses, due, opts) {
+  opts = opts || {};
+  if (!due.length) return '';
+  const dest = g => repDest(ses.cid, ses.key, g);
+  const li = d => { const nx = dest(d.g);
+    return `<li class="hwitem chkitem ${d.rep ? 'is-rep' : ''}"><span class="hwt">${esc(hwText(d.h))}<span class="small muted hwm">${dueMeta(d)}</span></span>
+      ${nx ? `<button type="button" class="btn repbtn" data-act="due-rep" data-cid="${ses.cid}" data-key="${ses.key}" data-mk="${esc(d.mk)}" title="Reporter au ${esc(dayShort(nx.date))}">Reporter</button>` : ''}
+      ${opts.del && d.man && d.from.key === ses.key ? `<button type="button" class="btn icon-btn ghost" data-act="chk-del" data-cid="${ses.cid}" data-key="${ses.key}" data-id="${esc(d.id)}" aria-label="Retirer">${ICON.close}</button>` : ''}</li>`; };
+  const all = due.length > 1 && due.some(d => dest(d.g)) ? `<button type="button" class="btn repall" data-act="due-rep-all" data-cid="${ses.cid}" data-key="${ses.key}">Tout reporter</button>` : '';
+  return `<ul class="hwlist">${due.map(li).join('')}</ul>${all ? `<div class="row" style="justify-content:flex-end;margin-top:6px">${all}</div>` : ''}`;
+}
+/* reporter une liste d'éléments (clés mk) de la séance ses ; confirmation si des élèves sont déjà pointés et que tout part */
+function doReport(ses, mks, confirmed) {
+  const due = hwDueAt(ses), pick = due.filter(d => mks.includes(d.mk)); if (!pick.length) return;
+  const left = due.length - pick.length;
+  const marks = DB.obs.filter(o => o.ses === ses.key && DV.has(o.cat));
+  if (!left && (marks.length || DB.hwOk[ses.key]) && !confirmed) {
+    PENDREP = {ses, mks};
+    openModal(`<h2>Reporter la vérification ?</h2><p>${marks.length ? plural(marks.length, 'élève est déjà noté', 'élèves sont déjà notés') + ' (devoir non fait, incomplet ou bâclé)' : '« Le reste a fait ses devoirs » est déjà coché'} pour cette séance. Si vous reportez, ${marks.length ? 'ces annotations seront retirées' : 'cette coche sera retirée'} : la vérification aura lieu à la séance suivante.</p>
+      <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn ink" data-act="due-rep-go">Reporter quand même</button></div>`);
+    return;
+  }
+  let last = null;
+  pick.forEach(d => { const nx = repDest(ses.cid, ses.key, d.g); if (!nx) return; DB.hwMove[d.mk] = {to: nx.key, o: d.rep || ses.date}; last = nx; });
+  if (!last) { toast('Aucune séance suivante pour ce groupe.'); return; }
+  if (!left) { removeObs(o => o.ses === ses.key && DV.has(o.cat)); delete DB.hwOk[ses.key]; }
+  SESS_CACHE = {}; save();
+  if (CT) renderContent(); renderKeep();
+  toast(pick.length > 1 ? `Reporté au ${fmtShort(last.date)} (${pick.length} travaux)` : `Reporté au ${fmtShort(last.date)}`);
+}
+let PENDREP = null;
+/* ajout manuel de travail à vérifier (enregistré tout de suite) */
+function addManualCheck(cid, key, text, src) {
+  const ct = DB.content[key] || (DB.content[key] = {ch: null, items: [], hw: []});
+  (ct.chk || (ct.chk = [])).push(src ? {id: uid(), text, src} : {id: uid(), text});
+  SESS_CACHE = {}; save();
+}
+/* devoirs déjà donnés, pour « reprendre un devoir » (plus récents d'abord) */
+function pastHwOptions(ses) {
+  const out = [];
+  classSessions(ses.cid).forEach(p => {
+    if (p.date > ses.date || p.key === ses.key || !compat(p.group, ses.group)) return;
+    const ct = DB.content[p.key]; if (!ct || !ct.hw) return;
+    ct.hw.forEach((h, i) => out.push({v: p.key + '#' + i, text: hwText(h), date: p.date, group: p.group}));
+  });
+  return out.reverse().slice(0, 40);
 }
 function contentSummary(ct, lvl, short) {
   if (!ct || (!ct.items.length && ct.ch == null)) return '';
@@ -2204,6 +2396,7 @@ function contentSummary(ct, lvl, short) {
   if (ct.items.length) parts.push(short ? [...new Set(ct.items.map(it => (ITYPE[it.type] || ITYPE.autre).l.replace(' / bilan', '')))].join(', ') : ct.items.map(it => it.label || (ITYPE[it.type] || ITYPE.autre).l).join(', '));
   return parts.join(' · ');
 }
+const ctEmpty = ct => !ct.items.length && !ct.hw.length && ct.ch == null && !ct.note && !ct.ready && !(ct.chk && ct.chk.length);
 const hasEval = ct => !!(ct && ct.items.some(i => i.type === 'eval'));
 function ctButton(ses) {
   const ct = DB.content[ses.key], c = cls(ses.cid);
@@ -2259,6 +2452,15 @@ function renderContent() {
   if (k === 'cr') fields = fld('hw-detail', 'Précision (facultatif) : TP 1, question 4');
   if (k === 'lecon') fields = fld('hw-detail', 'Quelle leçon (facultatif)');
   if (k === 'autre') fields = fld('hw-text', 'Travail à faire');
+  const sesF = {...(sesByKey(s.cid, s.key) || {}), key: s.key, cid: s.cid, group: s.group, date: s.date};
+  const due = hwDueAt(sesF), past = pastHwOptions(sesF);
+  const chkSec = `<section class="ctsec" style="--sc:var(--sc-ck)"><h3 class="sech">Travail à vérifier${due.length ? ` <span class="chip warn">${due.length}</span>` : ''} <span class="sub">· en début de séance</span></h3>
+        ${due.length ? dueListHTML(sesF, due, {del: true}) : '<p class="small muted" style="margin:0">Rien à vérifier pour l\'instant.</p>'}
+        <div class="chkadd">
+          ${past.length ? `<div class="row" style="gap:6px"><select id="chk-src" aria-label="Reprendre un devoir déjà donné" style="flex:1 1 260px;width:auto"><option value="">Reprendre un devoir déjà donné…</option>${past.map(o => `<option value="${esc(o.v)}">${esc(o.text)} · donné le ${esc(dayShort(o.date))}${o.group !== 'all' && o.group !== s.group ? ' (' + o.group + ')' : ''}</option>`).join('')}</select><button type="button" class="btn" data-act="chk-add" data-k="src">Ajouter</button></div>` : ''}
+          <div class="row" style="gap:6px"><input type="text" id="chk-text" placeholder="Autre : classeur, correction signée, fiche à rendre…" style="flex:1 1 260px;width:auto" aria-label="Travail à vérifier (texte libre)"><button type="button" class="btn" data-act="chk-add" data-k="text">Ajouter</button></div>
+        </div>
+        <p class="small muted" style="margin:0">Les ajouts et les reports sont enregistrés tout de suite.</p></section>`;
   const nextAny = nextSession(s.cid, s.key, s.group, false);
   const other = otherGroupSession(s);
   $('#layer').innerHTML = `<div class="scrim" data-act="ct-close"></div>
@@ -2267,13 +2469,14 @@ function renderContent() {
       <div class="hd"><div style="flex:1 1 200px;min-width:0"><h2 id="ct-t">Contenu de la séance</h2><div class="small muted">${dot(c)} ${esc(c.name)}${s.group !== 'all' ? ' · ' + s.group : ''} · ${fmtLong(s.date)}${s.label ? ', ' + esc(s.label) : ''}</div></div>
         <button class="btn icon-btn ghost" data-act="ct-close" aria-label="Fermer">${ICON.close}</button></div>
       ${progressHTML({key: s.key, cid: s.cid, group: s.group, date: s.date}, true)}
-      <div><div class="lbl">Chapitre <span style="text-transform:none;letter-spacing:0;font-weight:400">· liste ${esc(chapScope(lvl))}</span></div>
-        <div class="row" style="gap:6px;margin-top:6px">${chBtns}<button type="button" class="gchip" data-act="ct-newch">+ Chapitre ${(chs.reduce((m, x) => Math.max(m, x.n), 0)) + 1}</button>${d.ch != null ? '<button type="button" class="btn ghost" data-act="ct-noch">Aucun</button>' : ''}</div>
-        ${d.ch != null ? `<label class="f" for="ct-title" style="margin-top:8px;display:block">Titre du chapitre ${d.ch} <span class="muted" style="font-weight:400">(facultatif)</span><input style="margin-top:6px" type="text" id="ct-title" value="${esc(title)}" data-inp="ct-title" placeholder="ex. La matière et ses trois états"></label>` : ''}</div>
-      <div><div class="lbl">Déroulé de la séance</div>
+      <section class="ctsec" style="--sc:var(--sc-ch)"><h3 class="sech">Chapitre <span class="sub">· liste ${esc(chapScope(lvl))}</span></h3>
+        <div class="row" style="gap:6px">${chBtns}<button type="button" class="gchip" data-act="ct-newch">+ Chapitre ${(chs.reduce((m, x) => Math.max(m, x.n), 0)) + 1}</button>${d.ch != null ? '<button type="button" class="btn ghost" data-act="ct-noch">Aucun</button>' : ''}</div>
+        ${d.ch != null ? `<label class="f" for="ct-title" style="margin-top:8px;display:block">Titre du chapitre ${d.ch} <span class="muted" style="font-weight:400">(facultatif)</span><input style="margin-top:6px" type="text" id="ct-title" value="${esc(title)}" data-inp="ct-title" placeholder="ex. La matière et ses trois états"></label>` : ''}</section>
+      ${chkSec}
+      <section class="ctsec" style="--sc:var(--sc-de)"><h3 class="sech">Déroulé de la séance</h3>
         ${items ? `<ul class="ctlist">${items}</ul>` : '<p class="small muted" style="margin:6px 0">Ajoutez un ou plusieurs éléments.</p>'}
-        <div class="row" style="gap:6px;margin-top:6px">${ITYPES.map(([key, l, col]) => `<button type="button" class="btn addty" style="--tc:${col}" data-act="ct-add" data-t="${key}">+ ${l}</button>`).join('')}</div></div>
-      <div><div class="lbl">Travail à faire</div>
+        <div class="row" style="gap:6px;margin-top:6px">${ITYPES.map(([key, l, col]) => `<button type="button" class="btn addty" style="--tc:${col}" data-act="ct-add" data-t="${key}">+ ${l}</button>`).join('')}</div></section>
+      <section class="ctsec" style="--sc:var(--sc-hw)"><h3 class="sech">Travail à faire <span class="sub">· donné aux élèves</span></h3>
         ${hws ? `<ul class="hwlist">${hws}</ul>` : ''}
         <div class="hwform">
           <select id="hw-kind" data-chg="hw-kind" aria-label="Type de devoir">${HWKINDS.map(([v, l]) => `<option value="${v}" ${v === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
@@ -2286,9 +2489,9 @@ function renderContent() {
             if (!after.length) return '<option value="next">Pour la séance suivante</option>';
             return after.map((x, n) => `<option value="${n ? x.key : 'next'}" ${CT.hw.due === (n ? x.key : 'next') || (!n && CT.hw.due === x.key) ? 'selected' : ''}>${n ? '' : 'Séance suivante : '}${cap(dayShort(x.date))}${x.start !== '99:99' ? ', ' + fmtT(x.start) : ''}${x.group !== 'all' && x.group !== s.group ? '' : ''}${x.group === 'all' && s.group !== 'all' ? ' (classe entière)' : ''}</option>`).join('');
           })()}</select>
-          ${CT.hw.edit != null ? '<button type="button" class="btn ink" data-act="hw-add">Enregistrer le devoir</button><button type="button" class="btn ghost" data-act="hw-cancel">Annuler</button>' : '<button type="button" class="btn" data-act="hw-add">Ajouter le devoir</button>'}</div></div>
-      <div><label class="lbl" for="ct-note" style="display:block">Commentaire <span style="text-transform:none;letter-spacing:0;font-weight:400">· visible par vous seul</span></label>
-        <textarea id="ct-note" rows="3" data-inp="ct-note" placeholder="ex. Manqué de temps, bilan à reprendre · groupe agité après la récréation" style="margin-top:6px">${esc(d.note || '')}</textarea></div>
+          ${CT.hw.edit != null ? '<button type="button" class="btn ink" data-act="hw-add">Enregistrer le devoir</button><button type="button" class="btn ghost" data-act="hw-cancel">Annuler</button>' : '<button type="button" class="btn" data-act="hw-add">Ajouter le devoir</button>'}</div></section>
+      <section class="ctsec" style="--sc:var(--sc-no)"><h3 class="sech"><label for="ct-note">Commentaire</label> <span class="sub">· visible par vous seul</span></h3>
+        <textarea id="ct-note" rows="3" data-inp="ct-note" placeholder="ex. Manqué de temps, bilan à reprendre · groupe agité après la récréation">${esc(d.note || '')}</textarea></section>
       ${other ? `<label class="check other"><input type="checkbox" id="ct-other" ${CT.other ? 'checked' : ''} data-act="ct-other"> Même contenu pour le ${other.group} (${fmtShort(other.date)}, ${fmtT(other.start)})</label>` : ''}
       <p class="err" id="ct-err" hidden></p>
     </div>
@@ -2318,7 +2521,9 @@ function syncInputs() {
 function saveContent(fromCT) {
   const s = CT.ses, d = CT.data, lvl = levelOf(cls(s.cid));
   Object.entries(CT.titles).forEach(([n, t]) => { const ch = chaptersOf(lvl).find(x => x.n === +n); if (ch) ch.t = t; });
-  const empty = !d.items.length && !d.hw.length && d.ch == null && !d.note && !d.ready;
+  const live = DB.content[s.key]; // le travail à vérifier ajouté à la main est enregistré à part, au fil de l'eau
+  if (live && live.chk && live.chk.length) d.chk = live.chk; else delete d.chk;
+  const empty = !d.items.length && !d.hw.length && d.ch == null && !d.note && !d.ready && !d.chk;
   if (empty) delete DB.content[s.key]; else DB.content[s.key] = d;
   const other = otherGroupSession(s);
   if (other && CT.other && !empty) {
@@ -2371,7 +2576,7 @@ function viewProg() {
     else { const sts = ct.items.map(i => i.st); status = sts.every(x => x === 'done') ? 'Fait' : sts.some(x => x === 'not' || x === 'part') ? (sts.every(x => x === 'not') ? 'Pas fait' : 'En partie') : 'À renseigner'; cl = status === 'Fait' ? 'pos' : status === 'À renseigner' ? 'muted' : 'warn'; }
     const items = ct ? ct.items.map(it => `${ityChip(it.type)}${it.label ? ' <span>' + esc(it.label) + '</span>' : ''}${st && it.st && it.st !== 'done' && it.st !== 'prev' ? ` <span class="small st-${it.st}">(${it.st === 'part' ? 'en partie' : 'pas fait'})</span>` : ''}`).join(' ') : '';
     const given = ct && ct.hw.length ? ct.hw.map(h => `<span class="hwl"><b>${cap(esc(hwDueLabel(h, s, c.id, s.group)))}</b> : ${esc(hwText(h))}</span>`).join('') : '';
-    const due = s.cancelled ? '' : hwDueAt({...s, cid: c.id}).map(d => `<span class="hwl hwv"><b>À vérifier</b> (donné le ${esc(dayShort(d.from.date))}) : ${esc(hwText(d.h))}</span>`).join('');
+    const due = s.cancelled ? '' : hwDueAt({...s, cid: c.id}).map(d => `<span class="hwl hwv"><b>À vérifier</b> (${dueMeta(d)}) : ${esc(hwText(d.h))}</span>`).join('');
     const hw = given + due;
     const note = ct && ct.note ? `<span class="pnote">${esc(ct.note)}</span>` : '';
     const now = hi && s.key === hi.key;
@@ -2453,12 +2658,13 @@ function checkListHTML(ses, ck) {
   const sec = (title, items) => items ? `<div class="chksec"><div class="lbl">${title}</div><ul class="chklist">${items}</ul></div>` : '';
   const prevD = ck.prev ? fmtShort(ck.prev.date) : '';
   let h = '';
-  if (ck.hw.length) h += `<div class="chksec"><div class="lbl">Travail à faire pour aujourd'hui</div><ul class="hwlist">${ck.hw.map(d => `<li class="hwitem"><span>${esc(hwText(d.h))}</span><span class="small muted">donné le ${fmtShort(d.from.date)}</span></li>`).join('')}</ul></div>`;
+  if (ck.hw.length) h += `<div class="chksec"><div class="lbl">Travail à vérifier</div>${dueListHTML(ses, ck.hw)}</div>`;
   h += sec('Rattrapages en cours', ck.catch.map(c => line(stu(c.sid), esc(catchText(c)), `<button class="btn" data-act="catch-done" data-id="${c.id}">Rattrapé</button>`)).join(''));
   h += sec(`Devoirs le ${prevD}`, ck.dev.map(o => line(stu(o.sid), esc(CAT[o.cat].l) + (o.note ? ' · ' + esc(o.note) : ' · à vérifier aujourd\'hui'), `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
   h += sec(`Oubli de matériel le ${prevD}`, ck.mat.map(o => line(stu(o.sid), o.note ? esc(o.note) : 'À vérifier aujourd\'hui', `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`)).join(''));
   return h || '<p class="muted" style="margin:0">Rien à vérifier pour cette séance.</p>';
 }
+const sesOfEl = el => { const s = sesByKey(el.dataset.cid, el.dataset.key); return s ? {...s, cid: el.dataset.cid} : (V.ses && V.ses.key === el.dataset.key ? V.ses : null); };
 const sesByKey = (cid, key) => classSessions(cid).find(x => x.key === key) || null;
 const fmtDay = d => parseD(d).toLocaleDateString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long'});
 function itemsHTML(ct, showState) {
@@ -2547,11 +2753,14 @@ function sesHeader(ses, actions) {
     <span class="grow"></span>${actions || ''}
   </header>${sesTabs(ses)}`;
 }
+function cdtBtn(ses) { const on = !!DB.cdt[ses.key]; return `<button class="btn readybtn cdtbtn" data-act="cdt-toggle" data-key="${ses.key}" aria-pressed="${on}">${on ? '<i class="pdot pb">✓</i>Cahier de textes complété' : '<i class="pdot pbx">!</i>Cahier de textes à compléter'}</button>`; }
+function setCdt(key, on) { if (on) DB.cdt[key] = true; else delete DB.cdt[key]; save(); }
+function setReady(key, on) { const ct = DB.content[key] || (DB.content[key] = {ch: null, items: [], hw: []}); if (on) ct.ready = true; else { delete ct.ready; if (ctEmpty(ct)) delete DB.content[key]; } SESS_CACHE = {}; save(); }
 function viewHub() {
   const ses = V.ses;
   const ck = checkItems(ses);
   const rdy = !!(DB.content[ses.key] && DB.content[ses.key].ready);
-  return `${sesHeader(ses, `<button class="btn readybtn" data-act="ready-toggle" aria-pressed="${rdy}">${rdy ? '<i class="pdot pg">✓</i>Séance prête' : '<i class="pdot pr">!</i>Marquer comme prête'}</button><button class="btn primary icon-btn" data-act="hub-content" aria-label="Modifier le contenu de la séance" title="Modifier le contenu">${ICON.edit}</button>`)}
+  return `${sesHeader(ses, `<button class="btn readybtn" data-act="ready-toggle" aria-pressed="${rdy}">${rdy ? '<i class="pdot pg">✓</i>Séance prête' : '<i class="pdot pr">!</i>Marquer comme prête'}</button>${cdtBtn(ses)}<button class="btn primary icon-btn" data-act="hub-content" aria-label="Modifier le contenu de la séance" title="Modifier le contenu">${ICON.edit}</button>`)}
   <main class="main"><div class="wrap hub" style="max-width:1300px">
     <section class="card"><h2 class="h2s">Progression</h2>${progressHTML(ses)}</section>
     <div class="hubcol"><section class="card"><h2 class="h2s">À vérifier${ck.n ? ` <span class="chip warn">${ck.n}</span>` : ''}</h2>${checkListHTML(ses, ck)}</section>
@@ -2573,9 +2782,8 @@ function viewDevoirs() {
       <span class="ph">${photoHTML(s)}${a ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${dv ? `<span class="dv-tag">${DV_SHORT[dv]}</span>` : fine ? '<span class="dv-tag ok">Fait</span>' : ''}</span>
       <span class="nm">${name}</span></button>`;
   }).join('');
-  const dates = [...new Set(due.map(d => fmtShort(d.from.date)))].join(', ');
   const okBtn = `<button class="btn hwokbtn" data-act="hw-ok" aria-pressed="${ok}">${ok ? '<i class="pdot pg">✓</i>Le reste a fait ses devoirs' : 'Le reste a fait ses devoirs'}</button>`;
-  const top = due.length ? `<div class="banner hw"><p><strong>Travail à vérifier :</strong> ${due.map(d => esc(hwText(d.h))).join(' · ')} <span class="small">(donné le ${dates})</span></p>${okBtn}</div>`
+  const top = due.length ? `<div class="banner hw dvban"><div class="dvbl"><strong>Travail à vérifier</strong>${dueListHTML(ses, due)}</div>${okBtn}</div>`
     : `<div class="banner ok"><p>Aucun travail n'était prévu pour cette séance. Vous pouvez tout de même noter un devoir non fait.</p>${ok ? okBtn : ''}</div>`;
   const tot = cnt.devoir + cnt.devoir_inc + cnt.devoir_bac;
   const recap = (done ? plural(done, 'fait', 'faits') + ' · ' : '') + (tot ? [cnt.devoir && plural(cnt.devoir, 'non fait', 'non faits'), cnt.devoir_inc && plural(cnt.devoir_inc, 'incomplet'), cnt.devoir_bac && plural(cnt.devoir_bac, 'bâclé')].filter(Boolean).join(' · ') : 'Aucun devoir non fait');
@@ -2952,6 +3160,28 @@ const ACT = {
     save(); closeModal(); back(); V.rid = null; render();
   },
   'ct-open': () => openContent(V.ses),
+  'due-rep': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (ses) doReport(ses, [el.dataset.mk]); },
+  'due-rep-all': el => { if (CT) syncInputs(); const ses = sesOfEl(el); if (ses) doReport(ses, hwDueAt(ses).map(d => d.mk)); },
+  'due-rep-go': () => { const p = PENDREP; PENDREP = null; closeModal(); if (p) doReport(p.ses, p.mks, true); },
+  'chk-add': el => {
+    syncInputs(); const s = CT.ses;
+    if (el.dataset.k === 'src') {
+      const v = $('#chk-src') && $('#chk-src').value; if (!v) { toast('Choisissez un devoir dans la liste.'); return; }
+      const i = v.lastIndexOf('#'), pk = v.slice(0, i), h = DB.content[pk] && DB.content[pk].hw[+v.slice(i + 1)]; if (!h) return;
+      addManualCheck(s.cid, s.key, hwText(h), pk.split('|')[0]);
+    } else {
+      const t = $('#chk-text') && $('#chk-text').value.trim(); if (!t) { $('#chk-text') && $('#chk-text').focus(); return; }
+      addManualCheck(s.cid, s.key, t, null);
+    }
+    renderContent(); renderKeep(); toast('Ajouté au travail à vérifier');
+  },
+  'chk-del': el => {
+    if (CT) syncInputs(); const ct = DB.content[el.dataset.key]; if (!ct || !ct.chk) return; const id = el.dataset.id;
+    ct.chk = ct.chk.filter(m => m.id !== id); if (!ct.chk.length) delete ct.chk;
+    Object.keys(DB.hwMove).forEach(k => { if (k.startsWith(id + '@')) delete DB.hwMove[k]; });
+    if (ctEmpty(ct)) delete DB.content[el.dataset.key];
+    SESS_CACHE = {}; save(); if (CT) renderContent(); renderKeep();
+  },
   'prog-open': el => { const s = classSessions(V.pcid).find(x => x.key === el.dataset.key); if (s) openContent({key: s.key, cid: V.pcid, group: s.group, date: s.date, label: s.label}); },
   'ct-close': () => { CT = null; closeLayer(); },
   'ct-ch': el => { syncInputs(); CT.data.ch = +el.dataset.n; renderContent(); },
@@ -3017,7 +3247,13 @@ const ACT = {
   'chap-del': el => { const lvl = el.dataset.lvl; DB.chapters[lvl] = chaptersOf(lvl).filter(x => x.n !== +el.dataset.n); save(); chapModal(lvl); render(); },
   'amen-pop': el => amenPop(el),
   'stu-flag': el => { const x = stu(el.dataset.sid); if (!x) return; const f = el.dataset.f; if (x[f]) delete x[f]; else x[f] = true; save(); renderKeep(); },
-  'ready-toggle': () => { const k = V.ses.key, ct = DB.content[k] || (DB.content[k] = {ch: null, items: [], hw: []}); if (ct.ready) { delete ct.ready; if (!ct.items.length && !ct.hw.length && ct.ch == null && !ct.note) delete DB.content[k]; } else ct.ready = true; SESS_CACHE = {}; save(); renderKeep(); toast(DB.content[k] && DB.content[k].ready ? 'Séance marquée prête' : 'Séance à nouveau en préparation'); },
+  'cdt-toggle': el => { const k = el.dataset.key; setCdt(k, !DB.cdt[k]); renderKeep(); toast(DB.cdt[k] ? 'Cahier de textes complété' : 'Cahier de textes à compléter'); },
+  'hv-ready': el => { const k = el.dataset.key; setReady(k, !(DB.content[k] && DB.content[k].ready)); refreshHover(el); },
+  'hv-cdt': el => { const k = el.dataset.key; setCdt(k, !DB.cdt[k]); refreshHover(el); },
+  'sui-ses': el => { const x = DB.slots.find(y => y.id === el.dataset.slot); if (x) openSession(sesFromSlot(el.dataset.date, x), 'bilan'); },
+  'cdt-first': el => { V.date = el.dataset.date; V.mode = 'week'; render(); },
+  'cdt-week': el => { const keys = el.dataset.keys.split(','), on = el.dataset.on === '1'; keys.forEach(k => { if (on) DB.cdt[k] = true; else delete DB.cdt[k]; }); save(); renderKeep(); toast(on ? `Cahier de textes coché pour ${plural(keys.length, 'séance')}` : 'Cahier de textes décoché pour la semaine'); },
+  'ready-toggle': () => { const k = V.ses.key, ct = DB.content[k] || (DB.content[k] = {ch: null, items: [], hw: []}); if (ct.ready) { delete ct.ready; if (ctEmpty(ct)) delete DB.content[k]; } else ct.ready = true; SESS_CACHE = {}; save(); renderKeep(); toast(DB.content[k] && DB.content[k].ready ? 'Séance marquée prête' : 'Séance à nouveau en préparation'); },
   'sync-now': () => syncNow(true),
   'sync-login': () => msLogin(false),
   'sync-logout': () => { syncLogout(); render(); toast('Déconnecté de OneDrive. Les données restent sur cet appareil.'); },
@@ -3060,7 +3296,7 @@ const ACT = {
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
 /* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
-const UNDO_MSG = {'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+const UNDO_MSG = {'due-rep': 'Travail reporté', 'due-rep-all': 'Travail reporté', 'due-rep-go': 'Travail reporté', 'chk-add': 'Ajouté au travail à vérifier', 'chk-del': 'Retiré du travail à vérifier', 'cdt-toggle': 'Cahier de textes modifié', 'hv-ready': 'Séance modifiée', 'hv-cdt': 'Cahier de textes modifié', 'cdt-week': 'Cahier de textes modifié', 'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-del-item-go': 'Élément supprimé', 'room-board': 'Tableau déplacé', 'room-kind': 'Type de labo modifié',
   'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'ch-share': 'Partage des chapitres modifié', 'sep-del': 'Paire retirée'};
@@ -3173,7 +3409,7 @@ async function showPersist() {
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
 const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup'];
-const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk'];
+const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'cdt'];
 const SYNC_SET = ['evenIsA', 'holidays', 'periods'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
 const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});
@@ -3529,9 +3765,9 @@ function mergeBackupFile(file) {
 }
 
 /* ---------- aperçu d'une séance au survol (ordinateur) ---------- */
-const CAN_HOVER = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
-let hovT = null, hovEl = null;
-function hideHover() { clearTimeout(hovT); hovT = null; const el = $('#hovercard'); if (el) el.hidden = true; }
+/* aperçu au survol : souris ou stylet (pas le doigt). Il reste ouvert quand on passe dessus, pour cocher « prête » / « cahier de textes ». */
+let hovT = null, hovEl = null, hovOut = null, HOV = null;
+function hideHover() { clearTimeout(hovT); clearTimeout(hovOut); hovT = hovOut = null; HOV = null; const el = $('#hovercard'); if (el) el.hidden = true; }
 function sesPreviewHTML(d, x) {
   const c = cls(x.cid); if (!c) return '';
   const ses = {...sesFromSlot(d, x), start: x.start}, key = ses.key, ct = DB.content[key], lvl = levelOf(c);
@@ -3541,28 +3777,45 @@ function sesPreviewHTML(d, x) {
     <div class="small muted">${cap(fmtDay(d))} · ${fmtT(x.start)} – ${fmtT(x.end)}${cancelled ? ' · <strong>annulé</strong>' : ''}</div>`;
   if (ct && ct.ch != null) h += `<div class="hvch">${esc(chapShort(lvl, ct.ch))}</div>`;
   if (items) h += `<ul class="pglist">${items}</ul>`;
-  if (due.length) h += `<div class="hvsec"><span class="hwb">À vérifier</span><ul>${due.map(q => `<li>${esc(hwText(q.h))} <span class="small muted">(donné le ${esc(dayShort(q.from.date))})</span></li>`).join('')}</ul></div>`;
+  if (due.length) h += `<div class="hvsec"><span class="hwb">À vérifier</span><ul>${due.map(q => `<li>${esc(hwText(q.h))} <span class="small muted">(${dueMeta(q)})</span></li>`).join('')}</ul></div>`;
   if (ct && ct.hw.length) h += `<div class="hvsec"><span class="lbl" style="margin:0">Travail donné</span><ul>${ct.hw.map(q => `<li>${esc(hwText(q))} <span class="small muted">(${esc(hwDueLabel(q, ses, c.id, x.group))})</span></li>`).join('')}</ul></div>`;
   if (ct && ct.note) h += `<p class="pgnote">${esc(ct.note)}</p>`;
   if (!items && !(ct && ct.ch != null) && !due.length && !(ct && (ct.hw.length || ct.note))) h += '<p class="small muted" style="margin:6px 0 0">Rien de renseigné pour cette séance.</p>';
+  if (!cancelled) { const rd = !!(ct && ct.ready), cd = !!DB.cdt[key];
+    h += `<div class="hvtg"><button type="button" class="g" data-act="hv-ready" data-key="${key}" aria-pressed="${rd}">${rd ? '<i class="pdot pg">✓</i>Séance prête' : '<i class="pdot pr">!</i>Marquer prête'}</button><button type="button" class="b" data-act="hv-cdt" data-key="${key}" aria-pressed="${cd}">${cd ? '<i class="pdot pb">✓</i>Cahier de textes' : '<i class="pdot pbx">!</i>Cahier de textes'}</button></div>`; }
   return h;
 }
 function showHover(b) {
   if (!b.isConnected || $('#modal').innerHTML || $('#layer').innerHTML) return;
   const x = DB.slots.find(s => s.id === b.dataset.slot); if (!x) return;
-  let el = $('#hovercard'); if (!el) { el = document.createElement('div'); el.id = 'hovercard'; el.setAttribute('role', 'tooltip'); document.body.appendChild(el); }
-  el.innerHTML = sesPreviewHTML(b.dataset.date, x); el.hidden = false;
+  let el = $('#hovercard'); if (!el) { el = document.createElement('div'); el.id = 'hovercard'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Aperçu de la séance'); document.body.appendChild(el); }
+  el.innerHTML = sesPreviewHTML(b.dataset.date, x); el.hidden = false; HOV = {slot: x.id, date: b.dataset.date};
   const r = b.getBoundingClientRect(), w = el.offsetWidth, hh = el.offsetHeight;
   const left = r.right + 10 + w < window.innerWidth ? r.right + 10 : Math.max(8, r.left - 10 - w);
   el.style.left = left + 'px'; el.style.top = Math.max(8, Math.min(r.top, window.innerHeight - hh - 8)) + 'px';
 }
-document.addEventListener('mouseover', e => {
-  if (!CAN_HOVER) return;
+/* après « prête » / « cahier de textes » dans l'aperçu : on redessine l'emploi du temps et on garde l'aperçu ouvert */
+function refreshHover() {
+  const h = HOV; renderKeep(); if (!h) return;
+  const b = document.querySelector(`[data-slot="${h.slot}"][data-date="${h.date}"]`); if (!b) return;
+  hovEl = b; showHover(b);
+}
+document.addEventListener('pointerover', e => {
+  if (e.pointerType === 'touch') return;
+  if (e.target.closest && e.target.closest('#hovercard')) { clearTimeout(hovOut); hovOut = null; return; }
   const b = e.target.closest && e.target.closest('.blk[data-slot], .slot[data-slot]');
-  if (b === hovEl) return;
-  hideHover(); hovEl = b; if (b) hovT = setTimeout(() => showHover(b), 700);
+  if (b && b === hovEl) { clearTimeout(hovOut); hovOut = null; return; }
+  if (!b && !hovEl) return;
+  clearTimeout(hovT); hovT = null;
+  const card = $('#hovercard'), open = card && !card.hidden;
+  hovEl = b;
+  if (b) { if (open) { clearTimeout(hovOut); hovOut = null; showHover(b); } else hovT = setTimeout(() => showHover(b), 600); }
+  else if (open && !hovOut) hovOut = setTimeout(() => { hovEl = null; hideHover(); }, 350); // le temps de passer du créneau à l'aperçu
 });
-['scroll', 'pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { hovEl = null; hideHover(); }, true));
+/* stylet qui s'éloigne de l'écran ou souris qui quitte la fenêtre */
+document.addEventListener('pointerout', e => { if (e.pointerType !== 'touch' && !e.relatedTarget) { clearTimeout(hovT); hovT = null; if (!hovOut) hovOut = setTimeout(() => { hovEl = null; hideHover(); }, 900); } });
+document.addEventListener('pointerdown', e => { if (e.target.closest && e.target.closest('#hovercard')) return; hovEl = null; hideHover(); }, true);
+['scroll', 'keydown'].forEach(ev => document.addEventListener(ev, e => { if (ev === 'scroll' && e.target && e.target.closest && e.target.closest('#hovercard')) return; hovEl = null; hideHover(); }, true));
 document.addEventListener('scroll', () => hideAmen(), true);
 
 /* ---------- démarrage ---------- */

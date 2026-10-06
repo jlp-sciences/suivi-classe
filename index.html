@@ -696,6 +696,8 @@ button.wpill{cursor:pointer}
 .slitems .bty{font-size:11.5px;line-height:18px;padding:0 6px;margin-top:1px}
 .slitems .bil{white-space:normal;overflow:visible}
 .slot.past .slitems .bit{color:var(--muted)}
+.slhw{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+.slhwt{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sc-hw)}
 @media (max-width:720px){
   .dvban{flex-direction:column;align-items:stretch;gap:10px}
   .dvban .hwokbtn{width:100%;justify-content:center}
@@ -744,7 +746,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.10.1', d: '2026-10-06'};
+const APP_VERSION = {n: '2.10.2', d: '2026-10-06'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1081,7 +1083,7 @@ function slotCard(d, s, FM) {
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwPending(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const ct = DB.content[d + '|' + s.id]; return ct && ct.ch != null ? ' · ' + esc(chapterLabel(levelOf(c), ct.ch)) : ''; })()}</span>${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.items.length || st.k === 'cancel') return ''; return `<span class="slitems">${ct.items.map(it => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim(); return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}</span>`; }).join('')}</span>`; })()}</span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwPending(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const ct = DB.content[d + '|' + s.id]; return ct && ct.ch != null ? ' · ' + esc(chapterLabel(levelOf(c), ct.ch)) : ''; })()}</span>${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.items.length || st.k === 'cancel') return ''; return `<span class="slitems">${ct.items.map(it => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim(); return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}</span>`; }).join('')}</span>`; })()}${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.hw || !ct.hw.length || st.k === 'cancel') return ''; const ses = sesFromSlot(d, s); return `<span class="slitems slhw"><span class="slhwt">Travail donné</span>${ct.hw.map(h => `<span class="bit"><i class="bty" style="--tc:var(--sc-hw)">${esc(cap(hwDueLabel(h, ses, s.cid, s.group)))}</i><span class="bil">${esc(hwText(h))}</span></span>`).join('')}</span>`; })()}</span>
     ${right}</button></li>`;
 }
 

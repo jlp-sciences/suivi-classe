@@ -646,6 +646,49 @@ table.prev td,table.prev th{padding:6px 8px;border-top:1px solid var(--line);tex
 .synth .sp{background:var(--pos)} .synth .sr{background:var(--ras)} .synth .sn{background:var(--neg)}
 .synleg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:14px}
 .synleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* ---- v2.10 : vue semaine compacte ---- */
+.wkbar{padding:8px 16px;gap:8px;flex-wrap:wrap}
+.wkbar .seg button{padding:0 12px;min-height:34px}
+.wkbar .btn.icon-btn{min-width:38px;min-height:38px}
+.wkbar .wkt{margin:0;font-family:var(--serif);font-size:20px;font-weight:600;white-space:nowrap}
+.wkbar .wks{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--muted);margin-left:4px}
+.wpills{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-left:6px}
+.wpill{display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:0 9px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);white-space:nowrap}
+button.wpill{cursor:pointer}
+.wpill.red{color:#B3261E;border-color:rgba(217,48,37,.35);background:rgba(217,48,37,.06)}
+.wpill.blue{color:var(--cdt);border-color:rgba(47,109,181,.35);background:rgba(47,109,181,.06)}
+.wpill.warn{color:var(--warn-ink);border-color:var(--warn-line);background:var(--warn-soft)}
+.wpill.ok{color:var(--muted);font-weight:500}
+.wpill.ghost{color:var(--muted);font-weight:500}
+.wpill .pdot{margin:0}
+.wkmain{padding:8px 12px 10px}
+.wkwrap{max-width:none;gap:8px}
+.wkwrap .tt{grid-template-columns:38px repeat(var(--n),minmax(120px,1fr));column-gap:6px;row-gap:4px}
+.wkwrap .tt-dh{padding:3px 6px;font-size:13px;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wkwrap .tt-dh b{font-size:15px}
+.wkwrap .tt-tag{display:inline;font-size:10px;margin-left:4px}
+.wkwrap .tt-times span{font-size:11px}
+.wkwrap .blk{padding:5px 7px 4px;gap:1px}
+.wkwrap .blk .bc{font-size:14px;line-height:19px;flex:none}
+.wkwrap .blk .bch{font-size:12.5px}
+.bits{display:flex;flex-direction:column;min-height:0;overflow:hidden;flex:0 1 auto}
+.bit{display:flex;align-items:center;gap:5px;height:16px;line-height:16px;font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;min-width:0;flex:none}
+.bty{font-style:normal;font-size:10px;font-weight:700;line-height:14px;padding:0 4px;border-radius:4px;color:var(--tc);background:color-mix(in srgb,var(--tc) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 35%,transparent);flex:none}
+.bil{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bmore{flex:none;margin-left:auto;padding:0 5px;border-radius:5px;font-size:10.5px;font-weight:700;line-height:14px;color:var(--ink-2);background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.blk.past .bit{color:var(--muted)}
+.bfoot{margin-top:auto;display:flex;align-items:center;gap:4px;min-height:19px;flex:none;min-width:0}
+.bfoot .grow{flex:1 1 auto}
+.btop{display:flex;align-items:center;gap:4px;min-width:0;flex:none}
+.btop .bc,.wkwrap .btop .bc{flex:1 1 auto;min-width:0}
+.btop .bdots{position:static;display:flex;gap:3px;flex:none}
+.bfoot .chip{margin:0;font-size:11px;padding:0 6px;line-height:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.bfoot .evb{flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;line-height:17px;align-self:auto}
+.blk.short .evb{display:inline-block}
+.blk.has-eval{border-color:color-mix(in srgb,var(--neg) 55%,transparent)}
+.leglist{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:8px}
+.leglist li{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -680,7 +723,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.9.1', d: '2026-10-06'};
+const APP_VERSION = {n: '2.10', d: '2026-10-06'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -912,6 +955,7 @@ function render() {
   else if (V.name === 'settings') app.innerHTML = viewSettings();
   else if (V.name === 'trombi') app.innerHTML = viewTrombi();
   saveNav();
+  if (V.name === 'today' && V.tab === 'edt' && $('.wkmain')) fitWeek();
   if (V.name === 'today' && V.tab === 'prog') { const r = $('.prow.is-now'), k = V.pcid + '|' + V.pg; if (r && V.pScroll !== k) { V.pScroll = k; r.scrollIntoView({block: 'center'}); } }
 }
 /* se souvenir de la page ouverte, pour la retrouver après un rafraîchissement */
@@ -1041,6 +1085,36 @@ function slotDots(d, x, st) {
   return `<span class="bdots">${hw ? '<i class="pdot py" title="Devoir à vérifier"></i>' : ''}${cdtDot(d + '|' + x.id)}${ready ? '<i class="pdot pg" title="Séance prête">✓</i>' : pend ? '<i class="pdot pr" title="Séance pas encore prête">!</i>' : ''}</span>`;
 }
 /* ---------- vue : semaine ---------- */
+/* ajustement de la hauteur de la grille, mesuré après affichage (pour que toute la semaine tienne à l'écran) */
+let WEEK_FIX = 0, WEEK_FIX_KEY = '';
+function fitWeek() {
+  const m = $('.wkmain'), tt = $('.tt'); if (!m || !tt) return;
+  const key = window.innerWidth + 'x' + window.innerHeight + '|' + document.querySelectorAll('.wkmain .banner').length + '|' + document.querySelectorAll('.tt-dh').length + '|' + ($('.wkbar') ? $('.wkbar').offsetHeight : 0);
+  if (WEEK_FIX_KEY === key) return; // une seule correction par taille d'écran
+  WEEK_FIX_KEY = key;
+  const over = m.scrollHeight - m.clientHeight; // > 0 : ça déborde ; < 0 : il reste de la place
+  const slack = over > 0 ? -over : (m.clientHeight - (tt.getBoundingClientRect().bottom - m.getBoundingClientRect().top) - 14);
+  if (Math.abs(slack) > 6) { WEEK_FIX += slack; const top = m.scrollTop; render(); const m2 = $('.wkmain'); if (m2) m2.scrollTop = top; }
+}
+const ITY_SHORT = {tp: 'TP', act: 'Activité', exo: 'Exercices', cours: 'Cours', corr: 'Correction', eval: 'Éval.', autre: 'Autre'};
+/* un créneau de la vue semaine : classe · groupe · chapitre, puis un élément de la séance par ligne, puis pastilles */
+function blkHTML(d, x, c, st, o) {
+  const key = d + '|' + x.id, ct = DB.content[key], ev = hasEval(ct), cancel = st.k === 'cancel';
+  const items = ct && !cancel ? ct.items : [];
+  let chip = cancel ? '<span class="chip neu">Annulé</span>' : stateChip(st), evp = ev && !cancel;
+  const LINE = 16, base = o.h - 11 - 19 - 1; // hauteur sans marges/bordure, ni ligne de titre, ni espacement
+  let foot = !!(evp || chip), avail = base - (foot ? 20 : 0);
+  if (items.length && foot && avail < LINE) { chip = ''; evp = false; foot = false; avail = base; } // le contenu de la séance passe avant l'état du bilan
+  const fit = Math.max(0, Math.floor(avail / LINE));
+  const show = items.slice(0, fit), more = items.length - show.length;
+  const line = (it, last) => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim();
+    return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}${last && more ? `<span class="bmore">+${more}</span>` : ''}</span>`; };
+  const lines = show.map((it, i) => line(it, i === show.length - 1)).join('');
+  return `<button class="blk ${ev ? 'has-eval' : ''} ${o.past ? 'past' : ''} ${o.isNow ? 'now' : ''} ${cancel ? 'cancel' : ''} ${o.h < 58 ? 'short' : ''}" style="top:${o.top}px;height:${o.h}px;left:calc(${x._lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)}" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + o.g + ', ' + fmtT(x.start))}">
+    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span>${slotDots(d, x, st)}</span>
+    ${lines ? `<span class="bits">${lines}</span>` : ''}
+    ${foot ? `<span class="bfoot">${evp ? '<span class="evb">Évaluation</span>' : ''}${chip}</span>` : ''}</button>`;
+}
 function viewWeek() {
   const t = todayStr(), mon = mondayOf(V.date), FM = fillMap(), fd = focusDay();
   const wt = weekType(mon);
@@ -1051,15 +1125,15 @@ function viewWeek() {
   const t0 = valid.length ? Math.floor(Math.min(...valid.map(x => tMin(x.start))) / 60) * 60 : 480;
   const t1 = valid.length ? Math.ceil(Math.max(...valid.map(x => tMin(x.end))) / 60) * 60 : 1020;
   const nb = (IS_DEMO ? 1 : 0) + (backupDue() && !IS_DEMO ? 1 : 0) + (!STORAGE_OK && !IS_DEMO ? 1 : 0);
-  const avail = window.innerHeight - 57 - 80 - 40 - 64 - 34 - nb * 84;
-  const PPM = Math.max(0.8, Math.min(1.6, avail / Math.max(60, t1 - t0)));
+  const avail = window.innerHeight - 57 - 58 - 26 - 30 - 6 - nb * 84 + WEEK_FIX;
+  const PPM = Math.max(0.8, Math.min(2.4, avail / Math.max(60, t1 - t0)));
   const H = (t1 - t0) * PPM;
   let todo = 0, started = 0;
   const cols = shown.map(d => {
     const hol = holidayOn(d), sl = slotsOn(d);
     const wd = parseD(d);
     const hi = d === fd;
-    const head = `<div class="tt-dh ${hi ? 'today' : ''}">${DAYS[wd.getDay()].slice(0, 3)}. <b>${wd.getDate()}</b>${hi ? `<span class="tt-tag">${d === t ? "Aujourd'hui" : 'Prochain jour'}</span>` : ''}</div>`;
+    const head = `<div class="tt-dh ${hi ? 'today' : ''}">${DAYS[wd.getDay()].slice(0, 3)}. <b>${wd.getDate()}</b>${hi ? ` <span class="tt-tag">${d === t ? "Aujourd'hui" : 'Prochain jour'}</span>` : ''}</div>`;
     /* ligne « maintenant », comme dans un agenda */
     const nm = nowMin(), nowLine = d === t && nm >= t0 && nm <= t1 ? `<div class="tt-now" style="top:${(nm - t0) * PPM}px" aria-hidden="true"></div>` : '';
     const pastShade = d === t && nm > t0 ? `<div class="tt-past" style="height:${Math.min(nm - t0, t1 - t0) * PPM}px" aria-hidden="true"></div>` : '';
@@ -1075,19 +1149,21 @@ function viewWeek() {
       const top = (tMin(x.start) - t0) * PPM, h = (tMin(x.end) - tMin(x.start)) * PPM - 4;
       const w = 100 / nl;
       const g = x.group === 'all' ? 'Classe entière' : 'Demi-groupe ' + x.group;
-      return `<button class="blk ${hasEval(DB.content[d + '|' + x.id]) ? 'has-eval' : ''} ${d < t ? 'past' : ''} ${isNow ? 'now' : ''} ${st.k === 'cancel' ? 'cancel' : ''} ${h < 58 ? 'short' : ''}" style="top:${top}px;height:${h}px;left:calc(${x._lane * w}% + 2px);width:calc(${w}% - 4px);--cc:${ccol(c)}" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + g + ', ' + fmtT(x.start))}">
-        <span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${(() => { const ct = DB.content[d + '|' + x.id]; return ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''; })()}</span><span class="bg">${(() => { const ct = DB.content[d + '|' + x.id]; const ty = ct && ct.items.length ? [...new Set(ct.items.map(i => (ITYPE[i.type] || ITYPE.autre).l.replace(' / bilan', '')))].join(', ') : ''; return ty ? esc(ty) : fmtT(x.start) + ' – ' + fmtT(x.end); })()}</span>${hasEval(DB.content[d + '|' + x.id]) ? '<span class="evb">Évaluation</span>' : ''}${stateChip(st)}${slotDots(d, x, st)}</button>`;
+      return blkHTML(d, x, c, st, {top, h, w, isNow, past: d < t, g});
     }).join('');
     return {head, body: `<div class="tt-col ${hi ? 'hi' : ''}" style="height:${H}px">${pastShade}${blocks}${nowLine}</div>`};
   });
   const hours = []; for (let m = t0; m <= t1; m += 60) hours.push(`<span style="top:${(m - t0) * PPM}px">${m / 60} h</span>`);
   const isCur = mon === mondayOf(fd);
   const miss = cdtMissing(), prep = prepMissing(14);
-  const sub = `Semaine ${wt} · ` + (todo ? `<strong class="todo">${plural(todo, 'séance')} à compléter</strong>` : started ? 'Tout est à jour' : 'Aucune séance commencée')
-    + `</div><div class="sub">` + (prep.n ? `<button type="button" class="cdtcount prepcount" data-act="cdt-first" data-date="${prep.first}" title="Aller à la première séance à préparer"><i class="pdot pr">!</i> ${plural(prep.n, 'séance', 'séances')} à préparer d'ici 2 semaines</button> · ` : '<span><i class="pdot pg">✓</i> Séances des 2 semaines à venir prêtes</span> · ') + (miss.n ? `<button type="button" class="cdtcount" data-act="cdt-first" data-date="${miss.first}" title="Aller à la première séance sans cahier de textes"><i class="pdot pbx">!</i> ${plural(miss.n, 'cahier de textes', 'cahiers de textes')} à compléter</button>` : '<span><i class="pdot pb">✓</i> Cahiers de textes à jour</span>');
   const wk = []; shown.forEach(d => { if (!holidayOn(d)) slotsOn(d).forEach(x => { const k = d + '|' + x.id; if (cls(x.cid) && !DB.cancelled[k]) wk.push(k); }); });
   const wkAll = wk.length && wk.every(k => DB.cdt[k]);
-  const wkBtn = wk.length ? ` · <button type="button" class="cdtcount" data-act="cdt-week" data-keys="${wk.join(',')}" data-on="${wkAll ? '0' : '1'}" title="${wkAll ? 'Décocher le cahier de textes pour toute la semaine' : 'Cocher le cahier de textes pour toutes les séances de cette semaine'}">${wkAll ? 'Semaine cochée (décocher)' : 'Tout cocher pour la semaine'}</button>` : '';
+  const pills = [
+    todo ? `<span class="wpill warn" title="Séances passées de la semaine où des élèves n'ont encore aucune observation : bilans élèves à compléter">${todo} bilan${todo > 1 ? 's' : ''} élèves</span>` : '',
+    prep.n ? `<button type="button" class="wpill red" data-act="cdt-first" data-date="${prep.first}" title="Séances des 2 prochaines semaines pas encore prêtes : aller à la première"><i class="pdot pr">!</i>${prep.n} à préparer</button>` : `<span class="wpill ok" title="Toutes les séances des 2 prochaines semaines sont prêtes"><i class="pdot pg">✓</i>Tout est prêt</span>`,
+    miss.n ? `<button type="button" class="wpill blue" data-act="cdt-first" data-date="${miss.first}" title="Séances passées sans cahier de textes coché : aller à la première"><i class="pdot pbx">!</i>${miss.n} cahier${miss.n > 1 ? 's' : ''} de textes</button>` : `<span class="wpill ok" title="Cahiers de textes à jour"><i class="pdot pb">✓</i>Cahiers de textes</span>`,
+    wk.length ? `<button type="button" class="wpill ghost" data-act="cdt-week" data-keys="${wk.join(',')}" data-on="${wkAll ? '0' : '1'}" title="${wkAll ? 'Décocher le cahier de textes pour toute la semaine' : 'Cocher le cahier de textes pour toutes les séances de cette semaine'}">${wkAll ? 'Décocher la semaine' : 'Cocher la semaine'}</button>` : ''
+  ].join('');
   const endD = parseD(shown[shown.length - 1]);
   const title = `Du ${parseD(mon).getDate()} ${parseD(mon).getMonth() === endD.getMonth() ? '' : parseD(mon).toLocaleDateString('fr-FR', {month:'short'}) + ' '}au ${endD.toLocaleDateString('fr-FR', {day:'numeric', month:'long'})}`;
   let body = banners();
@@ -1096,19 +1172,20 @@ function viewWeek() {
   else body += `<div class="tt-wrap"><div class="tt" style="--n:${shown.length};--hour:${60 * PPM}px">
       <div></div>${cols.map(c => c.head).join('')}
       <div class="tt-times" style="height:${H}px">${hours.join('')}</div>${cols.map(c => c.body).join('')}
-    </div></div>
-    <p class="small muted legend" style="margin:0">Toucher un créneau : ouvrir la séance · Appui long : le marquer comme annulé · <i class="pdot py"></i> devoir à vérifier · <i class="pdot pbx">!</i><i class="pdot pb">✓</i> cahier de textes à compléter / complété · <i class="pdot pr">!</i> à préparer · <i class="pdot pg">✓</i> prête · Survol à la souris ou au stylet : aperçu, avec les cases à cocher</p>`;
+    </div></div>`;
   return `${tabBar('edt')}
-  <header class="bar">
+  <header class="bar wkbar">
     <button class="btn icon-btn" data-act="week" data-n="-7" aria-label="Semaine précédente">${ICON.back}</button>
-    <div class="ttl"><h1>${title}</h1><div class="sub">${sub}${wkBtn}</div></div>
+    <h1 class="wkt">${title} <span class="wks">Sem. ${wt}</span></h1>
     <button class="btn icon-btn" data-act="week" data-n="7" aria-label="Semaine suivante">${ICON.next}</button>
     ${isCur ? '' : '<button class="btn ghost" data-act="week" data-n="0">Cette semaine</button>'}
+    <span class="wpills">${pills}</span>
     <span class="grow"></span>
     ${modeSeg('week')}
-    <button class="btn" data-act="other">Autre classe</button>
+    <button class="btn icon-btn" data-act="other" aria-label="Autre classe (séance hors emploi du temps)" title="Autre classe (séance hors emploi du temps)">${ICON.plus || '+'}</button>
+    <button class="btn icon-btn" data-act="legend" aria-label="Légende" title="Légende">?</button>
   </header>
-  <main class="main"><div class="wrap" style="max-width:1280px">${body}</div></main>`;
+  <main class="main wkmain"><div class="wrap wkwrap">${body}</div></main>`;
 }
 function slotMenu(slotId, date) {
   const x = DB.slots.find(y => y.id === slotId); if (!x) return;
@@ -3324,6 +3401,16 @@ const ACT = {
   'hv-ready': el => { const k = el.dataset.key; setReady(k, !(DB.content[k] && DB.content[k].ready)); refreshHover(el); },
   'hv-cdt': el => { const k = el.dataset.key; setCdt(k, !DB.cdt[k]); refreshHover(el); },
   'sui-ses': el => { const x = DB.slots.find(y => y.id === el.dataset.slot); if (x) openSession(sesFromSlot(el.dataset.date, x), 'bilan'); },
+  legend: () => openModal(`<h2>Légende de l'emploi du temps</h2>
+    <ul class="leglist">
+      <li><i class="pdot py"></i> Devoir à vérifier à cette séance</li>
+      <li><i class="pdot pbx">!</i><i class="pdot pb">✓</i> Cahier de textes École Directe à compléter / complété</li>
+      <li><i class="pdot pr">!</i><i class="pdot pg">✓</i> Séance à préparer / prête</li>
+      <li><span class="evb" style="display:inline-block">Évaluation</span> La séance contient une évaluation</li>
+      <li><span class="chip pos">✓ Complet</span> <span class="chip warn">3 restants</span> <span class="chip neg">Aucune info</span> Bilan des élèves (séances passées)</li>
+    </ul>
+    <p class="small muted">Toucher un créneau : ouvrir la séance · Appui long : la marquer comme annulée · Survol à la souris ou au stylet : aperçu, avec les cases « prête » et « cahier de textes ».<br>En haut : séances à préparer sur 2 semaines, cahiers de textes en retard (toucher pour y aller), « Cocher la semaine » pour le cahier de textes.</p>
+    <div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`),
   'cdt-first': el => { V.date = el.dataset.date; V.mode = 'week'; render(); },
   'cdt-week': el => { const keys = el.dataset.keys.split(','), on = el.dataset.on === '1'; keys.forEach(k => { if (on) DB.cdt[k] = true; else delete DB.cdt[k]; }); save(); renderKeep(); toast(on ? `Cahier de textes coché pour ${plural(keys.length, 'séance')}` : 'Cahier de textes décoché pour la semaine'); },
   'ready-toggle': () => { const k = V.ses.key, ct = DB.content[k] || (DB.content[k] = {ch: null, items: [], hw: []}); if (ct.ready) { delete ct.ready; if (ctEmpty(ct)) delete DB.content[k]; } else ct.ready = true; SESS_CACHE = {}; save(); renderKeep(); toast(DB.content[k] && DB.content[k].ready ? 'Séance marquée prête' : 'Séance à nouveau en préparation'); },

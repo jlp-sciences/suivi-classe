@@ -614,6 +614,7 @@ table.prev td,table.prev th{padding:6px 8px;border-top:1px solid var(--line);tex
 #hovercard .hvtg button{flex:1 1 120px;min-height:40px;white-space:nowrap;padding:0 8px;display:inline-flex;align-items:center;gap:6px;justify-content:center;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 #hovercard .hvtg button[aria-pressed="true"].g{background:rgba(46,158,91,.14);border-color:rgba(46,158,91,.5)}
 #hovercard .hvtg button[aria-pressed="true"].b{background:rgba(47,109,181,.12);border-color:rgba(47,109,181,.5)}
+.cdtcount.prepcount{color:#B3261E}
 .cdtcount{color:var(--cdt);font-weight:600;background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 /* bilans de la classe (Suivi) */
 .apprs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
@@ -679,7 +680,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.9', d: '2026-10-05'};
+const APP_VERSION = {n: '2.9.1', d: '2026-10-06'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1021,6 +1022,12 @@ function slotCard(d, s, FM) {
 
 /* pastilles en bas à droite d'un créneau : jaune = devoir à vérifier · bleue = cahier de textes (! à compléter, ✓ complété) · verte = prête (! rouge = pas prête) */
 const cdtDot = key => DB.cdt[key] ? '<i class="pdot pb" title="Cahier de textes complété">✓</i>' : '<i class="pdot pbx" title="Cahier de textes à compléter">!</i>';
+/* séances à venir (non annulées) pas encore marquées « prêtes », sur les `days` prochains jours */
+function prepMissing(days) {
+  let n = 0, first = null; const lim = addDays(todayStr(), days);
+  DB.classes.forEach(c => classSessions(c.id).forEach(x => { if (x.extra || x.cancelled || sesStarted(x) || x.date > lim) return; const ct = DB.content[x.key]; if (ct && ct.ready) return; n++; if (!first || x.date < first) first = x.date; }));
+  return {n, first};
+}
 /* séances commencées (non annulées) sans cahier de textes coché */
 function cdtMissing() {
   let n = 0, first = null;
@@ -1075,9 +1082,9 @@ function viewWeek() {
   });
   const hours = []; for (let m = t0; m <= t1; m += 60) hours.push(`<span style="top:${(m - t0) * PPM}px">${m / 60} h</span>`);
   const isCur = mon === mondayOf(fd);
-  const miss = cdtMissing();
+  const miss = cdtMissing(), prep = prepMissing(14);
   const sub = `Semaine ${wt} · ` + (todo ? `<strong class="todo">${plural(todo, 'séance')} à compléter</strong>` : started ? 'Tout est à jour' : 'Aucune séance commencée')
-    + `</div><div class="sub">` + (miss.n ? `<button type="button" class="cdtcount" data-act="cdt-first" data-date="${miss.first}" title="Aller à la première séance sans cahier de textes"><i class="pdot pbx">!</i> ${plural(miss.n, 'cahier de textes', 'cahiers de textes')} à compléter</button>` : '<span><i class="pdot pb">✓</i> Cahiers de textes à jour</span>');
+    + `</div><div class="sub">` + (prep.n ? `<button type="button" class="cdtcount prepcount" data-act="cdt-first" data-date="${prep.first}" title="Aller à la première séance à préparer"><i class="pdot pr">!</i> ${plural(prep.n, 'séance', 'séances')} à préparer d'ici 2 semaines</button> · ` : '<span><i class="pdot pg">✓</i> Séances des 2 semaines à venir prêtes</span> · ') + (miss.n ? `<button type="button" class="cdtcount" data-act="cdt-first" data-date="${miss.first}" title="Aller à la première séance sans cahier de textes"><i class="pdot pbx">!</i> ${plural(miss.n, 'cahier de textes', 'cahiers de textes')} à compléter</button>` : '<span><i class="pdot pb">✓</i> Cahiers de textes à jour</span>');
   const wk = []; shown.forEach(d => { if (!holidayOn(d)) slotsOn(d).forEach(x => { const k = d + '|' + x.id; if (cls(x.cid) && !DB.cancelled[k]) wk.push(k); }); });
   const wkAll = wk.length && wk.every(k => DB.cdt[k]);
   const wkBtn = wk.length ? ` · <button type="button" class="cdtcount" data-act="cdt-week" data-keys="${wk.join(',')}" data-on="${wkAll ? '0' : '1'}" title="${wkAll ? 'Décocher le cahier de textes pour toute la semaine' : 'Cocher le cahier de textes pour toutes les séances de cette semaine'}">${wkAll ? 'Semaine cochée (décocher)' : 'Tout cocher pour la semaine'}</button>` : '';
@@ -2467,6 +2474,12 @@ function otherGroupSession(ses) {
   return cand && (parseD(cand.date) - parseD(ses.date)) / 864e5 <= 10 ? cand : null;
 }
 function renderContent() {
+  /* garder la position de défilement quand la fenêtre se redessine (ajout d'un TP, choix du type de devoir…) */
+  const oldSc = $('#layer .sheet[aria-labelledby="ct-t"] .scroll'), keepTop = oldSc && CT && oldSc.dataset.key === CT.ses.key ? oldSc.scrollTop : null;
+  renderContentInner();
+  const sc = $('#layer .sheet[aria-labelledby="ct-t"] .scroll'); if (sc) { sc.dataset.key = CT.ses.key; if (keepTop != null) sc.scrollTop = keepTop; }
+}
+function renderContentInner() {
   const s = CT.ses, c = cls(s.cid), lvl = levelOf(c), d = CT.data;
   const started = sesStarted(classSessions(s.cid).find(x => x.key === s.key) || {date: s.date, start: '00:00'});
   const chs = chaptersOf(lvl).slice().sort((a, b) => a.n - b.n);

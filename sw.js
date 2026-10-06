@@ -1,6 +1,6 @@
 // Suivi de classe : fonctionnement hors ligne.
 // Aucune donnée d'élève ne passe ici : elles restent dans le stockage de la tablette.
-const CACHE = 'suivi-classe-v8';
+const CACHE = 'suivi-classe-v9';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable.png', './pdf.min.js', './pdf.worker.min.js'];
 
 self.addEventListener('install', e => {

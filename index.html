@@ -689,6 +689,27 @@ button.wpill{cursor:pointer}
 .blk.has-eval{border-color:color-mix(in srgb,var(--neg) 55%,transparent)}
 .leglist{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:8px}
 .leglist li{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* ---- v2.10.1 : téléphone ---- */
+.slitems{display:flex;flex-direction:column;gap:3px;margin-top:2px;min-width:0}
+.slitems .bit{height:auto;min-height:22px;line-height:1.3;font-size:14px;color:var(--ink);white-space:normal;align-items:flex-start;gap:7px}
+.slitems .bty{font-size:11.5px;line-height:18px;padding:0 6px;margin-top:1px}
+.slitems .bil{white-space:normal;overflow:visible}
+.slot.past .slitems .bit{color:var(--muted)}
+@media (max-width:720px){
+  .dvban{flex-direction:column;align-items:stretch;gap:10px}
+  .dvban .hwokbtn{width:100%;justify-content:center}
+  .chkitem:not(.is-moved):not(.is-rm){display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:8px;row-gap:6px;align-items:center}
+  .chkitem:not(.is-moved):not(.is-rm) .vchk{grid-column:1;grid-row:1}
+  .chkitem:not(.is-moved):not(.is-rm) .hwt{grid-column:2;grid-row:1}
+  .chkitem:not(.is-moved):not(.is-rm) [data-act="due-x"]{grid-column:3;grid-row:1}
+  .chkitem:not(.is-moved):not(.is-rm) .repbtn{grid-column:2;grid-row:2;justify-self:start}
+  .chkitem.is-moved,.chkitem.is-rm{flex-wrap:wrap;row-gap:6px}
+  .chkitem.is-moved .hwt,.chkitem.is-rm .hwt{flex:1 1 100%}
+  .sesttl{flex:1 1 calc(100% - 140px) !important;min-width:0}
+  .sesttl h1{font-size:22px}
+  .sesttl .sub{font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -723,7 +744,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.10', d: '2026-10-06'};
+const APP_VERSION = {n: '2.10.1', d: '2026-10-06'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1060,7 +1081,7 @@ function slotCard(d, s, FM) {
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwPending(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const sm = contentSummary(DB.content[d + '|' + s.id], levelOf(c), false); return sm ? ' · ' + esc(sm) : ''; })()}</span></span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwPending(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const ct = DB.content[d + '|' + s.id]; return ct && ct.ch != null ? ' · ' + esc(chapterLabel(levelOf(c), ct.ch)) : ''; })()}</span>${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.items.length || st.k === 'cancel') return ''; return `<span class="slitems">${ct.items.map(it => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim(); return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}</span>`; }).join('')}</span>`; })()}</span>
     ${right}</button></li>`;
 }
 

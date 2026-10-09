@@ -402,7 +402,8 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .pdot{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;font-style:normal;font-size:11px;font-weight:800;line-height:1;vertical-align:-3px;flex:none}
 .pdot.pr{background:rgba(217,48,37,.16);color:#B3261E;box-shadow:inset 0 0 0 1px rgba(217,48,37,.35)}
 .pdot.pg{background:rgba(46,158,91,.18);color:#1E7A45;box-shadow:inset 0 0 0 1px rgba(46,158,91,.4)}
-.pdot.py{width:12px;height:12px;background:rgba(242,193,46,.55);box-shadow:inset 0 0 0 1px rgba(200,150,20,.45);vertical-align:-1px}
+.pdot.py{background:rgba(242,193,46,.38);color:#7A5600;box-shadow:inset 0 0 0 1px rgba(200,150,20,.6)}
+.pdot.py.ok{background:rgba(242,193,46,.2)}
 .blk.past .pdot{opacity:.75}
 .legend .pdot{margin:0 3px 0 5px}
 .readybtn .pdot{margin-right:2px}
@@ -729,7 +730,7 @@ button.wpill{cursor:pointer}
 .room .it .table{position:absolute;border-radius:6px;background:repeating-linear-gradient(45deg,var(--surface-2) 0 6px,transparent 6px 12px);border:1px dashed var(--line-2)}
 .room .it .sep{position:absolute;border-radius:2px;background:var(--line-2);pointer-events:none}
 .room .it .sep.glass{background:linear-gradient(90deg,#BFD9E6,#E3F0F6,#BFD9E6);border:1px solid #9EC3D6}
-.room .it .ss{position:absolute;display:flex}
+.room .it .ss{position:absolute;display:flex;container-type:inline-size;container-name:ss}
 .room .it .ss > .seat{flex:1 1 auto;width:100%;height:100%}
 .room .it .uh{position:absolute;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--ink-2);padding:0 3px;white-space:nowrap;overflow:hidden;min-height:0}
 .room .it.edit{cursor:grab;touch-action:none}
@@ -742,7 +743,8 @@ button.wpill{cursor:pointer}
 .mini i.m-board{background:var(--ink)} .mini i.m-desk{background:var(--muted)}
 /* places : photo à gauche, prénom à droite ; la photo disparaît seulement si la place est vraiment étroite */
 .room .seat{gap:5px}
-.room .seat .sp{width:auto;height:100%;aspect-ratio:4/5;min-height:0;max-width:45%}
+.room .seat .sp{width:min(42%, 80px);height:100%;aspect-ratio:auto;min-height:0;max-width:none;align-self:stretch}
+.room .seat .sp img{object-position:center 25%}
 .room .seat .sn{font-size:12.5px}
 .seat{container-type:inline-size}
 @container (max-width: 88px){.seat .sp{display:block}}
@@ -755,6 +757,53 @@ button.wpill{cursor:pointer}
 .roommain .room{margin:0 auto}
 .proj .room .it .uh{font-size:clamp(10px,1.1vw,15px)}
 .proj .room .it .blob{background:#ECEAE5}
+
+@container ss (max-width: 96px){
+  .room .it .ss > .seat{flex-direction:column;align-items:stretch;gap:2px}
+  .room .it .ss > .seat .sp{width:100%;height:auto;max-width:none;flex:1 1 auto;aspect-ratio:auto;min-height:0}
+  .room .it .ss > .seat .st{padding:0 3px 2px;align-items:center}
+  .room .it .ss > .seat .sn{font-size:11.5px}
+}
+
+/* ---- v2.12 : pastilles en bas à droite, bilan carré, noté, mise en évidence ---- */
+.pdot.pq{border-radius:4px}
+.pdot.pq svg{width:12px;height:12px;fill:currentColor}
+.pdot.pq.ok{background:rgba(30,140,140,.18);color:#13706F;box-shadow:inset 0 0 0 1px rgba(30,140,140,.45)}
+.pdot.pq.part{background:rgba(230,126,34,.2);color:#9A4B0B;box-shadow:inset 0 0 0 1px rgba(230,126,34,.5);font-size:10px}
+.pdot.pq.none{background:rgba(217,48,37,.16);color:#B3261E;box-shadow:inset 0 0 0 1px rgba(217,48,37,.4)}
+.wkwrap .blk .bdots{position:absolute;right:5px;bottom:4px;display:flex;gap:2px}
+.wkwrap .blk .bits .bit:last-child{padding-right:var(--dw)}
+.wkwrap .blk.noitems .btop{padding-right:var(--dw)}
+.blk.has-eval{border:2px solid var(--neg) !important}
+.blk.has-graded{border:2px solid #4B2A7B !important}
+:root[data-theme="dark"] .blk.has-graded{border-color:#A58BD6 !important}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .blk.has-graded{border-color:#A58BD6 !important}}
+.slot.has-eval{border:2px solid var(--neg)}
+.slot.has-graded{border:2px solid #4B2A7B}
+.bnote{flex:none;font-size:10px;font-weight:700;padding:0 4px;border-radius:4px;color:#4B2A7B;background:rgba(75,42,123,.12)}
+.leg-bd{display:inline-block;width:22px;height:14px;border-radius:4px;vertical-align:-2px}
+.leg-bd.ev{border:2px solid var(--neg)} .leg-bd.gr{border:2px solid #4B2A7B}
+.tt.hlon .blk:not(.hl){opacity:.32;filter:saturate(.4)}
+.tt.hlon .blk.hl{z-index:3}
+.blk.hl-bilan{box-shadow:0 0 0 3px #E67E22 !important}
+.blk.hl-prep{box-shadow:0 0 0 3px #D93025 !important}
+.blk.hl-cdt{box-shadow:0 0 0 3px #2F6DB5 !important}
+.wpill[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:1px}
+.ctitem .gradebox{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#4B2A7B;min-height:36px}
+.ctitem .gradebox input{width:20px;height:20px;accent-color:#4B2A7B}
+
+/* ---- grille de saisie de l'emploi du temps ---- */
+.eggrid-card{display:flex;flex-direction:column;gap:10px}
+.eggrid{display:grid;grid-template-columns:40px repeat(var(--n),minmax(110px,1fr));column-gap:6px;row-gap:4px}
+.egdh{text-align:center;font-size:13px;font-weight:600;color:var(--muted)}
+.egtimes{position:relative}
+.egtimes span{position:absolute;right:2px;transform:translateY(-50%);font-size:11px;color:var(--muted)}
+.egtimes span:first-child{transform:none}
+.egcol{position:relative;border:1px solid var(--line);border-radius:10px;background-color:var(--surface);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px 63px);cursor:copy;touch-action:manipulation}
+.egb{position:absolute;display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:4px 6px;border-radius:8px;border:1px solid color-mix(in srgb,var(--cc) 45%,transparent);background:color-mix(in srgb,var(--cc) 18%,var(--surface));box-shadow:inset 0 3px 0 var(--cc);text-align:left;overflow:hidden;font-size:12px;color:var(--ink);touch-action:manipulation;cursor:pointer}
+.egb b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.egb span{color:var(--ink-2);font-size:11.5px}
+.egb i{font-style:normal;font-size:10.5px;font-weight:700;padding:0 4px;border-radius:4px;background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -789,7 +838,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.11', d: '2026-10-08'};
+const APP_VERSION = {n: '2.12', d: '2026-10-09'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -847,7 +896,7 @@ const CLASS_COLORS = [['#2F6DB5','Bleu'],['#D9822B','Orange'],['#7B4FB3','Violet
 function nextColor(list) { const used = (list || DB.classes).map(c => c.color); return (CLASS_COLORS.find(([h]) => !used.includes(h)) || CLASS_COLORS[(list || DB.classes).length % CLASS_COLORS.length])[0]; }
 function defaultSettings() {
   return {
-    evenIsA: true, lastBackup: null, hidePhotos: false, labsV3: true,
+    evenIsA: true, lastBackup: null, hidePhotos: false, labsV3: true, labsV4: true,
     holidays: DEFAULT_HOLIDAYS.map(h => ({...h})),
     periods: {
       semestre: [{n:'Semestre 1', s:'2026-09-01', e:'2027-01-08'}, {n:'Semestre 2', s:'2027-01-09', e:'2027-06-19'}],
@@ -871,7 +920,7 @@ const isFixed = it => !!FIXED[it.type];
 const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
-const MIG_STAMP = new Set(); // enregistrements créés par une migration : datés « anciens » pour la synchro
+const MIG_STAMP = new Map(); // enregistrements créés par une migration : datés « anciens » pour la synchro (une vraie modification l'emporte toujours)
 let STORAGE_OK = false;
 
 function migrate(core) {
@@ -885,10 +934,14 @@ function migrate(core) {
   /* labos v3 : on repart des 6 labos par défaut et de plans vides (une seule fois par appareil).
      Les labos par défaut sont marqués « anciens » pour la synchro : une disposition déjà retouchée sur un autre appareil l'emporte. */
   if (!(core && core.settings && core.settings.labsV3)) {
-    d.rooms = defaultRooms(); d.rooms.forEach(r => MIG_STAMP.add('rooms:' + r.id));
+    d.rooms = defaultRooms(); d.rooms.forEach(r => MIG_STAMP.set('rooms:' + r.id, 1));
     Object.keys(d.place).forEach(k => { if (!k.startsWith('v3|')) delete d.place[k]; });
     d.settings.labsV3 = true;
+  } else if (!(core.settings.labsV4)) {
+    const def = defaultRooms();
+    ['lab-pc1', 'lab-pc2'].forEach(id => { const i = d.rooms.findIndex(r => r.id === id); if (i >= 0) { d.rooms[i] = def.find(r => r.id === id); MIG_STAMP.set('rooms:' + id, 2); } });
   }
+  d.settings.labsV4 = true;
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
   /* nouvelle détection du niveau : on regroupe les listes de chapitres existantes */
@@ -1005,10 +1058,12 @@ function focusDay() {
   return t;
 }
 const homeV = () => ({name:'today', tab:'edt', mode: HOME_MODE, date: focusDay()});
+/* un créneau peut n'être valable qu'à partir d'une date (from) ou jusqu'à une date (to) : modifications en cours d'année */
+const slotValid = (s, date) => (!s.from || date >= s.from) && (!s.to || date <= s.to);
 function slotsOn(date) {
   if (holidayOn(date)) return [];
   const wd = parseD(date).getDay(), wt = weekType(date);
-  return DB.slots.filter(s => s.day === wd && (s.week === 'all' || s.week === wt) && cls(s.cid)).sort((a, b) => a.start.localeCompare(b.start));
+  return DB.slots.filter(s => s.day === wd && (s.week === 'all' || s.week === wt) && cls(s.cid) && slotValid(s, date)).sort((a, b) => a.start.localeCompare(b.start));
 }
 const sesFromSlot = (date, s) => ({key: date + '|' + s.id, date, cid: s.cid, group: s.group, label: fmtT(s.start) + ' – ' + fmtT(s.end)});
 const sesOther = (date, cid, group) => ({key: date + '|x|' + cid + '|' + group, date, cid, group, label: 'Hors emploi du temps'});
@@ -1144,9 +1199,10 @@ function slotCard(d, s, FM) {
   const n = studentsOf(s.cid, s.group).length;
   const chip = stateChip(st) || `<span class="status">${st.k === 'empty' ? 'Aucun élève' : 'À venir'}</span>`;
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
-  return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
+  const ctS = DB.content[d + '|' + s.id];
+  return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''} ${st.k !== 'cancel' && hasEval(ctS) ? 'has-eval' : st.k !== 'cancel' && isGraded(ctS) ? 'has-graded' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; return (hwPending(sesFromSlot(d, s)).length ? '<span class="dlab"><i class="pdot py"></i>Devoir</span>' : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const ct = DB.content[d + '|' + s.id]; return ct && ct.ch != null ? ' · ' + esc(chapterLabel(levelOf(c), ct.ch)) : ''; })()}</span>${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.items.length || st.k === 'cancel') return ''; return `<span class="slitems">${ct.items.map(it => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim(); return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}</span>`; }).join('')}</span>`; })()}${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.hw || !ct.hw.length || st.k === 'cancel') return ''; const ses = sesFromSlot(d, s); return `<span class="slitems slhw"><span class="slhwt">Travail donné</span>${ct.hw.map(h => `<span class="bit"><i class="bty" style="--tc:var(--sc-hw)">${esc(cap(hwDueLabel(h, ses, s.cid, s.group)))}</i><span class="bil">${esc(hwText(h))}</span></span>`).join('')}</span>`; })()}</span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; const hs = hwState(sesFromSlot(d, s)); return (hs ? `<span class="dlab">${hwDot(hs)}${hs === 'todo' ? 'Devoir à vérifier' : 'Devoirs vérifiés'}</span>` : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const ct = DB.content[d + '|' + s.id]; return ct && ct.ch != null ? ' · ' + esc(chapterLabel(levelOf(c), ct.ch)) : ''; })()}</span>${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.items.length || st.k === 'cancel') return ''; return `<span class="slitems">${ct.items.map(it => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim(); return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}${it.graded && (it.type === 'tp' || it.type === 'act') ? '<span class="bnote">noté</span>' : ''}</span>`; }).join('')}</span>`; })()}${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.hw || !ct.hw.length || st.k === 'cancel') return ''; const ses = sesFromSlot(d, s); return `<span class="slitems slhw"><span class="slhwt">Travail donné</span>${ct.hw.map(h => `<span class="bit"><i class="bty" style="--tc:var(--sc-hw)">${esc(cap(hwDueLabel(h, ses, s.cid, s.group)))}</i><span class="bil">${esc(hwText(h))}</span></span>`).join('')}</span>`; })()}</span>
     ${right}</button></li>`;
 }
 
@@ -1164,12 +1220,25 @@ function cdtMissing() {
   DB.classes.forEach(c => classSessions(c.id).forEach(x => { if (x.extra || x.cancelled || !sesStarted(x) || DB.cdt[x.key]) return; n++; if (!first || x.date < first) first = x.date; }));
   return {n, first};
 }
+/* devoirs : ! = reste à vérifier · ✓ = tout vérifié, reporté ou retiré · rien si aucun travail prévu */
+function hwState(ses) { const all = hwDueAt(ses, true); if (all.some(d => !d.ok && !d.x)) return 'todo'; return all.length || movedAway(ses).length ? 'done' : null; }
+const hwDot = st => st === 'todo' ? '<i class="pdot py" title="Devoir à vérifier">!</i>' : st === 'done' ? '<i class="pdot py ok" title="Devoirs vérifiés ou reportés">✓</i>' : '';
+const SILH = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.2" r="3"/><path d="M2.6 14.5c.5-3.1 2.7-5 5.4-5s4.9 1.9 5.4 5z"/></svg>';
+/* bilan des élèves (séances commencées) : carré — silhouette = complet, chiffre = élèves restants, ! = aucune observation */
+function bilanDot(st) {
+  if (!st) return '';
+  if (st.k === 'done') return `<i class="pdot pq ok" title="Bilan des élèves complet">${SILH}</i>`;
+  if (st.k === 'part') return `<i class="pdot pq part" title="${plural(st.n, 'élève restant', 'élèves restants')} au bilan">${st.n > 99 ? '99' : st.n}</i>`;
+  if (st.k === 'none') return '<i class="pdot pq none" title="Bilan des élèves : aucune observation">!</i>';
+  return '';
+}
 function slotDots(d, x, st) {
   if (st && st.k === 'cancel') return '';
-  const ct = DB.content[d + '|' + x.id], ready = !!(ct && ct.ready), hw = hwPending(sesFromSlot(d, x)).length > 0;
+  const ct = DB.content[d + '|' + x.id], ready = !!(ct && ct.ready);
   const pend = !ready && !sesStarted({date: d, start: x.start});
-  return `<span class="bdots">${hw ? '<i class="pdot py" title="Devoir à vérifier"></i>' : ''}${cdtDot(d + '|' + x.id)}${ready ? '<i class="pdot pg" title="Séance prête">✓</i>' : pend ? '<i class="pdot pr" title="Séance pas encore prête">!</i>' : ''}</span>`;
+  return `<span class="bdots">${hwDot(hwState(sesFromSlot(d, x)))}${cdtDot(d + '|' + x.id)}${ready ? '<i class="pdot pg" title="Séance prête">✓</i>' : pend ? '<i class="pdot pr" title="Séance pas encore prête">!</i>' : ''}${bilanDot(st)}</span>`;
 }
+const isGraded = ct => !!(ct && ct.items.some(i => (i.type === 'tp' || i.type === 'act') && i.graded));
 /* ---------- vue : semaine ---------- */
 /* ---------- conseils de classe : enregistrés dans la classe (c.councils), affichés dans l'emploi du temps ---------- */
 function councilsOn(d) { const out = []; DB.classes.forEach(c => (c.councils || []).forEach(k => { if (k.date === d && k.s && k.e) out.push({...k, cid: c.id}); })); return out.sort((a, b) => a.s.localeCompare(b.s)); }
@@ -1211,21 +1280,31 @@ function fitWeek() {
 const ITY_SHORT = {tp: 'TP', act: 'Activité', exo: 'Exercices', cours: 'Cours', corr: 'Correction', eval: 'Éval.', autre: 'Autre'};
 /* un créneau de la vue semaine : classe · groupe · chapitre, puis un élément de la séance par ligne, puis pastilles */
 function blkHTML(d, x, c, st, o) {
-  const key = d + '|' + x.id, ct = DB.content[key], ev = hasEval(ct), cancel = st.k === 'cancel';
+  const key = d + '|' + x.id, ct = DB.content[key], ev = hasEval(ct), gr = !ev && isGraded(ct), cancel = st.k === 'cancel';
   const items = ct && !cancel ? ct.items : [];
-  let chip = cancel ? `<span class="chip neu">${consCancel(key) ? 'Annulé · conseil' : 'Annulé'}</span>` : stateChip(st), evp = false; // l'évaluation apparaît déjà comme élément « Éval. » (pas de pastille en double)
-  const LINE = 16, base = o.h - 11 - 19 - 1; // hauteur sans marges/bordure, ni ligne de titre, ni espacement
-  let foot = !!(evp || chip), avail = base - (foot ? 20 : 0);
-  if (items.length && foot && avail < LINE) { chip = ''; evp = false; foot = false; avail = base; } // le contenu de la séance passe avant l'état du bilan
+  const chip = cancel ? `<span class="chip neu">${consCancel(key) ? 'Annulé · conseil' : 'Annulé'}</span>` : '';
+  const dots = slotDots(d, x, st), nd = (dots.match(/class="pdot/g) || []).length;
+  const LINE = 16, base = o.h - 13 - 19 - 1; // hauteur sans marges/bordure (2 px si encadré), ni ligne de titre, ni espacement
+  const avail = base - (chip ? 20 : 0);
   const fit = Math.max(0, Math.floor(avail / LINE));
   const show = items.slice(0, fit), more = items.length - show.length;
   const line = (it, last) => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim();
-    return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}${last && more ? `<span class="bmore">+${more}</span>` : ''}</span>`; };
+    return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}${it.graded && (it.type === 'tp' || it.type === 'act') ? '<span class="bnote">noté</span>' : ''}${last && more ? `<span class="bmore">+${more}</span>` : ''}</span>`; };
   const lines = show.map((it, i) => line(it, i === show.length - 1)).join('');
-  return `<button class="blk ${ev ? 'has-eval' : ''} ${o.past ? 'past' : ''} ${o.isNow ? 'now' : ''} ${cancel ? 'cancel' : ''} ${o.h < 58 ? 'short' : ''}" style="top:${o.top}px;height:${o.h}px;left:calc(${x._lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)}" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + o.g + ', ' + fmtT(x.start))}">
-    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span>${slotDots(d, x, st)}</span>
+  const hl = V.hl && blkMatches(V.hl, d, x, st) ? 'hl hl-' + V.hl : '';
+  return `<button class="blk ${ev ? 'has-eval' : ''} ${gr ? 'has-graded' : ''} ${o.past ? 'past' : ''} ${o.isNow ? 'now' : ''} ${cancel ? 'cancel' : ''} ${o.h < 58 ? 'short' : ''} ${lines ? '' : 'noitems'} ${hl}" style="top:${o.top}px;height:${o.h}px;left:calc(${x._lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)};--dw:${nd ? nd * 19 + 4 : 0}px" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + o.g + ', ' + fmtT(x.start))}">
+    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span></span>
     ${lines ? `<span class="bits">${lines}</span>` : ''}
-    ${foot ? `<span class="bfoot">${evp ? '<span class="evb">Évaluation</span>' : ''}${chip}</span>` : ''}</button>`;
+    ${chip ? `<span class="bfoot">${chip}</span>` : ''}${dots}</button>`;
+}
+/* indicateurs de la semaine : quels créneaux mettre en évidence */
+function blkMatches(kind, d, x, st) {
+  const key = d + '|' + x.id;
+  if (DB.cancelled[key]) return false;
+  if (kind === 'bilan') return st.k === 'none' || st.k === 'part';
+  if (kind === 'prep') return !sesStarted({date: d, start: x.start}) && !(DB.content[key] && DB.content[key].ready);
+  if (kind === 'cdt') return sesStarted({date: d, start: x.start}) && !DB.cdt[key];
+  return false;
 }
 function viewWeek() {
   const t = todayStr(), mon = mondayOf(V.date), FM = fillMap(), fd = focusDay();
@@ -1272,13 +1351,17 @@ function viewWeek() {
   });
   const hours = []; for (let m = t0; m <= t1; m += 60) hours.push(`<span style="top:${(m - t0) * PPM}px">${m / 60} h</span>`);
   const isCur = mon === mondayOf(fd);
-  const miss = cdtMissing(), prep = prepMissing(14);
-  const wk = []; shown.forEach(d => { if (!holidayOn(d)) slotsOn(d).forEach(x => { const k = d + '|' + x.id; if (cls(x.cid) && !DB.cancelled[k]) wk.push(k); }); });
+  const wk = [], wkSes = []; shown.forEach(d => { if (!holidayOn(d)) slotsOn(d).forEach(x => { const k = d + '|' + x.id; if (cls(x.cid) && !DB.cancelled[k]) { wk.push(k); wkSes.push([d, x]); } }); });
+  const cntOf = kind => wkSes.filter(([d, x]) => blkMatches(kind, d, x, sesState(d, x, FM))).length;
+  const nB = cntOf('bilan'), nP = cntOf('prep'), nC = cntOf('cdt');
   const wkAll = wk.length && wk.every(k => DB.cdt[k]);
+  const pill = (kind, n, cl, icon, label, okLabel) => n
+    ? `<button type="button" class="wpill ${cl}" data-act="hl" data-k="${kind}" aria-pressed="${V.hl === kind}" title="Toucher pour mettre en évidence les créneaux concernés">${icon}${label}</button>`
+    : `<span class="wpill ok">${okLabel}</span>`;
   const pills = [
-    todo ? `<span class="wpill warn" title="Séances passées de la semaine où des élèves n'ont encore aucune observation : bilans élèves à compléter">${todo} bilan${todo > 1 ? 's' : ''} élèves</span>` : '',
-    prep.n ? `<button type="button" class="wpill red" data-act="cdt-first" data-date="${prep.first}" title="Séances des 2 prochaines semaines pas encore prêtes : aller à la première"><i class="pdot pr">!</i>${prep.n} à préparer</button>` : `<span class="wpill ok" title="Toutes les séances des 2 prochaines semaines sont prêtes"><i class="pdot pg">✓</i>Tout est prêt</span>`,
-    miss.n ? `<button type="button" class="wpill blue" data-act="cdt-first" data-date="${miss.first}" title="Séances passées sans cahier de textes coché : aller à la première"><i class="pdot pbx">!</i>${miss.n} cahier${miss.n > 1 ? 's' : ''} de textes</button>` : `<span class="wpill ok" title="Cahiers de textes à jour"><i class="pdot pb">✓</i>Cahiers de textes</span>`,
+    pill('bilan', nB, 'warn', '<i class="pdot pq part">!</i>', `${nB} bilan${nB > 1 ? 's' : ''} élèves`, '<i class="pdot pq ok">' + SILH + '</i>Bilans à jour'),
+    pill('prep', nP, 'red', '<i class="pdot pr">!</i>', `${nP} à préparer`, '<i class="pdot pg">✓</i>Tout est prêt'),
+    pill('cdt', nC, 'blue', '<i class="pdot pbx">!</i>', `${nC} cahier${nC > 1 ? 's' : ''} de textes`, '<i class="pdot pb">✓</i>Cahiers de textes'),
     wk.length ? `<button type="button" class="wpill ghost" data-act="cdt-week" data-keys="${wk.join(',')}" data-on="${wkAll ? '0' : '1'}" title="${wkAll ? 'Décocher le cahier de textes pour toute la semaine' : 'Cocher le cahier de textes pour toutes les séances de cette semaine'}">${wkAll ? 'Décocher la semaine' : 'Cocher la semaine'}</button>` : ''
   ].join('');
   const endD = parseD(shown[shown.length - 1]);
@@ -1286,7 +1369,7 @@ function viewWeek() {
   let body = banners();
   if (!DB.classes.length) body += welcomeCard();
   else if (!valid.length) body += `<div class="empty"><p>Aucun créneau dans l'emploi du temps.</p><button class="btn" data-act="settings" data-tab="edt">${ICON.cal}Saisir l'emploi du temps</button></div>`;
-  else body += `<div class="tt-wrap"><div class="tt" style="--n:${shown.length};--hour:${60 * PPM}px">
+  else body += `<div class="tt-wrap"><div class="tt ${V.hl ? 'hlon' : ''}" style="--n:${shown.length};--hour:${60 * PPM}px">
       <div></div>${cols.map(c => c.head).join('')}
       <div class="tt-times" style="height:${H}px">${hours.join('')}</div>${cols.map(c => c.body).join('')}
     </div></div>`;
@@ -1584,28 +1667,72 @@ function parseList(text, cid) {
   const fresh = out.filter(r => !have.has(norm(r.last + ' ' + r.first)));
   return {rows: fresh, dup: out.length - fresh.length};
 }
+/* ---------- saisie de l'emploi du temps sur une grille ---------- */
+const EG_T0 = 7 * 60, EG_T1 = 19 * 60, EG_PPM = 1.05;
+function egSlots(wt) {
+  const t = todayStr();
+  return DB.slots.filter(s => cls(s.cid) && (!s.to || s.to >= t) && (s.week === 'all' || s.week === wt));
+}
 function setEdt() {
-  const wt = weekType(todayStr());
-  const opts = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric:true})).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
-  const byDay = [1,2,3,4,5,6].map(d => {
-    const sl = DB.slots.filter(s => s.day === d && cls(s.cid)).sort((a, b) => a.start.localeCompare(b.start));
-    if (!sl.length) return '';
-    return `<div class="day"><h3>${DAYS[d]}</h3><ul class="stable">${sl.map(s => `<li><span style="width:130px;font-variant-numeric:tabular-nums">${fmtT(s.start)} – ${fmtT(s.end)}</span><span class="nm row" style="gap:8px">${dot(cls(s.cid))}${esc(cls(s.cid).name)}</span><span class="chip neu">${groupLabel(s.group)}</span><span class="chip ${s.week === 'all' ? 'neu' : 'dark'}">${s.week === 'all' ? 'Toutes les semaines' : 'Semaine ' + s.week}</span><button class="btn ghost" style="min-height:40px" data-act="del-slot" data-id="${s.id}">Retirer</button></li>`).join('')}</ul></div>`;
-  }).join('');
   if (!DB.classes.length) return `<div class="empty"><p>Créez d'abord vos classes.</p><button class="btn" data-act="tab" data-tab="classes">Classes et élèves</button></div>`;
+  const wtNow = weekType(todayStr()); if (V.egW !== 'A' && V.egW !== 'B') V.egW = wtNow;
+  const sl = egSlots(V.egW), sat = sl.some(x => x.day === 6), days = sat ? [1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5];
+  const t0 = Math.min(EG_T0, ...sl.map(x => Math.floor(tMin(x.start) / 60) * 60)), t1 = Math.max(EG_T1, ...sl.map(x => Math.ceil(tMin(x.end) / 60) * 60));
+  const H = (t1 - t0) * EG_PPM, t = todayStr();
+  const hours = []; for (let m = t0; m <= t1; m += 60) hours.push(`<span style="top:${(m - t0) * EG_PPM}px">${m / 60} h</span>`);
+  const col = d => {
+    const list = sl.filter(x => x.day === d).sort((a, b) => a.start.localeCompare(b.start));
+    const lanes = []; list.forEach(x => { let i = lanes.findIndex(e => e <= x.start); if (i < 0) { i = lanes.length; lanes.push(x.end); } else lanes[i] = x.end; x._eg = i; });
+    const nl = Math.max(1, lanes.length);
+    const blocks = list.map(x => { const c = cls(x.cid), top = (tMin(x.start) - t0) * EG_PPM, h = (tMin(x.end) - tMin(x.start)) * EG_PPM - 3, w = 100 / nl;
+      return `<button type="button" class="egb" style="top:${top}px;height:${h}px;left:calc(${x._eg * w}% + 2px);width:calc(${w}% - 4px);--cc:${ccol(c)}" data-act="eg-tap" data-id="${x.id}" aria-label="${esc(c.name + ', ' + DAYS[x.day] + ' ' + fmtT(x.start))}">
+        <b>${esc(c.name)}${x.group !== 'all' ? ' · ' + x.group : ''}</b><span>${fmtT(x.start)} – ${fmtT(x.end)}</span>${x.week !== 'all' ? `<i class="egw">Sem. ${x.week}</i>` : ''}${x.from && x.from > t ? `<i class="egf">dès le ${esc(dayShort(x.from))}</i>` : ''}${x.to ? `<i class="egf">jusqu'au ${esc(dayShort(x.to))}</i>` : ''}</button>`; }).join('');
+    return `<div class="egcol" style="height:${H}px" data-act="eg-tap" data-day="${d}" data-t0="${t0}">${blocks}</div>`;
+  };
   return `<section class="card" style="display:flex;flex-direction:column;gap:8px">
       <label class="check"><input type="checkbox" data-chg="parity" ${DB.settings.evenIsA ? 'checked' : ''}> Les semaines paires sont des semaines A</label>
-      <p class="small muted" style="margin:0">Cette semaine : semaine ${wt} (semaine n° ${isoWeek(todayStr())}).</p></section>
-    <form class="card form-grid" data-form="add-slot" style="padding:14px">
-      <label class="f" for="sl-day">Jour<select id="sl-day">${[1,2,3,4,5,6].map(d => `<option value="${d}">${DAYS[d]}</option>`).join('')}</select></label>
-      <label class="f" for="sl-start">Début<input type="time" id="sl-start" value="08:00" required></label>
-      <label class="f" for="sl-end">Fin<input type="time" id="sl-end" value="09:00" required></label>
-      <label class="f" for="sl-cid">Classe<select id="sl-cid">${opts}</select></label>
-      <label class="f" for="sl-group">Groupe<select id="sl-group"><option value="all">Classe entière</option><option value="G1">Demi-groupe G1</option><option value="G2">Demi-groupe G2</option></select></label>
-      <label class="f" for="sl-week">Semaine<select id="sl-week"><option value="all">Toutes</option><option value="A">A</option><option value="B">B</option></select></label>
-      <button class="btn primary" type="submit">Ajouter le créneau</button>
-    </form>
-    <section class="card">${byDay || '<p class="muted" style="margin:0">Aucun créneau pour l\'instant.</p>'}</section>`;
+      <p class="small muted" style="margin:0">Cette semaine : semaine ${wtNow} (semaine n° ${isoWeek(todayStr())}).</p></section>
+    <section class="card eggrid-card">
+      <div class="row" style="gap:10px"><div class="seg" role="group" aria-label="Semaine affichée"><button type="button" data-act="eg-week" data-w="A" aria-pressed="${V.egW === 'A'}">Semaine A</button><button type="button" data-act="eg-week" data-w="B" aria-pressed="${V.egW === 'B'}">Semaine B</button></div>
+        <span class="small muted">Double-toucher une case vide : ajouter un cours · double-toucher un cours : le modifier ou le supprimer. Les cours « toutes les semaines » apparaissent en A et en B.</span></div>
+      <div class="eggrid" style="--n:${days.length}">
+        <div></div>${days.map(d => `<div class="egdh">${DAYS[d]}</div>`).join('')}
+        <div class="egtimes" style="height:${H}px">${hours.join('')}</div>${days.map(col).join('')}
+      </div></section>`;
+}
+/* double toucher : deux touchers rapprochés sur la même cible */
+let EG_LAST = null;
+function egDouble(key) { const now = Date.now(), ok = EG_LAST && EG_LAST.k === key && now - EG_LAST.t < 450; EG_LAST = ok ? null : {k: key, t: now}; return ok; }
+/* le créneau a-t-il déjà eu lieu avant la date D (dans l'année) ? */
+function slotDatesFrom(slot, from, to) { const out = []; const yb = yearBounds(); if (!yb) return out; const s0 = from > yb.s ? from : yb.s, e0 = to && to < yb.e ? to : yb.e;
+  for (let d = s0; d <= e0; d = addDays(d, 1)) { if (holidayOn(d)) continue; const wd = parseD(d).getDay(); if (wd !== slot.day) continue; if (slot.week !== 'all' && weekType(d) !== slot.week) continue; if (!slotValid(slot, d)) continue; out.push(d); } return out; }
+const slotHasPast = (slot, D) => { const yb = yearBounds(); return !!yb && slotDatesFrom(slot, yb.s, addDays(D, -1)).length > 0; };
+let EG_EDIT = null;
+function egForm(o) {
+  EG_EDIT = o; const x = o.slot || {}, t = todayStr();
+  const opts = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true})).map(c => `<option value="${c.id}" ${c.id === (x.cid || o.cid) ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+  const past = o.slot ? slotHasPast(o.slot, t) : false;
+  const sel = (id, val, list) => `<select id="${id}">${list.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  openModal(`<h2>${o.slot ? 'Modifier le cours' : 'Nouveau cours'}</h2>
+    <div class="form-grid">
+      <label class="f" for="eg-cid">Classe<select id="eg-cid">${opts}</select></label>
+      <label class="f" for="eg-day">Jour${sel('eg-day', x.day || o.day, [1, 2, 3, 4, 5, 6].map(d => [d, DAYS[d]]))}</label>
+      <label class="f" for="eg-s">Début<input type="time" id="eg-s" value="${x.start || o.start}"></label>
+      <label class="f" for="eg-e">Fin<input type="time" id="eg-e" value="${x.end || o.end}"></label>
+      <label class="f" for="eg-week">Semaine${sel('eg-week', x.week || o.week || 'all', [['all', 'Toutes les semaines'], ['A', 'Semaine A'], ['B', 'Semaine B']])}</label>
+      <label class="f" for="eg-group">Groupe${sel('eg-group', x.group || 'all', [['all', 'Classe entière'], ['G1', 'Demi-groupe G1'], ['G2', 'Demi-groupe G2']])}</label>
+      <label class="f" for="eg-from">${o.slot ? 'Changement à partir du' : 'Valable à partir du'}<input type="date" id="eg-from" value="${o.slot && past ? t : (x.from || '')}"></label>
+    </div>
+    <p class="small muted">${o.slot ? (past ? 'Ce cours a déjà eu lieu : les séances avant cette date gardent leur contenu, leurs bilans et leurs devoirs. Les séances déjà préparées après cette date suivent le nouveau créneau, dans l\'ordre.' : 'Ce cours n\'a pas encore eu lieu : la modification s\'applique à toute l\'année.') : 'Laissez la date vide pour un cours valable toute l\'année.'}</p>
+    <div class="ft">${o.slot ? '<button class="btn ghost" data-act="eg-del" style="margin-right:auto;color:var(--neg)">Supprimer…</button>' : ''}<button class="btn" data-act="m-close">Annuler</button><button class="btn ink" data-act="eg-save">Enregistrer</button></div>`);
+}
+/* déplace, dans l'ordre, ce qui a déjà été préparé sur les séances futures d'un créneau vers celles du nouveau créneau */
+function moveFutureContent(oldKeys, newKeys) {
+  const maps = ['content', 'cdt', 'cancelled'], vals = oldKeys.map(k => maps.map(m => DB[m][k]));
+  oldKeys.forEach(k => maps.forEach(m => { delete DB[m][k]; }));
+  let n = 0;
+  vals.forEach((v, i) => { const nk = newKeys[i]; if (!nk) return; maps.forEach((m, j) => { if (v[j] != null) { DB[m][nk] = v[j]; if (m === 'content') n++; } }); });
+  return n;
 }
 function setPeriodes() {
   const block = (k, title) => `<section class="card" style="display:flex;flex-direction:column;gap:10px"><h3 style="font-size:17px">${title}</h3>
@@ -2061,8 +2188,8 @@ function defaultRooms() {
   };
   const boardTop = (r, deskFront) => { add(r, 'board', (ROOM_W - 560) / 2, 14, []); add(r, 'desk', deskFront ? (ROOM_W - 240) / 2 : (ROOM_W + 560) / 2 + 60, deskFront ? 84 : 14, []); };
   let r;
-  r = mk(1, 'PC 1', 'ilots', 270, 150); boardTop(r); grid(r, 'ilot', 2, 3, [0, 110, ROOM_W, ROOM_H], 0, (i, j) => [i * 3 + j + 1]);
-  r = mk(2, 'PC 2', 'ilots', 270, 150); boardTop(r); grid(r, 'ilot', 2, 3, [0, 110, ROOM_W, ROOM_H], 0, (i, j) => [i * 3 + j + 1]);
+  r = mk(1, 'PC 1', 'ilots', 145, 190); boardTop(r); grid(r, 'ilot6', 1, 4, [0, 110, ROOM_W, ROOM_H], 0, (i, j) => [j + 1]); // îlots tous en ligne
+  r = mk(2, 'PC 2', 'ilots', 140, 230); boardTop(r); grid(r, 'ilot', 1, 6, [0, 110, ROOM_W, ROOM_H], 1, (i, j) => [j + 1]); // îlots tous en ligne
   r = mk(3, 'PC 3', 'ilots', 250, 112); boardTop(r); grid(r, 'ilot', 3, 3, [0, 90, ROOM_W, ROOM_H], 1, (i, j) => [i * 3 + j + 1]);
   r = mk(4, 'PC 4', 'ilots', 250, 112); boardTop(r); grid(r, 'ilot', 3, 3, [0, 90, ROOM_W, ROOM_H], 1, (i, j) => [i * 3 + j + 1]);
   r = mk(5, 'PC 5', 'paillasses', 270, 118);
@@ -2153,7 +2280,27 @@ function unitHead(it, num, o, filled) {
   const noteBtn = o.ses && !o.edit && filled > 1 ? `<button type="button" class="note" data-act="unit-note" data-num="${num}" aria-label="Noter ${word === 'Îlot' ? "l'îlot" : 'le binôme'} ${num}">Noter</button>` : '';
   return `${word} ${num}${flag ? '<span class="fl">À modifier</span>' : ''}${conf ? '<span class="fl neg">À séparer</span>' : ''}${noteBtn}`;
 }
+/* vue prof : la salle vue depuis le tableau (tableau en bas de l'écran). Les places restent droites ;
+   seuls les emplacements tournent (demi-tour, ou quart de tour si le tableau est sur un côté). */
+function teacherRoom(room) {
+  const b = room.items.find(it => it.type === 'board'); if (!b) return room;
+  const [bw, bh] = itemDims(room, b), cx = b.x + bw / 2, cy = b.y + bh / 2;
+  const dx = cx / ROOM_W - 0.5, dy = cy / ROOM_H - 0.5;
+  const k = Math.abs(dy) >= Math.abs(dx) ? (dy < 0 ? 2 : 0) : (dx < 0 ? 3 : 1); // quarts de tour (sens horaire) pour amener le tableau en bas
+  if (!k) return room;
+  const items = room.items.map(it => {
+    const [w, h] = itemDims(room, it); let x = it.x + w / 2, y = it.y + h / 2;
+    if (k === 2) { x = ROOM_W - x; y = ROOM_H - y; }
+    else if (k === 1) { const nx = ROOM_H - y, ny = x; x = nx * ROOM_W / ROOM_H; y = ny * ROOM_H / ROOM_W; }
+    else { const nx = y, ny = ROOM_W - x; x = nx * ROOM_W / ROOM_H; y = ny * ROOM_H / ROOM_W; }
+    const nit = {...it, rot: ((it.rot || 0) + k) % 4}; const [nw, nh] = itemDims(room, nit);
+    nit.x = Math.max(0, Math.min(ROOM_W - nw, x - nw / 2)); nit.y = Math.max(0, Math.min(ROOM_H - nh, y - nh / 2));
+    return nit;
+  });
+  return {...room, items};
+}
 function renderRoom(room, o) {
+  if (o.teacher) room = teacherRoom(room);
   const out = [];
   const box = (x, y, w, h, W, H) => `left:${pct(x, W)};top:${pct(y, H)};width:${pct(w, W)};height:${pct(h, H)}`;
   room.items.forEach(it => {
@@ -2243,7 +2390,9 @@ function viewPlan() {
   if (!placed.size && studs.length && !edit) {
     ban += `<div class="banner ok"><p>Aucun élève n'est encore placé dans ce labo pour ce demi-groupe.</p><button class="btn primary" data-act="plan-random-edit">Répartir au hasard</button><button class="btn" data-act="plan-edit">Placer à la main</button></div>`; nb++;
   }
-  const o = {mode: 'plan', pl, sum, conflicts, cid: ctx.cid, group: ctx.group, ses: ctx.ses, edit, selSid: V.selSid};
+  const tv = V.tv !== false;
+  const o = {mode: 'plan', pl, sum, conflicts, cid: ctx.cid, group: ctx.group, ses: ctx.ses, edit, selSid: V.selSid, teacher: tv};
+  const tvBtn = `<button class="btn" data-act="tv" aria-pressed="${tv}" title="Basculer entre la vue depuis le tableau (prof) et la vue des élèves">${tv ? 'Vue prof' : 'Vue élèves'}</button>`;
   const word = room.kind === 'ilots' ? 'îlots' : 'binômes';
   const unplHTML = unpl.map(s => `<button type="button" class="seat ${V.selSid === s.id ? 'sel' : ''}" data-act="unpl" data-sid="${s.id}"><span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}</span></span></button>`).join('');
   const selPlaced = V.selSid && placed.has(V.selSid);
@@ -2263,14 +2412,14 @@ function viewPlan() {
   if (ctx.ses) {
     const ses = ctx.ses;
     head = sesHeader(ses, `<button class="btn" data-act="room-change">Labo : ${esc(room.name)}</button>
-      ${eyeBtn(true)}
+      ${tvBtn}${eyeBtn(true)}
       <button class="btn" data-act="plan-edit" aria-pressed="${edit}">Placer</button>
       <button class="btn" data-act="proj-open">${ICON.proj}Projeter</button>`);
   } else {
     head = `<header class="bar">
       <button class="btn ghost" data-act="back">${ICON.back}Salles</button>
       <div class="ttl"><h1 class="row" style="gap:10px">${title}</h1><div class="sub">Placer les élèves · ${sharedIlots(room) ? 'composition commune à tous les labos à îlots de 4' : 'placement propre à ce labo'}</div></div>
-      <span class="grow"></span>${eyeBtn(true)}
+      <span class="grow"></span>${tvBtn}${eyeBtn(true)}
       <button class="btn" data-act="proj-open">${ICON.proj}Projeter</button>
       <button class="btn ink" data-act="back">Terminé</button>
     </header>`;
@@ -2365,11 +2514,12 @@ function viewSalles() {
       const placed = placedSet(pl, room, sg.c.id, sg.g), n = studentsOf(sg.c.id, sg.g).length;
       ban = flagsBanner(pl, room, false);
       const conf = conflictNums(pl, sg.c.id, room);
-      plan = renderRoom(room, {mode: 'plan', pl, cid: sg.c.id, group: sg.g, ro: true, conflicts: conf});
+      plan = renderRoom(room, {mode: 'plan', pl, cid: sg.c.id, group: sg.g, ro: true, conflicts: conf, teacher: V.tv !== false});
       info = `${placed.size} placé${placed.size > 1 ? 's' : ''} sur ${n}` + (sharedIlots(room) ? ' · composition commune aux labos à îlots de 4' : '');
     }
     right = `<div class="row" style="gap:10px"><h2 style="font-family:var(--serif);font-size:24px;margin-right:6px">${esc(room.name)}</h2><span class="chip neu">${kindLabel(room)}</span><span class="grow" style="flex:1"></span>
         <button class="btn" data-act="room-edit">Disposer la salle</button>
+        <button class="btn" data-act="tv" aria-pressed="${V.tv !== false}" title="Vue depuis le tableau (prof) ou vue des élèves">${V.tv !== false ? 'Vue prof' : 'Vue élèves'}</button>
         <button class="btn ink" data-act="plan-open" ${sg ? '' : 'disabled'}>Placer les élèves</button>
         <button class="btn" data-act="proj-open-s" ${sg ? '' : 'disabled'}>${ICON.proj}Projeter</button></div>
       ${groups.length ? `<div class="row" style="gap:6px">${chips}</div>` : '<p class="muted" style="margin:0">Attribuez des demi-groupes (G1/G2) à vos élèves dans Réglages pour placer des groupes.</p>'}
@@ -2767,7 +2917,7 @@ function renderContentInner() {
     return `<li class="ctitem"><div class="row" style="gap:8px;flex-wrap:nowrap">${ityChip(it.type)}
       <input type="text" id="ct-l-${i}" value="${esc(it.label || '')}" placeholder="Intitulé (facultatif)" data-inp="ct-label" data-i="${i}" aria-label="Intitulé">
       <button type="button" class="btn icon-btn ghost" data-act="ct-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></div>
-      <div class="row" style="gap:8px">${stSeg}</div>${rep}</li>`;
+      <div class="row" style="gap:8px">${stSeg}${it.type === 'tp' || it.type === 'act' ? `<label class="gradebox"><input type="checkbox" data-act="ct-graded" data-i="${i}" ${it.graded ? 'checked' : ''}> Noté</label>` : ''}</div>${rep}</li>`;
   }).join('');
   const hws = d.hw.map((h, i) => `<li class="hwitem ${CT.hw.edit === i ? 'editing' : ''}"><span>${esc(hwText(h))}</span><span class="small muted">${hwDueLabel(h, s, s.cid, s.group)}</span><button type="button" class="btn icon-btn ghost" data-act="hw-edit" data-i="${i}" aria-label="Modifier le devoir" title="Modifier">${ICON.edit}</button><button type="button" class="btn icon-btn ghost" data-act="hw-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></li>`).join('');
   const k = CT.hw.kind;
@@ -2998,7 +3148,7 @@ const sesOfEl = el => { const s = sesByKey(el.dataset.cid, el.dataset.key); retu
 const sesByKey = (cid, key) => classSessions(cid).find(x => x.key === key) || null;
 const fmtDay = d => parseD(d).toLocaleDateString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long'});
 function itemsHTML(ct, showState) {
-  return ct && ct.items.length ? ct.items.map(it => `<li>${ityChip(it.type)} ${esc(it.label || '')}${showState && it.st === 'part' ? ' <span class="small st-part">(en partie)</span>' : ''}${showState && it.st === 'not' ? ' <span class="small st-not">(pas fait)</span>' : ''}${showState && it.st === 'done' ? ' <span class="small st-done">(fait)</span>' : ''}${it.rep ? ` <span class="small muted">→ reporté au ${fmtShort(it.rep)}</span>` : ''}</li>`).join('') : '';
+  return ct && ct.items.length ? ct.items.map(it => `<li>${ityChip(it.type)} ${esc(it.label || '')}${it.graded && (it.type === 'tp' || it.type === 'act') ? ' <span class="bnote">noté</span>' : ''}${showState && it.st === 'part' ? ' <span class="small st-part">(en partie)</span>' : ''}${showState && it.st === 'not' ? ' <span class="small st-not">(pas fait)</span>' : ''}${showState && it.st === 'done' ? ' <span class="small st-done">(fait)</span>' : ''}${it.rep ? ` <span class="small muted">→ reporté au ${fmtShort(it.rep)}</span>` : ''}</li>`).join('') : '';
 }
 const noteHTML = ct => ct && ct.note ? `<p class="pgnote">${esc(ct.note)}</p>` : '';
 function progressHTML(ses, compact) {
@@ -3546,6 +3696,7 @@ const ACT = {
   'ct-del': el => { syncInputs(); CT.data.items.splice(+el.dataset.i, 1); renderContent(); },
   'ct-st': el => { syncInputs(); const it = CT.data.items[+el.dataset.i]; it.st = it.st === el.dataset.v ? 'prev' : el.dataset.v; renderContent(); },
   'ct-other': el => { CT.other = el.checked; },
+  'ct-graded': el => { syncInputs(); const it = CT.data.items[+el.dataset.i]; if (!it) return; if (it.graded) delete it.graded; else it.graded = true; renderContent(); },
   'hw-allq': el => { syncInputs(); const nm = $('#hw-name') ? $('#hw-name').value : ''; CT.hw.allq = el.checked; renderContent(); if ($('#hw-name')) $('#hw-name').value = nm; },
   'hw-add': () => { syncInputs(); const h = readHwForm(); if (!h) { toast('Complétez le devoir (page, numéros ou texte).'); return; }
     if (CT.hw.edit != null && CT.data.hw[CT.hw.edit]) { h.id = CT.data.hw[CT.hw.edit].id; CT.data.hw[CT.hw.edit] = h; } else CT.data.hw.push(h);
@@ -3608,13 +3759,14 @@ const ACT = {
   'sui-ses': el => { const x = DB.slots.find(y => y.id === el.dataset.slot); if (x) openSession(sesFromSlot(el.dataset.date, x), 'bilan'); },
   legend: () => openModal(`<h2>Légende de l'emploi du temps</h2>
     <ul class="leglist">
-      <li><i class="pdot py"></i> Devoir à vérifier à cette séance</li>
+      <li><i class="pdot py">!</i><i class="pdot py ok">✓</i> Devoirs : à vérifier / tout vérifié ou reporté</li>
       <li><i class="pdot pbx">!</i><i class="pdot pb">✓</i> Cahier de textes École Directe à compléter / complété</li>
       <li><i class="pdot pr">!</i><i class="pdot pg">✓</i> Séance à préparer / prête</li>
       <li><i class="bty" style="--tc:#B5472F">Éval.</i> Élément « Évaluation » dans la séance (le créneau a alors un contour rouge)</li>
-      <li><span class="chip pos">✓ Complet</span> <span class="chip warn">3 restants</span> <span class="chip neg">Aucune info</span> Bilan des élèves (séances passées)</li>
+      <li><i class="pdot pq ok">${SILH}</i><i class="pdot pq part">3</i><i class="pdot pq none">!</i> Bilan des élèves (carré) : complet / élèves restants / aucune observation</li>
+      <li><span class="leg-bd ev"></span> Évaluation · <span class="leg-bd gr"></span> TP ou activité notés</li>
     </ul>
-    <p class="small muted">Toucher un créneau : ouvrir la séance · Appui long : la marquer comme annulée · Survol à la souris ou au stylet : aperçu, avec les cases « prête » et « cahier de textes ».<br>En haut : séances à préparer sur 2 semaines, cahiers de textes en retard (toucher pour y aller), « Cocher la semaine » pour le cahier de textes.</p>
+    <p class="small muted">Toucher un créneau : ouvrir la séance · Appui long : la marquer comme annulée · Survol à la souris ou au stylet : aperçu, avec les cases « prête » et « cahier de textes ».<br>En haut, pour la semaine affichée : bilans élèves incomplets, séances à préparer, cahiers de textes à cocher. Toucher un indicateur met en évidence les créneaux concernés.</p>
     <div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`),
   'cons-edit': el => { CONS_EDIT = {cid: el.dataset.cid, id: el.dataset.id}; render(); setTimeout(() => $('#cs-date')?.scrollIntoView({block: 'center', behavior: 'smooth'}), 0); },
   'cons-cancel': () => { CONS_EDIT = null; render(); },
@@ -3628,6 +3780,8 @@ const ACT = {
       <p>${esc(cap(fmtLong(k.date)))}, ${fmtT(k.s)} – ${fmtT(k.e)}${k.note ? ' · ' + esc(k.note) : ''}</p>
       ${keys.length ? `<p class="small muted" style="margin:0 0 6px">Cours au même moment :</p><ul class="stable">${keys.map(line).join('')}</ul>` : ''}
       <div class="ft"><button class="btn" data-act="m-close">Fermer</button><button class="btn" data-act="settings" data-tab="classes" data-cid="${c.id}">Modifier dans Réglages</button></div>`); },
+  tv: () => { V.tv = V.tv === false; try { localStorage.setItem('suivi-classe-tv', V.tv ? '1' : '0'); } catch (e) {} renderKeep(); },
+  hl: el => { V.hl = V.hl === el.dataset.k ? null : el.dataset.k; renderKeep(); },
   'cdt-first': el => { V.date = el.dataset.date; V.mode = 'week'; render(); },
   'cdt-week': el => { const keys = el.dataset.keys.split(','), on = el.dataset.on === '1'; keys.forEach(k => { if (on) DB.cdt[k] = true; else delete DB.cdt[k]; }); save(); renderKeep(); toast(on ? `Cahier de textes coché pour ${plural(keys.length, 'séance')}` : 'Cahier de textes décoché pour la semaine'); },
   'ready-toggle': () => { const k = V.ses.key, ct = DB.content[k] || (DB.content[k] = {ch: null, items: [], hw: []}); if (ct.ready) { delete ct.ready; if (ctEmpty(ct)) delete DB.content[k]; } else ct.ready = true; SESS_CACHE = {}; save(); renderKeep(); toast(DB.content[k] && DB.content[k].ready ? 'Séance marquée prête' : 'Séance à nouveau en préparation'); },
@@ -3670,10 +3824,47 @@ const ACT = {
   'catch-done': el => { const c = DB.catchup.find(x => x.id === el.dataset.id); if (c) { c.done = todayStr(); save(); refreshChecks(); toast('Rattrapage validé'); } },
   'catch-toggle': el => { const c = DB.catchup.find(x => x.id === el.dataset.id); if (c) { c.done = c.done ? null : todayStr(); save(); render(); toast(c.done ? 'Rattrapage validé' : 'Rattrapage rouvert'); } },
   'obs-seen': el => { const o = DB.obs.find(x => x.id === el.dataset.oid); if (o) { o.seen = true; save(); refreshChecks(); toast('Marqué comme vu'); } },
+  'eg-week': el => { V.egW = el.dataset.w; render(); },
+  'eg-tap': (el, e) => {
+    if (el.dataset.id) { if (e) e.stopPropagation(); if (egDouble('s' + el.dataset.id)) { const x = DB.slots.find(y => y.id === el.dataset.id); if (x) egForm({slot: x}); } return; }
+    if (e && e.target.closest('.egb')) return;
+    const r = el.getBoundingClientRect(), y = (e ? e.clientY : r.top) - r.top, m = +el.dataset.t0 + Math.max(0, y) / EG_PPM, st = Math.floor(m / 15) * 15;
+    if (!egDouble('d' + el.dataset.day + '|' + st)) return;
+    const hh = v => String(Math.floor(v / 60)).padStart(2, '0') + ':' + String(v % 60).padStart(2, '0');
+    egForm({day: +el.dataset.day, start: hh(st), end: hh(Math.min(st + 60, 23 * 60 + 59)), week: 'all'});
+  },
+  'eg-save': () => {
+    const o = EG_EDIT; if (!o) return;
+    const v = {cid: $('#eg-cid').value, day: +$('#eg-day').value, start: $('#eg-s').value, end: $('#eg-e').value, week: $('#eg-week').value, group: $('#eg-group').value};
+    const D = $('#eg-from').value || '';
+    if (!v.start || !v.end || v.end <= v.start) { toast("L'heure de fin doit suivre l'heure de début."); return; }
+    if (!o.slot) { const s = {id: uid(), ...v}; if (D) s.from = D; DB.slots.push(s); save(); closeModal(); render(); toast('Cours ajouté'); return; }
+    const old = o.slot, same = ['cid', 'day', 'start', 'end', 'week', 'group'].every(k => String(old[k]) === String(v[k]));
+    if (same) { closeModal(); return; }
+    const t = todayStr(), eff = D || t, yb = yearBounds();
+    const oldKeys = slotDatesFrom(old, eff, yb ? yb.e : eff).map(d => d + '|' + old.id);
+    let ns, n;
+    if (slotHasPast(old, eff)) {
+      old.to = addDays(eff, -1); ns = {id: uid(), ...v, from: eff}; if (old.toKeep) delete old.toKeep; DB.slots.push(ns);
+    } else { Object.assign(old, v); ns = old; }
+    const newKeys = slotDatesFrom(ns, eff, yb ? yb.e : eff).map(d => d + '|' + ns.id);
+    n = moveFutureContent(oldKeys, newKeys);
+    save(); closeModal(); render(); toast('Cours modifié' + (n ? ` · ${plural(n, 'séance préparée déplacée', 'séances préparées déplacées')}` : ''));
+  },
+  'eg-del': () => { const o = EG_EDIT; if (!o || !o.slot) return; const t = todayStr(), past = slotHasPast(o.slot, t);
+    const fut = slotDatesFrom(o.slot, t, (yearBounds() || {}).e || t).filter(d => DB.content[d + '|' + o.slot.id]).length;
+    openModal(`<h2>Supprimer ce cours ?</h2><p>${esc(cls(o.slot.cid)?.name || '')} · ${DAYS[o.slot.day]} ${fmtT(o.slot.start)} – ${fmtT(o.slot.end)}</p>
+      ${past ? `<label class="f" for="eg-to">Dernière séance le<input type="date" id="eg-to" value="${addDays(t, -1) >= (o.slot.from || '') ? addDays(t, -1) : t}"></label><p class="small muted">Les séances jusqu'à cette date sont conservées (contenu, bilans, devoirs).</p>` : '<p class="small muted">Ce cours n\'a pas encore eu lieu : il est retiré de toute l\'année.</p>'}
+      ${fut ? `<p class="small" style="color:var(--neg)">${plural(fut, 'séance future déjà préparée sera perdue', 'séances futures déjà préparées seront perdues')}.</p>` : ''}
+      <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn danger" data-act="eg-del-go">Supprimer</button></div>`); },
+  'eg-del-go': () => { const o = EG_EDIT; if (!o || !o.slot) return; const toEl = $('#eg-to');
+    if (toEl && toEl.value) { o.slot.to = toEl.value; if (o.slot.from && o.slot.to < o.slot.from) DB.slots = DB.slots.filter(s => s !== o.slot); }
+    else DB.slots = DB.slots.filter(s => s !== o.slot);
+    EG_EDIT = null; save(); closeModal(); render(); toast('Cours supprimé'); },
   'del-slot': el => { DB.slots = DB.slots.filter(s => s.id !== el.dataset.id); save(); render(); }
 };
 /* annulation : chaque action ci-dessous propose « Annuler » pendant quelques secondes */
-const UNDO_MSG = {'cons-del': 'Conseil supprimé', 'due-ok': 'Vérification modifiée', 'due-x': 'Devoir retiré de la liste', 'due-restore': 'Devoir remis dans la liste', 'due-purge-go': 'Supprimé définitivement', 'obs-seen-all': 'Tout marqué comme vu', 'due-unrep': 'Report annulé', 'due-rep': 'Travail reporté', 'due-rep-all': 'Travail reporté', 'due-rep-go': 'Travail reporté', 'chk-add': 'Ajouté au travail à vérifier', 'chk-del': 'Retiré du travail à vérifier', 'cdt-toggle': 'Cahier de textes modifié', 'hv-ready': 'Séance modifiée', 'hv-cdt': 'Cahier de textes modifié', 'cdt-week': 'Cahier de textes modifié', 'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
+const UNDO_MSG = {'eg-save': 'Emploi du temps modifié', 'eg-del-go': 'Cours supprimé', 'cons-del': 'Conseil supprimé', 'due-ok': 'Vérification modifiée', 'due-x': 'Devoir retiré de la liste', 'due-restore': 'Devoir remis dans la liste', 'due-purge-go': 'Supprimé définitivement', 'obs-seen-all': 'Tout marqué comme vu', 'due-unrep': 'Report annulé', 'due-rep': 'Travail reporté', 'due-rep-all': 'Travail reporté', 'due-rep-go': 'Travail reporté', 'chk-add': 'Ajouté au travail à vérifier', 'chk-del': 'Retiré du travail à vérifier', 'cdt-toggle': 'Cahier de textes modifié', 'hv-ready': 'Séance modifiée', 'hv-cdt': 'Cahier de textes modifié', 'cdt-week': 'Cahier de textes modifié', 'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-mirror': 'Élément retourné', 'room-dup': 'Élément dupliqué', 'room-cell': 'Taille des places modifiée', 'room-del-item-go': 'Élément supprimé', 'room-kind': 'Type de labo modifié',
   'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'ch-share': 'Partage des chapitres modifié', 'sep-del': 'Paire retirée'};
@@ -3837,7 +4028,7 @@ function putRec(p, v) {
 /* relève les modifications depuis la dernière fois ; renvoie true s'il y en a */
 function syncTrack() {
   const R = recordsOf(DB, PHOTOS), m = SM.m, now = Date.now(), base = !SM.init; let ch = false;
-  for (const [p, v] of R) { const h = recHash(p, v), x = m[p]; if (!x || x.d || x.h !== h) { m[p] = {t: base || MIG_STAMP.has(p) ? 1 : now, h}; ch = true; } }
+  for (const [p, v] of R) { const h = recHash(p, v), x = m[p]; if (!x || x.d || x.h !== h) { m[p] = {t: base ? 1 : MIG_STAMP.has(p) ? MIG_STAMP.get(p) : now, h}; ch = true; } }
   MIG_STAMP.clear();
   for (const p in m) if (!m[p].d && !R.has(p)) { m[p] = {t: now, d: 1}; ch = true; }
   if (base) { SM.init = true; ch = false; }

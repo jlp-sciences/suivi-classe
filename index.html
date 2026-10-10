@@ -773,7 +773,7 @@ button.wpill{cursor:pointer}
 .pdot.pq.none{background:rgba(217,48,37,.16);color:#B3261E;box-shadow:inset 0 0 0 1px rgba(217,48,37,.4)}
 .wkwrap .blk .bdots{position:absolute;right:5px;bottom:4px;display:flex;gap:2px}
 .wkwrap .blk .bits .bit:last-child{padding-right:var(--dw)}
-.wkwrap .blk.noitems .btop{padding-right:var(--dw)}
+.wkwrap .blk.noitems .btop{padding-right:min(var(--dw),calc(100% - 24px))}
 .blk.has-eval{border:2px solid var(--neg) !important}
 .blk.has-graded{border:2px solid #4B2A7B !important}
 :root[data-theme="dark"] .blk.has-graded{border-color:#A58BD6 !important}
@@ -804,6 +804,51 @@ button.wpill{cursor:pointer}
 .egb b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .egb span{color:var(--ink-2);font-size:11.5px}
 .egb i{font-style:normal;font-size:10.5px;font-weight:700;padding:0 4px;border-radius:4px;background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink-2)}
+
+/* ---- v2.13 ---- */
+/* pastilles : pleine = à faire, claire = fait */
+.pdot.py{background:#C99200;color:#fff;box-shadow:none}
+.pdot.py.ok{background:var(--surface);color:#A87A00;box-shadow:inset 0 0 0 1.5px #C99200}
+.pdot.pbx{background:#2F6DB5;color:#fff;box-shadow:none}
+.pdot.pb{background:var(--surface);color:#2F6DB5;box-shadow:inset 0 0 0 1.5px #2F6DB5}
+.pdot.pq.none{background:#C62828;color:#fff;box-shadow:none}
+.pdot.pq.part{background:#E06B00;color:#fff;box-shadow:none}
+.pdot.pq.ok{background:var(--surface);color:#13706F;box-shadow:inset 0 0 0 1.5px #1E8C8C}
+.pdot.pq.todo{background:var(--surface);color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.blk.past .pdot{opacity:1}
+/* séances notées : cadre épais + étiquette */
+.blk.has-eval{border:1px solid var(--neg) !important;box-shadow:inset 0 0 0 4px var(--neg)}
+.blk.has-graded{border:1px solid #4B2A7B !important;box-shadow:inset 0 0 0 4px #4B2A7B}
+:root[data-theme="dark"] .blk.has-graded{box-shadow:inset 0 0 0 4px #A58BD6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .blk.has-graded{box-shadow:inset 0 0 0 4px #A58BD6}}
+.blk.has-eval,.blk.has-graded{padding-left:9px !important;padding-right:9px !important}
+.btag{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:0 5px;border-radius:4px;color:#fff;line-height:16px}
+.btag.ev{background:var(--neg)} .btag.gr{background:#4B2A7B}
+.slot.has-eval{border:4px solid var(--neg)} .slot.has-graded{border:4px solid #4B2A7B}
+/* délégués */
+.dlg{display:inline-block;margin-left:4px;font-size:.9em;color:#B8860B;vertical-align:0;line-height:1}
+.dlg.sup{color:#8A7A50}
+.mini-tg.dl[aria-pressed="true"]{background:#FBF1D9;color:#7A5600;border-color:#E9D39C}
+.proj .dlg{display:none}
+/* suivi en grille */
+.stiles .stile{position:relative}
+.stile .stags{position:absolute;left:4px;top:4px;display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.stile .stags .chip{font-size:10px;padding:0 5px}
+.stile .sbar{display:flex;height:7px;margin:0 8px;border-radius:4px;overflow:hidden;background:var(--surface-2)}
+.stile .sbar .sp{background:var(--pos)} .stile .sbar .sr{background:var(--ras)} .stile .sbar .sn{background:var(--neg)}
+.stile .scnt{display:flex;gap:8px;justify-content:center;font-size:12px;padding:3px 6px 6px;color:var(--ink-2)}
+.stile .scnt b.pos{color:var(--pos)} .stile .scnt b.neg{color:var(--neg)}
+/* tirage au sort : choix des îlots */
+.room .it .pickov{position:absolute;border:3px solid #2F6DB5;border-radius:10px;background:rgba(47,109,181,.10);color:#2F6DB5;font-size:28px;font-weight:800;cursor:pointer;z-index:4;display:flex;align-items:center;justify-content:center}
+.room .it .pickov.off{border:2px dashed var(--line-2);background:rgba(0,0,0,.18);color:transparent}
+.room .it .blob.off{opacity:.4}
+.togpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:2px 10px;max-height:40vh;overflow:auto}
+/* projection : places occupées bien visibles, places libres effacées */
+.proj .room .seat{background:#fff;border:2px solid #3F444C}
+.proj .room .seat.empty{background:transparent;border:1.5px dashed #CFCBC2}
+.proj .room .it .blob{background:#E4E1DA}
+.proj .room .it .blob.emptyu{background:#F6F5F2}
+.proj .room .it .uh.emptyu{color:#B5B0A6}
 </style>
 </head>
 <body>
@@ -838,7 +883,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.12', d: '2026-10-09'};
+const APP_VERSION = {n: '2.13', d: '2026-10-10'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -896,7 +941,7 @@ const CLASS_COLORS = [['#2F6DB5','Bleu'],['#D9822B','Orange'],['#7B4FB3','Violet
 function nextColor(list) { const used = (list || DB.classes).map(c => c.color); return (CLASS_COLORS.find(([h]) => !used.includes(h)) || CLASS_COLORS[(list || DB.classes).length % CLASS_COLORS.length])[0]; }
 function defaultSettings() {
   return {
-    evenIsA: true, lastBackup: null, hidePhotos: false, labsV3: true, labsV4: true,
+    evenIsA: true, lastBackup: null, hidePhotos: false, labsV3: true, labsV4: true, labsV5: true,
     holidays: DEFAULT_HOLIDAYS.map(h => ({...h})),
     periods: {
       semestre: [{n:'Semestre 1', s:'2026-09-01', e:'2027-01-08'}, {n:'Semestre 2', s:'2027-01-09', e:'2027-06-19'}],
@@ -917,7 +962,7 @@ const SEATDEF = {
 const FIXED = {board: [560, 56], desk: [240, 96]};
 const ITEM_LABEL = {ilot: 'Îlot de 4', ilot6: 'Îlot de 6', simple: 'Paillasse de 2', double: 'Paillasses face à face', L: 'Paillasse en L (3)', board: 'Tableau', desk: 'Bureau'};
 const isFixed = it => !!FIXED[it.type];
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 const MIG_STAMP = new Map(); // enregistrements créés par une migration : datés « anciens » pour la synchro (une vraie modification l'emporte toujours)
@@ -930,7 +975,7 @@ function migrate(core) {
   if (!d.cancelled || typeof d.cancelled !== 'object') d.cancelled = {};
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
   if (!Array.isArray(d.catchup)) d.catchup = [];
-  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   /* labos v3 : on repart des 6 labos par défaut et de plans vides (une seule fois par appareil).
      Les labos par défaut sont marqués « anciens » pour la synchro : une disposition déjà retouchée sur un autre appareil l'emporte. */
   if (!(core && core.settings && core.settings.labsV3)) {
@@ -942,6 +987,9 @@ function migrate(core) {
     ['lab-pc1', 'lab-pc2'].forEach(id => { const i = d.rooms.findIndex(r => r.id === id); if (i >= 0) { d.rooms[i] = def.find(r => r.id === id); MIG_STAMP.set('rooms:' + id, 2); } });
   }
   d.settings.labsV4 = true;
+  /* v5 : PC 2 en ligne, imposé (daté « maintenant » pour l'emporter sur une ancienne version retouchée) */
+  if (core && core.settings && core.settings.labsV3 && !core.settings.labsV5) { const def = defaultRooms(), i = d.rooms.findIndex(r => r.id === 'lab-pc2'); if (i >= 0) d.rooms[i] = def.find(r => r.id === 'lab-pc2'); }
+  d.settings.labsV5 = true;
   if (!Array.isArray(d.settings.holidays)) d.settings.holidays = DEFAULT_HOLIDAYS.map(h => ({...h}));
   d.classes.forEach((c, i) => { if (!c.color) c.color = nextColor(d.classes.slice(0, i)); });
   /* nouvelle détection du niveau : on regroupe les listes de chapitres existantes */
@@ -998,7 +1046,10 @@ const studentsOf = (cid, group = 'all') => DB.students.filter(s => s.cid === cid
 const hasGroups = cid => DB.students.some(s => s.cid === cid && (s.group === 'G1' || s.group === 'G2'));
 const groupLabel = g => g === 'all' ? 'Classe entière' : 'Demi-groupe ' + g;
 /* PAP (apprentissage) / PAI (santé) : symboles discrets, bulle avec le commentaire */
-const amenIcons = s => !s || (!s.pap && !s.pai) ? '' : `<span class="amens">${s.pap ? `<span class="amen pap" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAP : voir les aménagements" title="PAP">${ICON.book}</span>` : ''}${s.pai ? `<span class="amen pai" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAI : voir les informations" title="PAI">${ICON.cross}</span>` : ''}</span>`;
+/* délégué(e) ★ / suppléant(e) ☆ : discret, jamais en projection */
+const dlIcon = s => !s || !s.dl ? '' : s.dl === 'd' ? '<span class="dlg" title="Délégué(e)" aria-label="délégué(e)">★</span>' : '<span class="dlg sup" title="Suppléant(e)" aria-label="suppléant(e)">☆</span>';
+const amenIcons = s => dlIcon(s) + amenIcons0(s);
+const amenIcons0 = s => !s || (!s.pap && !s.pai) ? '' : `<span class="amens">${s.pap ? `<span class="amen pap" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAP : voir les aménagements" title="PAP">${ICON.book}</span>` : ''}${s.pai ? `<span class="amen pai" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAI : voir les informations" title="PAI">${ICON.cross}</span>` : ''}</span>`;
 function amenPop(el) {
   const s = stu(el.dataset.sid); if (!s) return;
   let b = $('#amenpop'); if (!b) { b = document.createElement('div'); b.id = 'amenpop'; b.setAttribute('role', 'dialog'); document.body.appendChild(b); }
@@ -1229,7 +1280,8 @@ function bilanDot(st) {
   if (!st) return '';
   if (st.k === 'done') return `<i class="pdot pq ok" title="Bilan des élèves complet">${SILH}</i>`;
   if (st.k === 'part') return `<i class="pdot pq part" title="${plural(st.n, 'élève restant', 'élèves restants')} au bilan">${st.n > 99 ? '99' : st.n}</i>`;
-  if (st.k === 'none') return '<i class="pdot pq none" title="Bilan des élèves : aucune observation">!</i>';
+  if (st.k === 'none' || st.k === 'empty') return '<i class="pdot pq none" title="Bilan des élèves : aucune observation">!</i>';
+  if (st.k === 'future') return '<i class="pdot pq todo" title="Bilan des élèves : à faire pendant la séance">!</i>';
   return '';
 }
 function slotDots(d, x, st) {
@@ -1293,7 +1345,7 @@ function blkHTML(d, x, c, st, o) {
   const lines = show.map((it, i) => line(it, i === show.length - 1)).join('');
   const hl = V.hl && blkMatches(V.hl, d, x, st) ? 'hl hl-' + V.hl : '';
   return `<button class="blk ${ev ? 'has-eval' : ''} ${gr ? 'has-graded' : ''} ${o.past ? 'past' : ''} ${o.isNow ? 'now' : ''} ${cancel ? 'cancel' : ''} ${o.h < 58 ? 'short' : ''} ${lines ? '' : 'noitems'} ${hl}" style="top:${o.top}px;height:${o.h}px;left:calc(${x._lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)};--dw:${nd ? nd * 19 + 4 : 0}px" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + o.g + ', ' + fmtT(x.start))}">
-    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span></span>
+    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span>${ev && !cancel ? '<span class="btag ev">ÉVAL</span>' : gr && !cancel ? '<span class="btag gr">NOTÉ</span>' : ''}</span>
     ${lines ? `<span class="bits">${lines}</span>` : ''}
     ${chip ? `<span class="bfoot">${chip}</span>` : ''}${dots}</button>`;
 }
@@ -1417,7 +1469,7 @@ function viewGrid() {
   let abs = 0, seen = 0;
   const tiles = list.map(s => {
     const r = sum[s.id] || {}; if (r.abs) abs++; else if (r.pos || r.neg || r.ras) seen++;
-    const name = compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`;
+    const name = (compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`) + dlIcon(s);
     const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.dv ? `<span class="chip dv" title="${CAT[r.dv].l}">${compact ? 'Dev.' : 'Devoir'}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '');
     return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-long="fiche" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}">
       <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}</span>
@@ -1593,7 +1645,7 @@ function setClasses() {
   const g1 = list.filter(s => s.group === 'G1').length, g2 = list.filter(s => s.group === 'G2').length;
   const rows = list.map(s => `<li><span class="thumb">${photoHTML(s)}</span>
       <span class="nm">${esc(s.last.toUpperCase())} ${esc(s.first)}</span>
-      <span class="amtg"><button type="button" class="mini-tg pap" data-act="stu-flag" data-f="pap" data-sid="${s.id}" aria-pressed="${!!s.pap}" title="PAP">PAP</button><button type="button" class="mini-tg pai" data-act="stu-flag" data-f="pai" data-sid="${s.id}" aria-pressed="${!!s.pai}" title="PAI">PAI</button></span>
+      <span class="amtg"><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="d" data-sid="${s.id}" aria-pressed="${s.dl === 'd'}" title="Délégué(e)">★ Dél.</button><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="s" data-sid="${s.id}" aria-pressed="${s.dl === 's'}" title="Suppléant(e)">☆ Sup.</button><button type="button" class="mini-tg pap" data-act="stu-flag" data-f="pap" data-sid="${s.id}" aria-pressed="${!!s.pap}" title="PAP">PAP</button><button type="button" class="mini-tg pai" data-act="stu-flag" data-f="pai" data-sid="${s.id}" aria-pressed="${!!s.pai}" title="PAI">PAI</button></span>
       <select data-chg="group" data-sid="${s.id}" aria-label="Demi-groupe de ${esc(s.first)}"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select>
       <span class="btn filebtn" style="min-height:40px">Photo<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de ${esc(s.first)}"></span>
       <button class="btn icon-btn" style="min-height:40px;min-width:40px" data-act="stu-edit" data-sid="${s.id}" aria-label="Modifier ${esc(s.first)}" title="Modifier">${ICON.edit}</button>
@@ -2238,23 +2290,38 @@ function conflictNums(pl, cid, room) {
   return out;
 }
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function randomPlacement(cid, group, room) {
-  const ids = studentsOf(cid, group).map(s => s.id), units = roomUnits(room);
+const togGroups = cid => (DB.tog[cid] || []).map(g => g.filter(id => stu(id))).filter(g => g.length > 1);
+/* tirage : seulement dans les îlots choisis (use), élèves « à mettre ensemble » regroupés, paires « à séparer » évitées */
+function randomPlacement(cid, group, room, use) {
+  const ids = studentsOf(cid, group).map(s => s.id), all = roomUnits(room);
+  const units = use && use.length ? all.filter(u => use.includes(u.num)) : all;
   if (!units.length) return null;
-  const size = units[0].size;
-  let k = Math.min(units.length, Math.max(1, Math.ceil(ids.length / size)));
-  while (k < units.length && units.slice(0, k).reduce((a, u) => a + u.size, 0) < ids.length) k++;
-  const use = units.slice(0, k), cap = use.reduce((a, u) => a + u.size, 0), n = Math.min(ids.length, cap);
-  const sizes = use.map(() => 0); let left = n, i = 0;
-  while (left > 0 && i < 100000) { const j = i % k; if (sizes[j] < use[j].size) { sizes[j]++; left--; } i++; }
-  const pairs = sepPairs(cid); let best = null, bestC = Infinity;
-  for (let tr = 0; tr < 500 && bestC > 0; tr++) {
-    const sh = shuffle(ids), g = {}; let p = 0;
-    use.forEach((u, j) => { const arr = sh.slice(p, p + sizes[j]); p += sizes[j]; while (arr.length < u.size) arr.push(null); g[u.num] = arr; });
-    let c = 0; Object.values(g).forEach(arr => { const m = new Set(arr); pairs.forEach(([a, b]) => { if (m.has(a) && m.has(b)) c++; }); });
-    if (c < bestC) { best = g; bestC = c; }
+  const capTot = units.reduce((a, u) => a + u.size, 0), n = Math.min(ids.length, capTot);
+  /* nombre d'îlots utilisés : le moins possible, en remplissant de façon équilibrée */
+  let k = 1; while (k < units.length && units.slice(0, k).reduce((a, u) => a + u.size, 0) < n) k++;
+  const pairs = sepPairs(cid), idSet = new Set(ids);
+  const groups = togGroups(cid).map(g => g.filter(id => idSet.has(id))).filter(g => g.length > 1).sort((a, b) => b.length - a.length);
+  let best = null, bestScore = Infinity, bestC = 0, bestT = 0;
+  for (let tr = 0; tr < 600 && bestScore > 0; tr++) {
+    const use = shuffle(units).slice(0, k).sort((a, b) => a.num - b.num);
+    const sizes = use.map(() => 0); let left = n, i = 0;
+    while (left > 0 && i < 100000) { const j = i % use.length; if (sizes[j] < use[j].size) { sizes[j]++; left--; } i++; }
+    const slots = use.map((u, j) => ({u, cap: sizes[j], m: []}));
+    const placed = new Set(), pool = shuffle(ids);
+    for (const g of groups) { // un groupe « ensemble » : dans l'îlot où il reste le plus de place
+      const todo = g.filter(id => !placed.has(id)); if (!todo.length) continue;
+      const cands = shuffle(slots).filter(x => x.cap - x.m.length >= todo.length);
+      const tgt = cands[0] || shuffle(slots).sort((a, b) => (b.cap - b.m.length) - (a.cap - a.m.length))[0];
+      todo.forEach(id => { if (tgt.m.length < tgt.cap) { tgt.m.push(id); placed.add(id); } });
+    }
+    for (const id of pool) { if (placed.has(id)) continue; const x = shuffle(slots).find(y => y.m.length < y.cap); if (!x) break; x.m.push(id); placed.add(id); }
+    const g = {}; slots.forEach(x => { const arr = x.m.slice(); while (arr.length < x.u.size) arr.push(null); g[x.u.num] = shuffle(arr); });
+    let c = 0; Object.values(g).forEach(arr => { const m = new Set(arr); pairs.forEach(([a, b2]) => { if (m.has(a) && m.has(b2)) c++; }); });
+    let t = 0; groups.forEach(gr => { const where = new Set(gr.map(id => Object.keys(g).find(num => g[num].includes(id)))); t += where.size - 1; });
+    const score = c * 100 + t;
+    if (score < bestScore) { best = g; bestScore = score; bestC = c; bestT = t; }
   }
-  return {g: best, conflicts: bestC, unplaced: ids.length - n};
+  return {g: best, conflicts: bestC, split: bestT, unplaced: ids.length - n};
 }
 
 /* rendu d'une salle (plan, projection, édition, miniature) */
@@ -2268,7 +2335,7 @@ function seatHTML(s, num, i, o) {
   }
   const r = (o.sum && o.sum[s.id]) || {};
   const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.dv ? '<span class="chip dv">Dev.</span>' : '') + (r.ras ? '<span class="chip neu">RAS</span>' : '') + (r.abs ? '<span class="chip dark">Abs.</span>' : '');
-  const inner = `<span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}</span><span class="sc">${chips}</span></span>`;
+  const inner = `<span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}${dlIcon(s)}</span><span class="sc">${chips}</span></span>`;
   if (o.ro) return `<span class="seat">${inner}</span>`;
   return `<button type="button" class="seat ${r.abs ? 'is-absent' : ''} ${o.selSid === s.id ? 'sel' : ''}" data-act="seat" data-num="${num}" data-i="${i}" data-sid="${s.id}" ${o.ses && !o.edit ? 'data-long="fiche"' : ''} aria-label="${esc(s.first + ' ' + s.last)}">${inner}</button>`;
 }
@@ -2315,8 +2382,9 @@ function renderRoom(room, o) {
     if (it.type === 'desk') { out.push(`<div class="${cls0} fx desk ${it.rot % 2 ? 'vert' : ''}" style="${st}" ${drag}><span>Bureau</span></div>`); return; }
     const rel = q => box(q.x, q.y, q.w, q.h, L.w, L.h);
     const parts = [], uState = {};
-    it.nums.forEach((n, u) => { const num = String(n); uState[u] = {num, flag: o.mode === 'plan' && o.pl && o.pl.flags[num], conf: o.mode === 'plan' && o.conflicts && o.conflicts.has(num)}; });
-    L.blobs.forEach(q => { const us = uState[q.u] || {}; parts.push(`<span class="blob ${us.flag ? 'flag' : ''} ${us.conf ? 'conf' : ''}" style="${rel(q)}"></span>`); });
+    it.nums.forEach((n, u) => { const num = String(n); const mem = ((o.pl && o.pl.g[num]) || []).filter(id => validSid(id, o.cid, o.group));
+      uState[u] = {num, flag: o.mode === 'plan' && o.pl && o.pl.flags[num], conf: o.mode === 'plan' && o.conflicts && o.conflicts.has(num), empty: (o.mode === 'plan' || o.mode === 'proj') && !mem.length, off: o.pick && !o.pick.includes(num)}; });
+    L.blobs.forEach(q => { const us = uState[q.u] || {}; parts.push(`<span class="blob ${us.flag ? 'flag' : ''} ${us.conf ? 'conf' : ''} ${us.empty ? 'emptyu' : ''} ${us.off ? 'off' : ''}" style="${rel(q)}"></span>`); });
     if (L.table) parts.push(`<span class="table" style="${rel(L.table)}"></span>`);
     L.seps.forEach(q => parts.push(`<span class="sep ${q.kind}" style="${rel(q)}" aria-hidden="true"></span>`));
     L.units.forEach(u => {
@@ -2332,7 +2400,9 @@ function renderRoom(room, o) {
       });
       const lb = L.labels.find(l => l.u === u);
       const longAttr = o.mode === 'plan' && !o.ro ? `data-long="unit" data-num="${num}"` : '';
-      if (lb) parts.push(`<div class="uh" style="${rel(lb)}" ${longAttr}>${unitHead(it, num, o, filled)}</div>`);
+      if (lb) parts.push(`<div class="uh ${us.empty ? 'emptyu' : ''}" style="${rel(lb)}" ${longAttr}>${unitHead(it, num, o, filled)}</div>`);
+      if (o.pick) { const ub = [...seatsU, lb].filter(Boolean); const x0 = Math.min(...ub.map(q => q.x)), y0 = Math.min(...ub.map(q => q.y)), x1 = Math.max(...ub.map(q => q.x + q.w)), y1 = Math.max(...ub.map(q => q.y + q.h));
+        parts.push(`<button type="button" class="pickov ${us.off ? 'off' : 'on'}" style="${rel({x: x0, y: y0, w: x1 - x0, h: y1 - y0})}" data-act="pick-unit" data-num="${num}" aria-pressed="${!us.off}" aria-label="${unitWord(it)} ${num}">${us.off ? '' : '✓'}</button>`); }
     });
     out.push(`<div class="${cls0}" style="${st}" ${drag}>${parts.join('')}</div>`);
   });
@@ -2388,18 +2458,22 @@ function viewPlan() {
     ban += `<div class="banner ok"><p>Placement de la dernière séance repris (${fmtShort(pl.upd)}). Touchez « Placer » pour corriger.</p><button class="btn" data-act="plan-clear">Tout vider</button><button class="btn ghost" data-act="reuse-ok">OK</button></div>`; nb++;
   }
   if (!placed.size && studs.length && !edit) {
-    ban += `<div class="banner ok"><p>Aucun élève n'est encore placé dans ce labo pour ce demi-groupe.</p><button class="btn primary" data-act="plan-random-edit">Répartir au hasard</button><button class="btn" data-act="plan-edit">Placer à la main</button></div>`; nb++;
+    ban += `<div class="banner ok"><p>Aucun élève n'est encore placé dans ce labo pour ce demi-groupe.</p><button class="btn primary" data-act="plan-random-edit">Répartir au hasard…</button><button class="btn" data-act="plan-edit">Placer à la main</button></div>`; nb++;
   }
   const tv = V.tv !== false;
-  const o = {mode: 'plan', pl, sum, conflicts, cid: ctx.cid, group: ctx.group, ses: ctx.ses, edit, selSid: V.selSid, teacher: tv};
+  const o = {mode: 'plan', pl, sum, conflicts, cid: ctx.cid, group: ctx.group, ses: ctx.ses, edit, selSid: V.selSid, teacher: tv, pick: V.pick || null};
+  if (V.pick) { const cap = roomUnits(room).filter(u => V.pick.includes(u.num)).reduce((a, u) => a + u.size, 0);
+    ban = `<div class="banner ${cap < studs.length ? 'bad' : 'ok'}"><p><strong>Tirage au sort :</strong> touchez les ${room.kind === 'ilots' ? 'îlots' : 'paillasses'} à occuper (${plural(cap, 'place')} pour ${plural(studs.length, 'élève')}).</p>
+      <button class="btn" data-act="pick-all">Tous</button><button class="btn" data-act="pick-none">Aucun</button><button class="btn ghost" data-act="pick-cancel">Annuler</button><button class="btn primary" data-act="pick-go">Tirer au sort</button></div>`; nb = 1; }
   const tvBtn = `<button class="btn" data-act="tv" aria-pressed="${tv}" title="Basculer entre la vue depuis le tableau (prof) et la vue des élèves">${tv ? 'Vue prof' : 'Vue élèves'}</button>`;
   const word = room.kind === 'ilots' ? 'îlots' : 'binômes';
   const unplHTML = unpl.map(s => `<button type="button" class="seat ${V.selSid === s.id ? 'sel' : ''}" data-act="unpl" data-sid="${s.id}"><span class="sp">${photoHTML(s)}</span><span class="st"><span class="sn">${shortName(s)}</span></span></button>`).join('');
   const selPlaced = V.selSid && placed.has(V.selSid);
   const tools = edit ? `<div class="ptools">
-      <button class="btn primary" data-act="plan-random">Aléatoire</button>
+      <button class="btn primary" data-act="plan-pick">Aléatoire…</button>
       <button class="btn" data-act="plan-clear">Tout vider</button>
       <button class="btn" data-act="sep-open">À séparer${sepPairs(ctx.cid).length ? ' (' + sepPairs(ctx.cid).length + ')' : ''}</button>
+      <button class="btn" data-act="tog-open">Ensemble${togGroups(ctx.cid).length ? ' (' + togGroups(ctx.cid).length + ')' : ''}</button>
       ${ctx.ses ? '<button class="btn ink" data-act="plan-edit-done">Terminé</button>' : ''}</div>` : '';
   const help = edit ? 'Touchez un élève, puis une place : il s\'y installe (échange si la place est prise).' : 'Toucher un élève : noter une observation · Appui long sur « Îlot » ou « Paillasse » : marquer « à modifier ».';
   const side = `<aside class="unplaced">${tools}
@@ -2602,6 +2676,13 @@ function viewSuivi() {
   const sh = (k, l, cl) => `<button type="button" class="sh ${cl || ''} ${sk === k ? 'on' : ''}" data-act="sui-sort" data-k="${k}" aria-label="Trier par ${l}">${l}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`;
   const chips = classes.map(x => `<button class="gchip" data-act="sui-c" data-cid="${x.id}" aria-pressed="${x.id === c.id}">${dot(x)}${esc(x.name)}</button>`).join('');
   const seg = (k, items, cur) => `<div class="seg" role="group">${items.map(([v, l]) => `<button type="button" data-act="${k}" data-v="${v}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join('')}</div>`;
+  const sv = V.sv === 'grid' ? 'grid' : 'list';
+  const grid = rows.map(r => { const tot = r.pos + r.neg + r.ras, w = v => tot ? (v / tot * 100).toFixed(1) : 0;
+    return `<button class="tile stile" data-act="fiche-open" data-sid="${r.s.id}" aria-label="${esc(r.s.first + ' ' + r.s.last)}">
+      <span class="ph">${photoHTML(r.s)}<span class="stags">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></span>
+      <span class="nm">${esc(r.s.first)} <span>${esc(r.s.last)}</span>${dlIcon(r.s)}${amenIcons0(r.s)}</span>
+      <span class="sbar">${tot ? `<i class="sp" style="width:${w(r.pos)}%"></i><i class="sr" style="width:${w(r.ras)}%"></i><i class="sn" style="width:${w(r.neg)}%"></i>` : ''}</span>
+      <span class="scnt"><b class="pos">+${r.pos}</b><span>${r.ras} RAS</span><b class="neg">−${r.neg}</b>${r.abs ? `<span class="muted">${r.abs} abs.</span>` : ''}</span></button>`; }).join('');
   const body = rows.map(r => `<button class="srow" data-act="fiche-open" data-sid="${r.s.id}">
       <span class="thumb">${photoHTML(r.s)}</span>
       <span class="nm">${esc(r.s.first)} <span class="muted">${esc(r.s.last)}</span>${amenIcons(r.s)}</span>
@@ -2612,16 +2693,17 @@ function viewSuivi() {
   return `${tabBar('suivi')}
   <main class="main"><div class="wrap" style="max-width:1300px">
     <div class="row" style="gap:6px">${chips}</div>
-    <div class="row">${seg('sui-p', periods.map((p, i) => [i, esc(p.n)]), V.sp)}<span class="small muted">Touchez un titre de colonne pour trier.</span>
+    <div class="row">${seg('sui-p', periods.map((p, i) => [i, esc(p.n)]), V.sp)}<div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="sui-v" data-v="list" aria-pressed="${sv === 'list'}">Liste</button><button type="button" data-act="sui-v" data-v="grid" aria-pressed="${sv === 'grid'}">Grille</button></div>
       <span class="grow" style="flex:1"></span>
       <button class="gchip" data-act="sui-f" data-v="surv" aria-pressed="${V.sf === 'surv'}"><span class="chip neg">${nS}</span> à surveiller</button>
       <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button>
       <button class="gchip" data-act="sui-f" data-v="disc" aria-pressed="${V.sf === 'disc'}"><span class="chip disc">${nD}</span> discret${nD > 1 ? 's' : ''}</button></div>
     ${apprBlockHTML(c, per)}
-    <section class="card stable-card">
+    ${sv === 'grid' ? `<div class="row" style="gap:8px"><span class="small muted">Trier :</span>${['name', 'pos', 'neg', 'ras'].map(k => `<button type="button" class="gchip" data-act="sui-sort" data-k="${k}" aria-pressed="${sk === k}">${{name: 'Nom', pos: 'Positif', neg: 'Négatif', ras: 'RAS'}[k]}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`).join('')}</div>
+    <div class="tiles stiles">${grid || '<p class="muted">Aucun élève dans ce filtre.</p>'}</div>` : `<section class="card stable-card">
       <div class="srow head"><span></span>${sh('name', 'Élève')}<span>Gr.</span>${sh('pos', 'Positif', 'num')}${sh('neg', 'Négatif', 'num')}${sh('ras', 'RAS', 'num')}${sh('abs', 'Abs.', 'num')}<span class="last">Dernière remarque</span><span></span></div>
       ${body || '<p class="muted" style="padding:14px;margin:0">Aucun élève dans ce filtre.</p>'}
-    </section>
+    </section>`}
     <p class="small muted" style="margin:0">À surveiller : 3 remarques négatives ou plus sur les 14 derniers jours. Discret : seulement des RAS depuis 3 semaines (vu, sans se faire remarquer). Peu observé : aucune observation, RAS compris, depuis 3 semaines. Toucher un élève : sa fiche.</p>
   </div></main>`;
 }
@@ -2658,6 +2740,16 @@ function sepModal() {
     ${pairs.length ? `<ul class="stable">${pairs.map((p, i) => `<li><span class="nm">${esc(stu(p[0]).first + ' ' + stu(p[0]).last)} et ${esc(stu(p[1]).first + ' ' + stu(p[1]).last)}</span><button class="btn ghost" data-act="sep-del" data-i="${i}">Retirer</button></li>`).join('')}</ul>` : '<p class="muted">Aucune paire pour l\'instant.</p>'}
     <div class="form-grid"><label class="f" for="sep-a">Élève<select id="sep-a">${opts}</select></label><label class="f" for="sep-b">Et<select id="sep-b">${opts}</select></label><button class="btn" data-act="sep-add">Ajouter la paire</button></div>
     <div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`);
+}
+function togModal() {
+  const ctx = planCtx(), c = cls(ctx.cid); const gs = togGroups(ctx.cid);
+  const list = studentsOf(ctx.cid).slice().sort(byName);
+  openModal(`<h2>À mettre ensemble · ${esc(c.name)}</h2>
+    <p class="small muted">Pour l'entraide : le tirage au sort place ces élèves dans le même îlot ou la même paillasse, quand c'est possible. Les paires « à séparer » restent prioritaires. Visible par vous seul.</p>
+    ${gs.length ? `<ul class="stable">${gs.map((g, i) => `<li><span class="nm">${g.map(id => esc(stu(id).first + ' ' + stu(id).last)).join(', ')}</span><button class="btn ghost" data-act="tog-del" data-i="${i}">Retirer</button></li>`).join('')}</ul>` : '<p class="muted">Aucun groupe pour l\'instant.</p>'}
+    <div class="lbl" style="margin-top:6px">Nouveau groupe : cochez 2 élèves ou plus</div>
+    <div class="togpick">${list.map(s => `<label class="check"><input type="checkbox" class="tog-s" value="${s.id}"> ${esc(s.first + ' ' + s.last)}${s.group ? ' <span class="small muted">' + s.group + '</span>' : ''}</label>`).join('')}</div>
+    <div class="ft"><button class="btn" data-act="tog-add">Ajouter le groupe</button><button class="btn ink" data-act="m-close">Fermer</button></div>`);
 }
 function addPairs(cid, ids) {
   const list = DB.sep[cid] || (DB.sep[cid] = []);
@@ -3257,7 +3349,7 @@ function viewDevoirs() {
   const tiles = list.map(s => {
     const a = isAbsentIn(ses.key, s.id), dv = dvOf(ses.key, s.id);
     if (a) abs++; if (dv) cnt[dv]++; const fine = ok && !a && !dv && concerned(s); if (fine) done++;
-    const name = compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`;
+    const name = (compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`) + dlIcon(s);
     return `<button class="tile ${a ? 'is-absent' : ''} ${dv ? 'dv-on' : ''} ${fine ? 'dv-done' : ''}" data-act="dv-tap" ${a ? '' : 'data-long="dv"'} data-sid="${s.id}" aria-pressed="${!!dv}" aria-label="${esc(s.first + ' ' + s.last)}${dv ? ' : ' + CAT[dv].l : ''}">
       <span class="ph">${photoHTML(s)}${a ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${dv ? `<span class="dv-tag">${DV_SHORT[dv]}</span>` : fine ? '<span class="dv-tag ok">Fait</span>' : ''}</span>
       <span class="nm">${name}</span></button>`;
@@ -3541,6 +3633,7 @@ const ACT = {
   eye: () => { DB.settings.hidePhotos = !DB.settings.hidePhotos; save(); renderKeep(); toast(DB.settings.hidePhotos ? 'Photos masquées' : 'Photos affichées'); },
   'fiche-open': el => go({name:'fiche', sid: el.dataset.sid}),
   'sui-c': el => { V.scid = el.dataset.cid; V.sp = null; V.sf = null; render(); },
+  'sui-v': el => { V.sv = el.dataset.v; render(); },
   'sui-p': el => { V.sp = +el.dataset.v; render(); },
   'sui-s': el => { V.ss = el.dataset.v; render(); },
   'sui-f': el => { V.sf = V.sf === el.dataset.v ? null : el.dataset.v; render(); },
@@ -3561,7 +3654,14 @@ const ACT = {
   'room-change': () => chooseRoom(V.ses, true),
   layout: el => { V.layout = el.dataset.l; V.selSid = null; render(); },
   'plan-edit': () => { V.edit = !V.edit; V.selSid = null; V.hideFlags = true; renderKeep(); },
-  'plan-random-edit': () => { V.edit = true; V.hideFlags = true; ACT['plan-random'](); },
+  'plan-random-edit': () => { V.edit = true; V.hideFlags = true; ACT['plan-pick'](); },
+  'plan-pick': () => { const ctx = planCtx(), room = roomById(ctx.rid); if (!room) return; const pl = getPlace(ctx.cid, ctx.group, room, false), nums = roomUnits(room).map(u => u.num);
+    V.pick = pl && pl.use && pl.use.length ? pl.use.filter(n => nums.includes(n)) : nums; if (!V.pick.length) V.pick = nums; V.selSid = null; renderKeep(); },
+  'pick-unit': el => { const n = el.dataset.num; V.pick = V.pick.includes(n) ? V.pick.filter(x => x !== n) : V.pick.concat(n); renderKeep(); },
+  'pick-all': () => { const room = roomById(planCtx().rid); V.pick = roomUnits(room).map(u => u.num); renderKeep(); },
+  'pick-none': () => { V.pick = []; renderKeep(); },
+  'pick-cancel': () => { V.pick = null; renderKeep(); },
+  'pick-go': () => { if (!V.pick || !V.pick.length) { toast('Choisissez au moins un îlot ou une paillasse.'); return; } const ctx = planCtx(), room = roomById(ctx.rid); const pl = getPlace(ctx.cid, ctx.group, room, true); pl.use = V.pick.slice(); V.pick = null; ACT['plan-random'](); },
   'plan-edit-done': () => { V.edit = false; V.selSid = null; renderKeep(); },
   'flags-later': () => { V.hideFlags = true; renderKeep(); },
   'reuse-ok': () => { V.hideReuse = true; renderKeep(); },
@@ -3586,9 +3686,10 @@ const ACT = {
   'plan-random': () => {
     const ctx = planCtx(), room = roomById(ctx.rid); if (!room) return;
     const pl = getPlace(ctx.cid, ctx.group, room, true), prev = JSON.parse(JSON.stringify(pl));
-    const r = randomPlacement(ctx.cid, ctx.group, room); if (!r) { toast('Ce labo n\'a encore aucun îlot ni paillasse.'); return; }
+    const nums = roomUnits(room).map(u => u.num), use = (pl.use || []).filter(n => nums.includes(n));
+    const r = randomPlacement(ctx.cid, ctx.group, room, use); if (!r) { toast('Ce labo n\'a encore aucun îlot ni paillasse.'); return; }
     pl.g = r.g; pl.flags = {}; pl.upd = todayStr(); V.selSid = null; save(); renderKeep();
-    const msg = r.conflicts ? 'Impossible de séparer toutes les paires : vérifiez les groupes en rouge.' : r.unplaced ? `Pas assez de places : ${r.unplaced} élève(s) non placé(s).` : 'Nouvelle répartition. Touchez « Aléatoire » pour une autre.';
+    const msg = r.conflicts ? 'Impossible de séparer toutes les paires : vérifiez les groupes en rouge.' : r.split ? 'Certains élèves « ensemble » n\'ont pas pu être regroupés (pas assez de place).' : r.unplaced ? `Pas assez de places : ${r.unplaced} élève(s) non placé(s).` : 'Nouvelle répartition. Touchez « Aléatoire » pour une autre.';
     toast(msg, {label: 'Annuler', fn: () => { Object.assign(pl, prev); save(); renderKeep(); }});
   },
   'plan-clear': () => {
@@ -3598,6 +3699,9 @@ const ACT = {
     toast('Placement vidé', {label: 'Annuler', fn: () => { Object.assign(pl, prev); save(); renderKeep(); }});
   },
   'sep-open': () => sepModal(),
+  'tog-open': () => togModal(),
+  'tog-add': () => { const ids = [...document.querySelectorAll('.tog-s:checked')].map(x => x.value); if (ids.length < 2) { toast('Cochez au moins deux élèves.'); return; } const cid = planCtx().cid; (DB.tog[cid] || (DB.tog[cid] = [])).push(ids); save(); togModal(); renderKeep(); },
+  'tog-del': el => { const cid = planCtx().cid, gs = togGroups(cid), g = gs[+el.dataset.i]; DB.tog[cid] = (DB.tog[cid] || []).filter(x => JSON.stringify(x.filter(id => stu(id))) !== JSON.stringify(g)); save(); togModal(); renderKeep(); },
   'sep-add': () => { const a = $('#sep-a').value, b = $('#sep-b').value; if (!a || !b || a === b) { toast('Choisissez deux élèves différents.'); return; } addPairs(planCtx().cid, [a, b]); save(); sepModal(); renderKeep(); },
   'sep-del': el => { const cid = planCtx().cid; const pairs = sepPairs(cid); const p = pairs[+el.dataset.i]; DB.sep[cid] = (DB.sep[cid] || []).filter(x => x !== p); save(); sepModal(); renderKeep(); },
   'um-save': el => {
@@ -3752,6 +3856,7 @@ const ACT = {
   'chap-add': el => { const list = chaptersOf(el.dataset.lvl); list.push({n: list.reduce((m, x) => Math.max(m, x.n), 0) + 1, t: ''}); save(); chapModal(el.dataset.lvl); },
   'chap-del': el => { const lvl = el.dataset.lvl; DB.chapters[lvl] = chaptersOf(lvl).filter(x => x.n !== +el.dataset.n); save(); chapModal(lvl); render(); },
   'amen-pop': el => amenPop(el),
+  'stu-dl': el => { const x = stu(el.dataset.sid); if (!x) return; if (x.dl === el.dataset.v) delete x.dl; else x.dl = el.dataset.v; save(); renderKeep(); },
   'stu-flag': el => { const x = stu(el.dataset.sid); if (!x) return; const f = el.dataset.f; if (x[f]) delete x[f]; else x[f] = true; save(); renderKeep(); },
   'cdt-toggle': el => { const k = el.dataset.key; setCdt(k, !DB.cdt[k]); renderKeep(); toast(DB.cdt[k] ? 'Cahier de textes complété' : 'Cahier de textes à compléter'); },
   'hv-ready': el => { const k = el.dataset.key; setReady(k, !(DB.content[k] && DB.content[k].ready)); refreshHover(el); },
@@ -3867,7 +3972,7 @@ const ACT = {
 const UNDO_MSG = {'eg-save': 'Emploi du temps modifié', 'eg-del-go': 'Cours supprimé', 'cons-del': 'Conseil supprimé', 'due-ok': 'Vérification modifiée', 'due-x': 'Devoir retiré de la liste', 'due-restore': 'Devoir remis dans la liste', 'due-purge-go': 'Supprimé définitivement', 'obs-seen-all': 'Tout marqué comme vu', 'due-unrep': 'Report annulé', 'due-rep': 'Travail reporté', 'due-rep-all': 'Travail reporté', 'due-rep-go': 'Travail reporté', 'chk-add': 'Ajouté au travail à vérifier', 'chk-del': 'Retiré du travail à vérifier', 'cdt-toggle': 'Cahier de textes modifié', 'hv-ready': 'Séance modifiée', 'hv-cdt': 'Cahier de textes modifié', 'cdt-week': 'Cahier de textes modifié', 'catch-add': 'Rattrapage ajouté', 'catch-done': 'Rattrapage validé', 'catch-toggle': 'Rattrapage modifié', 'obs-seen': 'Marqué comme vu', 'ct-save': 'Contenu enregistré', 'ct-report': 'Élément reporté', 'ct-shift': 'Suite décalée', 'prog-shift': 'Suite décalée', 'chap-del': 'Chapitre retiré', 'stu-save': 'Élève modifié', 'stu-photo-del': 'Photo retirée', 'p-save': 'Observation enregistrée', 'allactive': 'Tous notés actifs', 'hw-ok': 'Vérification des devoirs modifiée', 'dv-set': 'Devoir modifié', 'p-ras': 'RAS noté', 'p-abs': 'Présence modifiée', 'p-del': 'Observation retirée', 'o-del': 'Observation supprimée',
   'slot-cancel': 'Séance modifiée', seat: 'Élève placé', 'unpl-drop': 'Élève retiré du plan', 'um-save': 'Marqué à modifier', 'um-clear': '« À modifier » retiré',
   'room-add': 'Élément ajouté', 'room-rot': 'Élément tourné', 'room-mirror': 'Élément retourné', 'room-dup': 'Élément dupliqué', 'room-cell': 'Taille des places modifiée', 'room-del-item-go': 'Élément supprimé', 'room-kind': 'Type de labo modifié',
-  'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'ch-share': 'Partage des chapitres modifié', 'sep-del': 'Paire retirée'};
+  'del-stu-go': 'Élève retiré', 'del-class-go': 'Classe supprimée', 'del-slot': 'Créneau retiré', 'hol-del': 'Période retirée', 'sep-add': 'Paire ajoutée', 'tog-add': 'Groupe ajouté', 'tog-del': 'Groupe retiré', 'stu-dl': 'Délégué modifié', 'ch-share': 'Partage des chapitres modifié', 'sep-del': 'Paire retirée'};
 Object.keys(UNDO_MSG).forEach(name => {
   const fn = ACT[name]; if (!fn) return;
   ACT[name] = (el, e) => {
@@ -3989,7 +4094,7 @@ async function showPersist() {
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
 const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup'];
-const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt'];
+const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog'];
 const SYNC_SET = ['evenIsA', 'holidays', 'periods'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
 const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});

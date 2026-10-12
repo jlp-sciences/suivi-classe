@@ -849,6 +849,24 @@ button.wpill{cursor:pointer}
 .proj .room .it .blob{background:#E4E1DA}
 .proj .room .it .blob.emptyu{background:#F6F5F2}
 .proj .room .it .uh.emptyu{color:#B5B0A6}
+
+/* ---- v2.14 : fantôme des absences ---- */
+.absgh{--gs:24px;position:relative;display:inline-block;width:var(--gs);height:calc(var(--gs) * 34 / 32);color:#6B6F76;vertical-align:middle;flex:none}
+.absgh svg{position:absolute;inset:0;width:100%;height:100%;fill:currentColor}
+.absgh svg .ge{fill:#fff}
+.absgh b{position:absolute;left:0;right:0;top:calc(var(--gs) * .47);text-align:center;color:#fff;font-size:calc(var(--gs) * .42);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+:root[data-theme="dark"] .absgh{color:#A9AEB6} :root[data-theme="dark"] .absgh b{color:#1b1d21} :root[data-theme="dark"] .absgh svg .ge{fill:#1b1d21}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .absgh{color:#A9AEB6} :root:not([data-theme="light"]) .absgh b{color:#1b1d21} :root:not([data-theme="light"]) .absgh svg .ge{fill:#1b1d21}}
+.absgh.gh-tile{--gs:32px;position:absolute;top:5px;right:6px;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.35))}
+.absgh.gh-big{--gs:38px}
+/* ---- v2.14 : séances notées dans la Progression ---- */
+.prow.has-eval{box-shadow:inset 0 0 0 4px var(--neg);border-radius:8px}
+.prow.has-graded{box-shadow:inset 0 0 0 4px #4B2A7B;border-radius:8px}
+:root[data-theme="dark"] .prow.has-graded{box-shadow:inset 0 0 0 4px #A58BD6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .prow.has-graded{box-shadow:inset 0 0 0 4px #A58BD6}}
+.prow .pd .btag{display:inline-block;margin-top:3px}
+.prow.is-now.has-eval{box-shadow:inset 9px 0 0 var(--pos),inset 0 0 0 4px var(--neg)}
+.prow.is-now.has-graded{box-shadow:inset 9px 0 0 var(--pos),inset 0 0 0 4px #4B2A7B}
 </style>
 </head>
 <body>
@@ -883,7 +901,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.13', d: '2026-10-10'};
+const APP_VERSION = {n: '2.14', d: '2026-10-10'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1584,7 +1602,7 @@ function viewFiche() {
         <div class="stat pos"><b>+${tot('pos')}</b><span>positives</span></div>
         <div class="stat neg"><b>−${tot('neg')}</b><span>négatives</span></div>
         <div class="stat"><b>${cnt.ras || 0}</b><span class="muted">séances RAS</span></div>
-        <div class="stat"><b>${cnt.absent || 0}</b><span class="muted">${(cnt.absent || 0) > 1 ? 'absences' : 'absence'}</span></div>
+        <div class="stat"><b>${cnt.absent ? ghostIcon(cnt.absent, 'gh-big') : 0}</b><span class="muted">${(cnt.absent || 0) > 1 ? 'absences' : 'absence'}</span></div>
       </div>
       <p class="small muted" style="margin:0">${esc(per.n)} : du ${fmtShort(per.s)} au ${fmtShort(per.e)}</p>
     </aside>
@@ -2294,35 +2312,46 @@ const togGroups = cid => (DB.tog[cid] || []).map(g => g.filter(id => stu(id))).f
 /* tirage : seulement dans les îlots choisis (use), élèves « à mettre ensemble » regroupés, paires « à séparer » évitées */
 function randomPlacement(cid, group, room, use) {
   const ids = studentsOf(cid, group).map(s => s.id), all = roomUnits(room);
-  const units = use && use.length ? all.filter(u => use.includes(u.num)) : all;
+  const chosen = use && use.length;
+  const units = chosen ? all.filter(u => use.includes(u.num)) : all;
   if (!units.length) return null;
   const capTot = units.reduce((a, u) => a + u.size, 0), n = Math.min(ids.length, capTot);
-  /* nombre d'îlots utilisés : le moins possible, en remplissant de façon équilibrée */
-  let k = 1; while (k < units.length && units.slice(0, k).reduce((a, u) => a + u.size, 0) < n) k++;
+  /* îlots choisis : tous reçoivent des élèves ; sans choix : le moins d'îlots possible */
+  let k = units.length;
+  if (!chosen) { k = 1; while (k < units.length && units.slice(0, k).reduce((a, u) => a + u.size, 0) < n) k++; }
   const pairs = sepPairs(cid), idSet = new Set(ids);
   const groups = togGroups(cid).map(g => g.filter(id => idSet.has(id))).filter(g => g.length > 1).sort((a, b) => b.length - a.length);
   let best = null, bestScore = Infinity, bestC = 0, bestT = 0;
   for (let tr = 0; tr < 600 && bestScore > 0; tr++) {
-    const use = shuffle(units).slice(0, k).sort((a, b) => a.num - b.num);
-    const sizes = use.map(() => 0); let left = n, i = 0;
-    while (left > 0 && i < 100000) { const j = i % use.length; if (sizes[j] < use[j].size) { sizes[j]++; left--; } i++; }
-    const slots = use.map((u, j) => ({u, cap: sizes[j], m: []}));
-    const placed = new Set(), pool = shuffle(ids);
-    for (const g of groups) { // un groupe « ensemble » : dans l'îlot où il reste le plus de place
+    const sel = (chosen ? units : shuffle(units).slice(0, k)).slice().sort((a, b) => a.num - b.num);
+    const slots = shuffle(sel.map(u => ({u, m: []})));
+    const placed = new Set();
+    const free = x => x.u.size - x.m.length;
+    for (const g of groups) { // un groupe « ensemble » : de préférence dans un îlot vide qui peut l'accueillir
       const todo = g.filter(id => !placed.has(id)); if (!todo.length) continue;
-      const cands = shuffle(slots).filter(x => x.cap - x.m.length >= todo.length);
-      const tgt = cands[0] || shuffle(slots).sort((a, b) => (b.cap - b.m.length) - (a.cap - a.m.length))[0];
-      todo.forEach(id => { if (tgt.m.length < tgt.cap) { tgt.m.push(id); placed.add(id); } });
+      const cands = shuffle(slots).filter(x => free(x) >= todo.length).sort((a, b) => a.m.length - b.m.length);
+      const tgt = cands[0] || slots.slice().sort((a, b) => free(b) - free(a))[0];
+      todo.forEach(id => { if (free(tgt) > 0) { tgt.m.push(id); placed.add(id); } });
     }
-    for (const id of pool) { if (placed.has(id)) continue; const x = shuffle(slots).find(y => y.m.length < y.cap); if (!x) break; x.m.push(id); placed.add(id); }
+    /* les autres : toujours vers l'îlot le moins rempli (répartition équilibrée) */
+    for (const id of shuffle(ids)) {
+      if (placed.has(id) || placed.size >= n) continue;
+      const open = shuffle(slots).filter(x => free(x) > 0); if (!open.length) break;
+      const x = open.sort((a, b) => a.m.length - b.m.length)[0]; x.m.push(id); placed.add(id);
+    }
     const g = {}; slots.forEach(x => { const arr = x.m.slice(); while (arr.length < x.u.size) arr.push(null); g[x.u.num] = shuffle(arr); });
     let c = 0; Object.values(g).forEach(arr => { const m = new Set(arr); pairs.forEach(([a, b2]) => { if (m.has(a) && m.has(b2)) c++; }); });
     let t = 0; groups.forEach(gr => { const where = new Set(gr.map(id => Object.keys(g).find(num => g[num].includes(id)))); t += where.size - 1; });
-    const score = c * 100 + t;
+    const sz = slots.map(x => x.m.length), spread = Math.max(...sz) - Math.min(...sz);
+    const score = c * 1000 + t * 10 + Math.max(0, spread - 1);
     if (score < bestScore) { best = g; bestScore = score; bestC = c; bestT = t; }
   }
   return {g: best, conflicts: bestC, split: bestT, unplaced: ids.length - n};
 }
+
+/* fantôme des absences (nombre dans le corps) */
+const GHOST_PATH = 'M16 1.5C9 1.5 6 7 6 13.5V16c-2 .5-3.5 2-4.5 4 2 .5 3.5 0 4.5-.8V26c0 2.5-1.5 4-2.5 5 3 1.8 5.5 1 6.8-.4 1.5 2 3.9 2.6 5.7.7 1.8 1.9 4.2 1.3 5.7-.7 1.3 1.4 3.8 2.2 6.8.4-1-1-2.5-2.5-2.5-5v-6.8c1 .8 2.5 1.3 4.5.8-1-2-2.5-3.5-4.5-4v-2.5C26 7 23 1.5 16 1.5Z';
+const ghostIcon = (n, cl) => `<span class="absgh ${cl || ''}" title="${n} absence${n > 1 ? 's' : ''}" aria-label="${n} absence${n > 1 ? 's' : ''}"><svg viewBox="0 0 32 34" aria-hidden="true"><path d="${GHOST_PATH}"/><ellipse class="ge" cx="12.3" cy="10.5" rx="1.5" ry="2"/><ellipse class="ge" cx="19.7" cy="10.5" rx="1.5" ry="2"/></svg><b>${n}</b></span>`;
 
 /* rendu d'une salle (plan, projection, édition, miniature) */
 const pct = (v, tot) => (v / tot * 100).toFixed(3) + '%';
@@ -2679,15 +2708,15 @@ function viewSuivi() {
   const sv = V.sv === 'grid' ? 'grid' : 'list';
   const grid = rows.map(r => { const tot = r.pos + r.neg + r.ras, w = v => tot ? (v / tot * 100).toFixed(1) : 0;
     return `<button class="tile stile" data-act="fiche-open" data-sid="${r.s.id}" aria-label="${esc(r.s.first + ' ' + r.s.last)}">
-      <span class="ph">${photoHTML(r.s)}<span class="stags">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></span>
+      <span class="ph">${photoHTML(r.s)}${r.abs ? ghostIcon(r.abs, 'gh-tile') : ''}<span class="stags">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></span>
       <span class="nm">${esc(r.s.first)} <span>${esc(r.s.last)}</span>${dlIcon(r.s)}${amenIcons0(r.s)}</span>
       <span class="sbar">${tot ? `<i class="sp" style="width:${w(r.pos)}%"></i><i class="sr" style="width:${w(r.ras)}%"></i><i class="sn" style="width:${w(r.neg)}%"></i>` : ''}</span>
-      <span class="scnt"><b class="pos">+${r.pos}</b><span>${r.ras} RAS</span><b class="neg">−${r.neg}</b>${r.abs ? `<span class="muted">${r.abs} abs.</span>` : ''}</span></button>`; }).join('');
+      <span class="scnt"><b class="pos">+${r.pos}</b><span>${r.ras} RAS</span><b class="neg">−${r.neg}</b></span></button>`; }).join('');
   const body = rows.map(r => `<button class="srow" data-act="fiche-open" data-sid="${r.s.id}">
       <span class="thumb">${photoHTML(r.s)}</span>
       <span class="nm">${esc(r.s.first)} <span class="muted">${esc(r.s.last)}</span>${amenIcons(r.s)}</span>
       <span class="muted small">${r.s.group || '—'}</span>
-      <span class="num pos">+${r.pos}</span><span class="num neg">−${r.neg}</span><span class="num">${r.ras}</span><span class="num">${r.abs}</span>
+      <span class="num pos">+${r.pos}</span><span class="num neg">−${r.neg}</span><span class="num">${r.ras}</span><span class="num">${r.abs ? ghostIcon(r.abs) : '<span class="muted">0</span>'}</span>
       <span class="last small">${esc(r.last)}</span>
       <span class="bdg">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></button>`).join('');
   return `${tabBar('suivi')}
@@ -2699,7 +2728,7 @@ function viewSuivi() {
       <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button>
       <button class="gchip" data-act="sui-f" data-v="disc" aria-pressed="${V.sf === 'disc'}"><span class="chip disc">${nD}</span> discret${nD > 1 ? 's' : ''}</button></div>
     ${apprBlockHTML(c, per)}
-    ${sv === 'grid' ? `<div class="row" style="gap:8px"><span class="small muted">Trier :</span>${['name', 'pos', 'neg', 'ras'].map(k => `<button type="button" class="gchip" data-act="sui-sort" data-k="${k}" aria-pressed="${sk === k}">${{name: 'Nom', pos: 'Positif', neg: 'Négatif', ras: 'RAS'}[k]}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`).join('')}</div>
+    ${sv === 'grid' ? `<div class="row" style="gap:8px"><span class="small muted">Trier :</span>${['name', 'pos', 'neg', 'ras', 'abs'].map(k => `<button type="button" class="gchip" data-act="sui-sort" data-k="${k}" aria-pressed="${sk === k}">${{name: 'Nom', pos: 'Positif', neg: 'Négatif', ras: 'RAS', abs: 'Absences'}[k]}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`).join('')}</div>
     <div class="tiles stiles">${grid || '<p class="muted">Aucun élève dans ce filtre.</p>'}</div>` : `<section class="card stable-card">
       <div class="srow head"><span></span>${sh('name', 'Élève')}<span>Gr.</span>${sh('pos', 'Positif', 'num')}${sh('neg', 'Négatif', 'num')}${sh('ras', 'RAS', 'num')}${sh('abs', 'Abs.', 'num')}<span class="last">Dernière remarque</span><span></span></div>
       ${body || '<p class="muted" style="padding:14px;margin:0">Aucun élève dans ce filtre.</p>'}
@@ -3150,8 +3179,9 @@ function viewProg() {
     const hw = given + due;
     const note = ct && ct.note ? `<span class="pnote">${esc(ct.note)}</span>` : '';
     const now = hi && s.key === hi.key;
-    return `<button class="prow ${s.cancelled ? 'is-cancel' : ''} ${now ? 'is-now' : ''}" data-act="prog-open" data-key="${s.key}">
-      <span class="pd">${now ? `<span class="nowtag">${ongoing ? 'En cours' : s.date === t ? "Aujourd'hui" : 'Prochaine'}</span>` : ''}${cap(parseD(s.date).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'}))}${s.start !== '99:99' ? '<br><span class="small muted">' + fmtT(s.start) + '</span>' : ''}</span>
+    const ev = !s.cancelled && hasEval(ct), gr = !s.cancelled && !ev && isGraded(ct);
+    return `<button class="prow ${s.cancelled ? 'is-cancel' : ''} ${now ? 'is-now' : ''} ${ev ? 'has-eval' : ''} ${gr ? 'has-graded' : ''}" data-act="prog-open" data-key="${s.key}">
+      <span class="pd">${now ? `<span class="nowtag">${ongoing ? 'En cours' : s.date === t ? "Aujourd'hui" : 'Prochaine'}</span>` : ''}${cap(parseD(s.date).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'}))}${s.start !== '99:99' ? '<br><span class="small muted">' + fmtT(s.start) + '</span>' : ''}${ev ? '<br><span class="btag ev">ÉVAL</span>' : gr ? '<br><span class="btag gr">NOTÉ</span>' : ''}</span>
       <span class="pg">${s.group === 'all' ? '<span class="chip neu">Entière</span>' : `<span class="chip neu">${s.group}</span>`}</span>
       <span class="pc small">${ct && ct.ch != null ? 'Ch. ' + ct.ch : '—'}</span>
       <span class="pi">${items || (note ? '' : '<span class="small muted">—</span>')}${note}</span>
@@ -3661,7 +3691,9 @@ const ACT = {
   'pick-all': () => { const room = roomById(planCtx().rid); V.pick = roomUnits(room).map(u => u.num); renderKeep(); },
   'pick-none': () => { V.pick = []; renderKeep(); },
   'pick-cancel': () => { V.pick = null; renderKeep(); },
-  'pick-go': () => { if (!V.pick || !V.pick.length) { toast('Choisissez au moins un îlot ou une paillasse.'); return; } const ctx = planCtx(), room = roomById(ctx.rid); const pl = getPlace(ctx.cid, ctx.group, room, true); pl.use = V.pick.slice(); V.pick = null; ACT['plan-random'](); },
+  'pick-go': () => { if (!V.pick || !V.pick.length) { toast('Choisissez au moins un îlot ou une paillasse.'); return; } const ctx = planCtx(), room = roomById(ctx.rid);
+    const nSt = studentsOf(ctx.cid, ctx.group).length; if (V.pick.length > nSt) { const x = V.pick.length - nSt; toast(`${V.pick.length} îlots ou paillasses pour ${nSt} élève${nSt > 1 ? 's' : ''} : désélectionnez-en ${x}.`); return; }
+    const capSel = roomUnits(room).filter(u => V.pick.includes(u.num)).reduce((a, u) => a + u.size, 0); if (capSel < nSt) { toast(`Pas assez de places : ${capSel} places pour ${nSt} élèves : ajoutez des îlots ou paillasses.`); return; } const pl = getPlace(ctx.cid, ctx.group, room, true); pl.use = V.pick.slice(); V.pick = null; ACT['plan-random'](); },
   'plan-edit-done': () => { V.edit = false; V.selSid = null; renderKeep(); },
   'flags-later': () => { V.hideFlags = true; renderKeep(); },
   'reuse-ok': () => { V.hideReuse = true; renderKeep(); },

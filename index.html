@@ -550,11 +550,12 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:50
 .clist button{justify-content:space-between}
 .clist button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .stable{list-style:none;margin:0;padding:0}
-.stable li{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.stable li{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}
 .thumb{width:44px;height:44px;border-radius:8px;background:var(--ph);overflow:hidden;display:flex;align-items:center;justify-content:center;flex:none;font-family:var(--serif);font-weight:600;color:var(--ph-ink)}
 .thumb img{width:100%;height:100%;object-fit:cover}
-.stable .nm{flex:1 1 160px;font-weight:500}
+.stable .nm{flex:1 1 120px;font-weight:500}
 .stable select{width:auto;min-width:90px}
+.stable select[data-chg="group"],.stable select[data-chg="group2"]{min-width:64px;padding-left:8px;padding-right:22px}
 .filebtn{position:relative;overflow:hidden}
 .filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-items:end}
@@ -681,6 +682,7 @@ button.wpill{cursor:pointer}
 .blk.past .bit{color:var(--muted)}
 .bfoot{margin-top:auto;display:flex;align-items:center;gap:4px;min-height:19px;flex:none;min-width:0}
 .bfoot .grow{flex:1 1 auto}
+.btop .bchip{flex:0 1 auto;min-width:0;font-size:11px;padding:0 6px;line-height:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
 .btop{display:flex;align-items:center;gap:4px;min-width:0;flex:none}
 .btop .bc,.wkwrap .btop .bc{flex:1 1 auto;min-width:0}
 .btop .bdots{position:static;display:flex;gap:3px;flex:none}
@@ -773,6 +775,7 @@ button.wpill{cursor:pointer}
 .pdot.pq.none{background:rgba(217,48,37,.16);color:#B3261E;box-shadow:inset 0 0 0 1px rgba(217,48,37,.4)}
 .wkwrap .blk .bdots{position:absolute;right:5px;bottom:4px;display:flex;gap:2px}
 .wkwrap .blk .bits .bit:last-child{padding-right:var(--dw)}
+.wkwrap .blk.dotline .bits .bit:last-child{padding-right:0}
 .wkwrap .blk.noitems .btop{padding-right:min(var(--dw),calc(100% - 24px))}
 .blk.has-eval{border:2px solid var(--neg) !important}
 .blk.has-graded{border:2px solid #4B2A7B !important}
@@ -867,6 +870,12 @@ button.wpill{cursor:pointer}
 .prow .pd .btag{display:inline-block;margin-top:3px}
 .prow.is-now.has-eval{box-shadow:inset 9px 0 0 var(--pos),inset 0 0 0 4px var(--neg)}
 .prow.is-now.has-graded{box-shadow:inset 9px 0 0 var(--pos),inset 0 0 0 4px #4B2A7B}
+
+/* ---- v2.15 : devoirs élève par élève ---- */
+.hwm .hwgrp{font-weight:700;color:var(--ink)}
+.tile.dv-nc{cursor:default;opacity:.55}
+.tile.dv-nc .ph{filter:grayscale(.6)}
+.dv-tag.nc{background:var(--surface-2);color:var(--muted)}
 </style>
 </head>
 <body>
@@ -901,7 +910,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.14', d: '2026-10-10'};
+const APP_VERSION = {n: '2.15', d: '2026-10-13'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1060,7 +1069,13 @@ function save() { syncSoon(); if (!STORAGE_OK) return; Store.saveCore().catch(()
 const cls = id => DB.classes.find(c => c.id === id);
 const stu = id => DB.students.find(s => s.id === id);
 const byName = (a, b) => (a.last + ' ' + a.first).localeCompare(b.last + ' ' + b.first, 'fr');
-const studentsOf = (cid, group = 'all') => DB.students.filter(s => s.cid === cid && (group === 'all' || s.group === group)).sort(byName);
+/* groupes : G1 / G2 (TP) et, si la classe a une 2e répartition, Ga / Gb */
+const G2SET = ['Ga', 'Gb'];
+const inGroup = (s, g) => g === 'all' || (G2SET.includes(g) ? s.g2 === g : s.group === g);
+const studentsOf = (cid, group = 'all') => DB.students.filter(s => s.cid === cid && inGroup(s, group)).sort(byName);
+const hasG2 = cid => !!(cls(cid) && cls(cid).g2) || DB.students.some(s => s.cid === cid && s.g2);
+const groupsOf = cid => [...(hasGroups(cid) ? ['G1', 'G2'] : []), ...(hasG2(cid) ? G2SET : [])];
+const stuGroups = s => [s.group, s.g2].filter(Boolean).join(' · ');
 const hasGroups = cid => DB.students.some(s => s.cid === cid && (s.group === 'G1' || s.group === 'G2'));
 const groupLabel = g => g === 'all' ? 'Classe entière' : 'Demi-groupe ' + g;
 /* PAP (apprentissage) / PAI (santé) : symboles discrets, bulle avec le commentaire */
@@ -1355,17 +1370,19 @@ function blkHTML(d, x, c, st, o) {
   const chip = cancel ? `<span class="chip neu">${consCancel(key) ? 'Annulé · conseil' : 'Annulé'}</span>` : '';
   const dots = slotDots(d, x, st), nd = (dots.match(/class="pdot/g) || []).length;
   const LINE = 16, base = o.h - 13 - 19 - 1; // hauteur sans marges/bordure (2 px si encadré), ni ligne de titre, ni espacement
-  const avail = base - (chip ? 20 : 0);
+  /* créneau étroit (deux cours en parallèle sur tablette en portrait) : les pastilles prennent leur propre ligne */
+  const lanePx = (window.innerWidth - 70) / 5 * o.w / 100, dotLine = nd > 0 && lanePx - 18 < 58 + nd * 19;
+  const avail = base - (chip ? 20 : 0) - (dotLine ? 19 : 0);
   const fit = Math.max(0, Math.floor(avail / LINE));
   const show = items.slice(0, fit), more = items.length - show.length;
   const line = (it, last) => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim();
     return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}${it.graded && (it.type === 'tp' || it.type === 'act') ? '<span class="bnote">noté</span>' : ''}${last && more ? `<span class="bmore">+${more}</span>` : ''}</span>`; };
   const lines = show.map((it, i) => line(it, i === show.length - 1)).join('');
   const hl = V.hl && blkMatches(V.hl, d, x, st) ? 'hl hl-' + V.hl : '';
-  return `<button class="blk ${ev ? 'has-eval' : ''} ${gr ? 'has-graded' : ''} ${o.past ? 'past' : ''} ${o.isNow ? 'now' : ''} ${cancel ? 'cancel' : ''} ${o.h < 58 ? 'short' : ''} ${lines ? '' : 'noitems'} ${hl}" style="top:${o.top}px;height:${o.h}px;left:calc(${x._lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)};--dw:${nd ? nd * 19 + 4 : 0}px" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + o.g + ', ' + fmtT(x.start))}">
-    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span>${ev && !cancel ? '<span class="btag ev">ÉVAL</span>' : gr && !cancel ? '<span class="btag gr">NOTÉ</span>' : ''}</span>
+  return `<button class="blk ${ev ? 'has-eval' : ''} ${gr ? 'has-graded' : ''} ${o.past ? 'past' : ''} ${o.isNow ? 'now' : ''} ${cancel ? 'cancel' : ''} ${o.h < 58 ? 'short' : ''} ${lines ? '' : 'noitems'} ${dotLine ? 'dotline' : ''} ${hl}" style="top:${o.top}px;height:${o.h}px;left:calc(${x._lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)};--dw:${nd ? nd * 19 + 4 : 0}px" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + o.g + ', ' + fmtT(x.start))}">
+    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span>${ev && !cancel ? '<span class="btag ev">ÉVAL</span>' : gr && !cancel ? '<span class="btag gr">NOTÉ</span>' : ''}${chip && o.h < 44 ? chip.replace('class="chip neu"', 'class="chip neu bchip"') : ''}</span>
     ${lines ? `<span class="bits">${lines}</span>` : ''}
-    ${chip ? `<span class="bfoot">${chip}</span>` : ''}${dots}</button>`;
+    ${chip && o.h >= 44 ? `<span class="bfoot">${chip}</span>` : ''}${dots}</button>`;
 }
 /* indicateurs de la semaine : quels créneaux mettre en évidence */
 function blkMatches(kind, d, x, st) {
@@ -1523,7 +1540,7 @@ function renderPanel() {
     <div class="scroll">
       <div class="hd">
         <div class="avatar">${photoHTML(s)}</div>
-        <div style="flex:1 1 140px;min-width:0"><h2 id="p-name">${esc(s.first + ' ' + s.last)}${amenIcons(s)}</h2><div class="small muted">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
+        <div style="flex:1 1 140px;min-width:0"><h2 id="p-name">${esc(s.first + ' ' + s.last)}${amenIcons(s)}</h2><div class="small muted">${esc(c.name)}${stuGroups(s) ? ' · ' + stuGroups(s) : ''}</div></div>
         ${bilanMode() ? (() => { const pv = bilanStep(s.id, -1), nx = bilanStep(s.id, 1); const all = studentsOf(ses.cid, ses.group).filter(x => x.id === s.id || !isAbsentIn(ses.key, x.id)); const i = all.findIndex(x => x.id === s.id);
           return `<div class="pnav"><button class="btn icon-btn" data-act="p-step" data-d="-1" ${pv ? '' : 'disabled'} aria-label="Élève précédent">${ICON.back}</button><span class="small muted">${i + 1} / ${all.length}</span><button class="btn icon-btn" data-act="p-step" data-d="1" ${nx ? '' : 'disabled'} aria-label="Élève suivant">${ICON.next}</button></div>`; })() : ''}
         <button class="btn" data-act="p-fiche">Fiche</button>
@@ -1588,7 +1605,7 @@ function viewFiche() {
   return `
   <header class="bar">
     <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
-    <div class="ttl"><h1>${esc(s.first + ' ' + s.last)}${amenIcons(s)}</h1><div class="sub">${esc(c.name)}${s.group ? ' · ' + s.group : ''}</div></div>
+    <div class="ttl"><h1>${esc(s.first + ' ' + s.last)}${amenIcons(s)}</h1><div class="sub">${esc(c.name)}${stuGroups(s) ? ' · ' + stuGroups(s) : ''}</div></div>
     <span class="grow"></span>
     <div class="seg" role="group" aria-label="Période">${seg}</div>
     <button class="btn icon-btn" data-act="stu-edit" data-sid="${s.id}" aria-label="Modifier l'élève" title="Modifier">${ICON.edit}</button>
@@ -1660,11 +1677,12 @@ function setClasses() {
       <button class="btn primary" type="submit">Ajouter la classe</button></form>`;
   if (!c) return `<div class="split"><div>${left}</div><div class="empty"><p>Créez votre première classe pour y importer vos élèves.</p></div></div>`;
   const list = studentsOf(c.id);
-  const g1 = list.filter(s => s.group === 'G1').length, g2 = list.filter(s => s.group === 'G2').length;
+  const g1 = list.filter(s => s.group === 'G1').length, g2 = list.filter(s => s.group === 'G2').length, twoG = hasG2(c.id);
+  const ga = list.filter(s => s.g2 === 'Ga').length, gb = list.filter(s => s.g2 === 'Gb').length;
   const rows = list.map(s => `<li><span class="thumb">${photoHTML(s)}</span>
       <span class="nm">${esc(s.last.toUpperCase())} ${esc(s.first)}</span>
       <span class="amtg"><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="d" data-sid="${s.id}" aria-pressed="${s.dl === 'd'}" title="Délégué(e)">★ Dél.</button><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="s" data-sid="${s.id}" aria-pressed="${s.dl === 's'}" title="Suppléant(e)">☆ Sup.</button><button type="button" class="mini-tg pap" data-act="stu-flag" data-f="pap" data-sid="${s.id}" aria-pressed="${!!s.pap}" title="PAP">PAP</button><button type="button" class="mini-tg pai" data-act="stu-flag" data-f="pai" data-sid="${s.id}" aria-pressed="${!!s.pai}" title="PAI">PAI</button></span>
-      <select data-chg="group" data-sid="${s.id}" aria-label="Demi-groupe de ${esc(s.first)}"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select>
+      <select data-chg="group" data-sid="${s.id}" aria-label="Demi-groupe de ${esc(s.first)}"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select>${twoG ? `<select data-chg="group2" data-sid="${s.id}" aria-label="Groupe a / b de ${esc(s.first)}"><option value="" ${!s.g2 ? 'selected' : ''}>—</option><option ${s.g2 === 'Ga' ? 'selected' : ''}>Ga</option><option ${s.g2 === 'Gb' ? 'selected' : ''}>Gb</option></select>` : ''}
       <span class="btn filebtn" style="min-height:40px">Photo<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de ${esc(s.first)}"></span>
       <button class="btn icon-btn" style="min-height:40px;min-width:40px" data-act="stu-edit" data-sid="${s.id}" aria-label="Modifier ${esc(s.first)}" title="Modifier">${ICON.edit}</button>
       <button class="btn ghost" style="min-height:40px" data-act="del-stu" data-sid="${s.id}">Retirer</button></li>`).join('');
@@ -1678,7 +1696,8 @@ function setClasses() {
         return `<div class="shch"><span class="lbl" style="margin:0">Chapitres communs avec</span>${others.map(x => `<button type="button" class="gchip" data-act="ch-share" data-cid="${c.id}" data-other="${x.id}" aria-pressed="${levelOf(x) === lv}">${dot(x)}${esc(x.name)}</button>`).join('')}
           <span class="small muted" style="flex-basis:100%">Les classes cochées utilisent la même liste de chapitres (numéros et titres). Le contenu des séances reste propre à chaque classe.</span></div>`; })() : ''}
       <div class="swatches" role="group" aria-label="Couleur de la classe">${CLASS_COLORS.map(([h, n]) => `<button type="button" class="sw" style="--sw:${h}" aria-label="${n}" aria-pressed="${c.color === h}" data-act="class-color" data-cid="${c.id}" data-col="${h}"></button>`).join('')}</div>
-      <p class="small muted" style="margin:0">${plural(list.length, 'élève')} · G1 : ${g1} · G2 : ${g2} · ${plural(list.filter(s => PHOTOS[s.id]).length, 'photo')}</p>
+      <p class="small muted" style="margin:0">${plural(list.length, 'élève')} · G1 : ${g1} · G2 : ${g2}${twoG ? ` · Ga : ${ga} · Gb : ${gb}` : ''} · ${plural(list.filter(s => PHOTOS[s.id]).length, 'photo')}</p>
+      <label class="check"><input type="checkbox" data-chg="class-g2" data-cid="${c.id}" ${twoG ? 'checked' : ''} ${list.some(s => s.g2) ? 'disabled' : ''}> <span>Deuxième répartition en demi-groupes <b>Ga / Gb</b> <span class="small muted">(groupes différents de G1 / G2${list.some(s => s.g2) ? ' · videz les Ga / Gb pour la retirer' : ''})</span></span></label>
       <div class="row">
         <button class="btn primary" data-act="imp-open">Importer une liste</button>
         <span class="btn filebtn">Importer le trombinoscope (PDF)<input type="file" accept="application/pdf,.pdf" data-chg="trombi" data-cid="${c.id}" aria-label="Importer le trombinoscope"></span>
@@ -1693,7 +1712,7 @@ function setClasses() {
     <form class="card form-grid" data-form="add-stu" data-cid="${c.id}" style="padding:14px">
       <label class="f" for="as-first">Prénom<input type="text" id="as-first" required></label>
       <label class="f" for="as-last">Nom<input type="text" id="as-last" required></label>
-      <label class="f" for="as-group">Demi-groupe<select id="as-group"><option value="">—</option><option>G1</option><option>G2</option></select></label>
+      <label class="f" for="as-group">Demi-groupe<select id="as-group"><option value="">—</option><option>G1</option><option>G2</option></select></label>${twoG ? '<label class="f" for="as-group2">Groupe a / b<select id="as-group2"><option value="">—</option><option>Ga</option><option>Gb</option></select></label>' : ''}
       <button class="btn" type="submit">Ajouter l'élève</button>
     </form>
     <section class="card">${rows ? `<ul class="stable">${rows}</ul>` : '<p class="muted" style="margin:0">Aucun élève pour l\'instant.</p>'}</section>
@@ -1790,7 +1809,7 @@ function egForm(o) {
       <label class="f" for="eg-s">Début<input type="time" id="eg-s" value="${x.start || o.start}"></label>
       <label class="f" for="eg-e">Fin<input type="time" id="eg-e" value="${x.end || o.end}"></label>
       <label class="f" for="eg-week">Semaine${sel('eg-week', x.week || o.week || 'all', [['all', 'Toutes les semaines'], ['A', 'Semaine A'], ['B', 'Semaine B']])}</label>
-      <label class="f" for="eg-group">Groupe${sel('eg-group', x.group || 'all', [['all', 'Classe entière'], ['G1', 'Demi-groupe G1'], ['G2', 'Demi-groupe G2']])}</label>
+      <label class="f" for="eg-group">Groupe${sel('eg-group', x.group || 'all', [['all', 'Classe entière'], ['G1', 'Demi-groupe G1'], ['G2', 'Demi-groupe G2'], ...(DB.classes.some(c => hasG2(c.id)) || G2SET.includes(x.group) ? [['Ga', 'Demi-groupe Ga'], ['Gb', 'Demi-groupe Gb']] : [])])}</label>
       <label class="f" for="eg-from">${o.slot ? 'Changement à partir du' : 'Valable à partir du'}<input type="date" id="eg-from" value="${o.slot && past ? t : (x.from || '')}"></label>
     </div>
     <p class="small muted">${o.slot ? (past ? 'Ce cours a déjà eu lieu : les séances avant cette date gardent leur contenu, leurs bilans et leurs devoirs. Les séances déjà préparées après cette date suivent le nouveau créneau, dans l\'ordre.' : 'Ce cours n\'a pas encore eu lieu : la modification s\'applique à toute l\'année.') : 'Laissez la date vide pour un cours valable toute l\'année.'}</p>
@@ -1848,10 +1867,10 @@ function otherModal(cid, group = 'all') {
   const list = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric:true}));
   cid = cid || list[0]?.id;
   if (!cid) { go({name:'settings', tab:'classes'}); return; }
-  const g = hasGroups(cid);
+  const gl = groupsOf(cid), g = gl.length > 0;
   openModal(`<h2>Ouvrir une classe</h2>
     <div class="pick">${list.map(c => `<button class="btn" data-act="om-cls" data-cid="${c.id}" aria-pressed="${c.id === cid}">${dot(c)}${esc(c.name)}</button>`).join('')}</div>
-    ${g ? `<div class="seg" role="group" aria-label="Groupe">${['all','G1','G2'].map(x => `<button data-act="om-grp" data-cid="${cid}" data-g="${x}" aria-pressed="${x === group}">${x === 'all' ? 'Classe entière' : x}</button>`).join('')}</div>` : ''}
+    ${g ? `<div class="seg" role="group" aria-label="Groupe">${['all', ...gl].map(x => `<button data-act="om-grp" data-cid="${cid}" data-g="${x}" aria-pressed="${x === group}">${x === 'all' ? 'Classe entière' : x}</button>`).join('')}</div>` : ''}
     <p class="small muted">La séance sera datée du ${fmtLong(otherDate()).toLowerCase()}, hors emploi du temps.</p>
     <div class="ft"><button class="btn" data-act="m-close">Annuler</button><button class="btn primary" data-act="om-go" data-cid="${cid}" data-g="${group}">Ouvrir</button></div>`);
 }
@@ -1882,14 +1901,14 @@ function buildExport(cid, per, type, sid) {
   const obs = DB.obs.filter(o => ids.has(o.sid) && o.date >= per.s && o.date <= per.e);
   if (type === 'detail') {
     const rows = [['Date','Créneau','Nom','Prénom','Groupe','Type','Observation','Commentaire']];
-    obs.sort((a, b) => a.date.localeCompare(b.date) || a.t - b.t).forEach(o => { const s = stu(o.sid); rows.push([o.date.split('-').reverse().join('/'), o.lbl || '', s.last, s.first, s.group || '', TYPE_L[CAT[o.cat].t], CAT[o.cat].l, o.note || '']); });
+    obs.sort((a, b) => a.date.localeCompare(b.date) || a.t - b.t).forEach(o => { const s = stu(o.sid); rows.push([o.date.split('-').reverse().join('/'), o.lbl || '', s.last, s.first, stuGroups(s), TYPE_L[CAT[o.cat].t], CAT[o.cat].l, o.note || '']); });
     return csv(rows);
   }
   const cats = CATS.filter(c => c.t === 'pos' || c.t === 'neg');
   const rows = [['Nom','Prénom','Groupe','Positif','Négatif','RAS','Absences', ...cats.map(c => c.l), 'Commentaires']];
   studs.forEach(s => {
     const mine = obs.filter(o => o.sid === s.id); const n = k => mine.filter(o => o.cat === k).length;
-    rows.push([s.last, s.first, s.group || '', mine.filter(o => CAT[o.cat].t === 'pos').length, mine.filter(o => CAT[o.cat].t === 'neg').length, n('ras'), n('absent'), ...cats.map(c => n(c.k)), mine.filter(o => o.note).map(o => fmtShort(o.date) + ' : ' + o.note).join(' | ')]);
+    rows.push([s.last, s.first, stuGroups(s), mine.filter(o => CAT[o.cat].t === 'pos').length, mine.filter(o => CAT[o.cat].t === 'neg').length, n('ras'), n('absent'), ...cats.map(c => n(c.k)), mine.filter(o => o.note).map(o => fmtShort(o.date) + ' : ' + o.note).join(' | ')]);
   });
   return csv(rows);
 }
@@ -2085,7 +2104,7 @@ function viewTrombi() {
     const names = (it.sid === 'new' || !cands.length) ? `<div class="tr-names">
         <input type="text" id="tr-f-${i}" value="${esc(it.first)}" placeholder="Prénom" aria-label="Prénom" data-chg="tr-name" data-i="${i}" data-k="first">
         <input type="text" id="tr-l-${i}" value="${esc(it.last)}" placeholder="Nom" aria-label="Nom" data-chg="tr-name" data-i="${i}" data-k="last"></div>` : '';
-    const grp = it.sid === 'skip' ? '' : `<div class="seg" role="group" aria-label="Demi-groupe">${['', 'G1', 'G2'].map(g => `<button type="button" data-act="tr-grp" data-i="${i}" data-g="${g}" aria-pressed="${it.group === g}">${g || '—'}</button>`).join('')}</div>`;
+    const grp = it.sid === 'skip' ? '' : `<div class="seg" role="group" aria-label="Demi-groupe">${['', 'G1', 'G2'].map(g => `<button type="button" data-act="tr-grp" data-i="${i}" data-g="${g}" aria-pressed="${it.group === g}">${g || '—'}</button>`).join('')}</div>${hasG2(TR.cid) ? `<div class="seg" role="group" aria-label="Groupe a / b">${['', 'Ga', 'Gb'].map(g => `<button type="button" data-act="tr-grp2" data-i="${i}" data-g="${g}" aria-pressed="${(it.g2 || '') === g}">${g || '—'}</button>`).join('')}</div>` : ''}`;
     return `<div class="tr-card ${it.sid === 'skip' ? 'is-skip' : ''}">
       <div class="tr-ph"><img src="${it.photo}" alt=""></div>
       <div class="tr-body">
@@ -2118,6 +2137,7 @@ async function commitTrombi() {
     let s;
     if (it.sid === 'new') { s = {id: uid(), cid, first: it.first.trim(), last: it.last.trim(), group: it.group}; DB.students.push(s); added++; }
     else { s = stu(it.sid); if (!s) continue; s.group = it.group; }
+    if (it.g2 !== undefined) { if (it.g2) s.g2 = it.g2; else delete s.g2; }
     PHOTOS[s.id] = it.photo; photos++;
     if (STORAGE_OK) { try { await Store.putPhoto(s.id, it.photo); } catch (e) {} }
   }
@@ -2286,7 +2306,7 @@ function getPlace(cid, group, room, create) {
   if (p) { p.g = p.g || {}; p.flags = p.flags || {}; }
   return p;
 }
-const validSid = (sid, cid, group) => { const s = sid && stu(sid); return s && s.cid === cid && (group === 'all' || s.group === group) ? s : null; };
+const validSid = (sid, cid, group) => { const s = sid && stu(sid); return s && s.cid === cid && inGroup(s, group) ? s : null; };
 function placedSet(pl, room, cid, group) {
   const nums = roomNums(room), out = new Set();
   if (pl) Object.entries(pl.g).forEach(([n, arr]) => { if (nums.has(n)) (arr || []).forEach(sid => { if (validSid(sid, cid, group)) out.add(sid); }); });
@@ -2599,7 +2619,7 @@ let DRAG = null;
 /* onglet Salles */
 function groupChoices() {
   const out = [];
-  DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true})).forEach(c => { if (hasGroups(c.id)) ['G1', 'G2'].forEach(g => out.push({c, g, k: c.id + '|' + g})); });
+  DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true})).forEach(c => { groupsOf(c.id).forEach(g => out.push({c, g, k: c.id + '|' + g})); });
   return out;
 }
 function viewSalles() {
@@ -2656,7 +2676,7 @@ function apprBlockHTML(c, per) {
   const t = todayStr();
   const all = classSessions(c.id).filter(x => !x.cancelled && !x.extra && x.date >= per.s && x.date <= per.e && sesStarted(x));
   const groups = [...new Set(classSessions(c.id).map(x => x.group))];
-  const order = ['all', 'G1', 'G2'].filter(g => groups.includes(g)).concat(groups.filter(g => !['all', 'G1', 'G2'].includes(g)));
+  const order = ['all', 'G1', 'G2', 'Ga', 'Gb'].filter(g => groups.includes(g)).concat(groups.filter(g => !['all', 'G1', 'G2', 'Ga', 'Gb'].includes(g)));
   if (!order.length) return '';
   const pies = order.map(g => {
     const list = all.filter(x => x.group === g), cnt = {}; let tot = 0, miss = 0;
@@ -2715,7 +2735,7 @@ function viewSuivi() {
   const body = rows.map(r => `<button class="srow" data-act="fiche-open" data-sid="${r.s.id}">
       <span class="thumb">${photoHTML(r.s)}</span>
       <span class="nm">${esc(r.s.first)} <span class="muted">${esc(r.s.last)}</span>${amenIcons(r.s)}</span>
-      <span class="muted small">${r.s.group || '—'}</span>
+      <span class="muted small">${stuGroups(r.s) || '—'}</span>
       <span class="num pos">+${r.pos}</span><span class="num neg">−${r.neg}</span><span class="num">${r.ras}</span><span class="num">${r.abs ? ghostIcon(r.abs) : '<span class="muted">0</span>'}</span>
       <span class="last small">${esc(r.last)}</span>
       <span class="bdg">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></button>`).join('');
@@ -2777,7 +2797,7 @@ function togModal() {
     <p class="small muted">Pour l'entraide : le tirage au sort place ces élèves dans le même îlot ou la même paillasse, quand c'est possible. Les paires « à séparer » restent prioritaires. Visible par vous seul.</p>
     ${gs.length ? `<ul class="stable">${gs.map((g, i) => `<li><span class="nm">${g.map(id => esc(stu(id).first + ' ' + stu(id).last)).join(', ')}</span><button class="btn ghost" data-act="tog-del" data-i="${i}">Retirer</button></li>`).join('')}</ul>` : '<p class="muted">Aucun groupe pour l\'instant.</p>'}
     <div class="lbl" style="margin-top:6px">Nouveau groupe : cochez 2 élèves ou plus</div>
-    <div class="togpick">${list.map(s => `<label class="check"><input type="checkbox" class="tog-s" value="${s.id}"> ${esc(s.first + ' ' + s.last)}${s.group ? ' <span class="small muted">' + s.group + '</span>' : ''}</label>`).join('')}</div>
+    <div class="togpick">${list.map(s => `<label class="check"><input type="checkbox" class="tog-s" value="${s.id}"> ${esc(s.first + ' ' + s.last)}${stuGroups(s) ? ' <span class="small muted">' + stuGroups(s) + '</span>' : ''}</label>`).join('')}</div>
     <div class="ft"><button class="btn" data-act="tog-add">Ajouter le groupe</button><button class="btn ink" data-act="m-close">Fermer</button></div>`);
 }
 function addPairs(cid, ids) {
@@ -2858,57 +2878,75 @@ function nextSession(cid, key, group, sameTrack) {
   return list.slice(i + 1).find(s => !s.cancelled && (sameTrack ? s.group === group : compat(s.group, group))) || null;
 }
 function firstSessionOnOrAfter(cid, date, group) { return classSessions(cid).find(s => !s.cancelled && s.date >= date && compat(s.group, group)) || null; }
-/* séance pour laquelle un devoir est à faire (donné à la séance `from`) */
-function hwTarget(h, from, cid, group) {
-  if (h.dueKey) { const t = classSessions(cid).find(x => x.key === h.dueKey); if (t && !t.cancelled && compat(t.group, group)) return t; }
-  return h.due ? firstSessionOnOrAfter(cid, h.due, group) : nextSession(cid, from.key, group, false);
+/* devoirs élève par élève : chaque élève est vérifié à SA prochaine séance (classe entière, G1/G2, Ga/Gb), quel que soit le groupe */
+const sesIx = list => list._ix || (list._ix = new Map(list.map((x, i) => [x.key, i])));
+const sesHasR = (x, st, g) => x.group === 'all' || (st ? inGroup(st, x.group) : compat(x.group, g));
+function nextFor(list, i, st, g, raw) { for (let j = i + 1; j < list.length; j++) { const x = list[j]; if ((raw || !x.cancelled) && sesHasR(x, st, g)) return x; } return null; }
+/* élèves qui ont reçu un devoir donné à la séance p (null : classe sans élèves → suivi par groupe) */
+function hwRecv(cid, p) { const l = studentsOf(cid, p.group); return l.length ? l : [null]; }
+/* séance où l'élève st doit être vérifié · {t, rep} (rep : date d'origine si reporté ou séance annulée) */
+function hwStuTarget(list, h, p, st, id, man, moves) {
+  const ix = sesIx(list), g = p.group, pi = ix.get(p.key); let t = null, rep = null;
+  if (man) t = p;
+  else if (h.dueKey && ix.has(h.dueKey)) { const k = ix.get(h.dueKey), x = list[k]; t = sesHasR(x, st, g) ? x : nextFor(list, k, st, g, true); }
+  else if (h.due) { for (let j = (pi == null ? 0 : pi + 1); j < list.length; j++) { const x = list[j]; if (x.date >= h.due && sesHasR(x, st, g)) { t = x; break; } } }
+  else if (pi != null) t = nextFor(list, pi, st, g, true);
+  if (t && t.cancelled) { rep = t.date; t = nextFor(list, ix.get(t.key), st, g, false); }
+  if (moves) {
+    /* anciens reports (enregistrés par groupe, avant la 2.15) */
+    let lm = null; [st ? st.group : g, 'all', g].forEach(k => { const mv = k && moves[id + '@' + k]; if (mv && !mv.fl && (!lm || (mv.f || '') > (lm.f || ''))) lm = mv; });
+    if (lm && ix.has(lm.to)) { const k = ix.get(lm.to); let x = list[k]; if (!sesHasR(x, st, g)) x = nextFor(list, k, st, g, false); else if (x.cancelled) x = nextFor(list, k, st, g, false); t = x; rep = lm.o; }
+    /* reports par séance : tous les élèves vérifiés à cette séance passent à leur séance suivante */
+    for (let n = 0; t && n < 60; n++) { const mv = moves[id + '@' + t.key]; if (!mv || !mv.fl) break; rep = rep || mv.o; t = nextFor(list, ix.get(t.key), st, g, false); }
+  }
+  return {t, rep};
 }
 const dayShort = d => parseD(d).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'});
-function hwDueLabel(h, from, cid, group) { const t = hwTarget(h, from, cid, group); return t ? 'pour le ' + dayShort(t.date) : h.due ? 'pour le ' + dayShort(h.due) : 'pour la séance suivante'; }
-/* séance prévue pour un devoir, sans tenir compte des annulations (pour savoir s'il a été décalé) */
-function hwTargetRaw(h, from, cid, group) {
-  const list = classSessions(cid);
-  if (h.dueKey) { const t = list.find(x => x.key === h.dueKey); if (t && compat(t.group, group)) return t; }
-  if (h.due) return list.find(x => x.date >= h.due && compat(x.group, group)) || null;
-  const i = list.findIndex(x => x.key === from.key); if (i < 0) return null;
-  return list.slice(i + 1).find(x => compat(x.group, group)) || null;
+function hwDueLabel(h, from, cid, group) {
+  const list = classSessions(cid), p = list.find(x => x.key === from.key) || {...from, group};
+  const ds = [...new Set(hwRecv(cid, p).map(st => { const r = hwStuTarget(list, h, p, st, null, false, null); return r.t ? r.t.date : null; }).filter(Boolean))].sort();
+  if (!ds.length) return h.due ? 'pour le ' + dayShort(h.due) : 'pour la séance suivante';
+  return 'pour le ' + ds.slice(0, 3).map(dayShort).join(' ou le ') + (ds.length > 3 ? '…' : '');
 }
-/* destination d'un report : prochaine séance du même groupe (classe entière → prochaine classe entière) */
-const repDest = (cid, key, g) => nextSession(cid, key, g, g === 'all');
+/* séance où reporter un élément à vérifier : la première séance suivante d'au moins un des élèves concernés */
+function hwRepDest(ses, d) {
+  const list = classSessions(ses.cid), i = sesIx(list).get(ses.key); if (i == null) return null;
+  const sts = d.sids.includes('*') ? [null] : d.sids.map(stu).filter(Boolean);
+  let best = null; sts.forEach(st => { const x = nextFor(list, i, st, d.from.group, false); if (x && (!best || sesIx(list).get(x.key) < sesIx(list).get(best.key))) best = x; });
+  return best;
+}
 /* travail à vérifier à la séance `ses` : devoirs donnés avant, ajouts manuels, reports (DB.hwMove), séances annulées sautées.
-   Chaque élément : {h, from, id, mk (clé de report), g (groupe), rep (date d'origine si reporté), man (ajout manuel), src} */
+   Chaque élément : {h, from, id, mk (clé : id@séance), mks (clés lues, dont anciennes clés par groupe), sids (élèves vérifiés ici), rep, man, src} */
 function hwDueAt(ses, withRemoved) {
-  const list = classSessions(ses.cid), out = [], moves = DB.hwMove || {};
-  const resolve = (key, g) => { const t = list.find(x => x.key === key); if (!t) return null; return t.cancelled ? nextSession(ses.cid, t.key, g, g === 'all') : t; };
+  const list = classSessions(ses.cid), out = [], moves = DB.hwMove || {}, st = DB.hwSt || {};
+  if (!sesIx(list).has(ses.key)) return out;
+  const purged = new Set(Object.entries(st).filter(([, v]) => v && v.d).map(([k]) => k.slice(0, k.lastIndexOf('@'))));
+  const here = studentsOf(ses.cid, ses.group).length;
   list.forEach(p => {
     if (p.date > ses.date) return;
     const ct = DB.content[p.key]; if (!ct) return;
-    if (!compat(p.group, ses.group)) return;
-    const g = p.group === 'all' ? ses.group : p.group; // groupe qui a reçu le devoir
-    /* groupes dont un report peut aboutir ici : un devoir donné en classe entière peut avoir été reporté par G1 ou G2 vers une séance en classe entière, et inversement */
-    const gs = p.group !== 'all' ? [p.group] : ses.group === 'all' ? ['all', 'G1', 'G2'] : [ses.group, 'all'];
-    if (p.key !== ses.key) (ct.hw || []).forEach((h, i) => {
-      const id = h.id || p.key + '#' + i, hits = [];
-      gs.forEach(gg => { const mv = moves[id + '@' + gg]; if (!mv) return; const t = resolve(mv.to, gg); if (t && t.key === ses.key) hits.push({g: gg, rep: mv.o}); });
-      if (!moves[id + '@' + g]) { let t = hwTargetRaw(h, p, ses.cid, g), rep = null; if (t && t.cancelled) { rep = t.date; t = nextSession(ses.cid, t.key, g, false); } if (t && t.key === ses.key) hits.push({g, rep}); }
-      if (hits.length) out.push({h, from: p, id, mk: id + '@' + hits[0].g, mks: hits.map(x => id + '@' + x.g), g: hits[0].g, rep: hits.map(x => x.rep).filter(Boolean).sort()[0] || null});
-    });
-    (ct.chk || []).forEach(m => {
-      const gm = p.group, mk = m.id + '@' + gm, mv = moves[mk];
-      let t, rep = null;
-      if (mv) { t = resolve(mv.to, gm); rep = mv.o; }
-      else { t = p; if (p.cancelled) { rep = p.date; t = nextSession(ses.cid, p.key, gm, gm === 'all'); } }
-      if (t && t.key === ses.key) out.push({h: {kind: 'autre', text: m.text}, from: p, id: m.id, mk, mks: [mk], g: gm, rep, man: true, src: m.src || null});
+    const items = [];
+    if (p.key !== ses.key) (ct.hw || []).forEach((h, i) => items.push({h, id: h.id || p.key + '#' + i}));
+    (ct.chk || []).forEach(m => items.push({h: {kind: 'autre', text: m.text}, id: m.id, man: true, src: m.src || null}));
+    if (!items.length) return;
+    const recv = hwRecv(ses.cid, p);
+    items.forEach(it => {
+      if (purged.has(it.id)) return;
+      const sids = [], reps = [];
+      recv.forEach(stx => { const r = hwStuTarget(list, it.h, p, stx, it.id, it.man, moves); if (r.t && r.t.key === ses.key) { sids.push(stx ? stx.id : '*'); if (r.rep) reps.push(r.rep); } });
+      if (!sids.length) return;
+      const mk = it.id + '@' + ses.key, gs = new Set(['all', p.group, ses.group]);
+      sids.forEach(id => { const x = stu(id); if (x && x.group) gs.add(x.group); });
+      out.push({h: it.h, from: p, id: it.id, mk, mks: [mk, ...[...gs].map(g => it.id + '@' + g)], g: ses.group, sids, here, rep: reps.sort()[0] || null, man: !!it.man, src: it.src || null});
     });
   });
-  /* états : vérifié (v) · retiré de la liste (x) · supprimé définitivement (d) */
-  const st = DB.hwSt || {};
-  out.forEach(d => { const k = d.mks.find(m => st[m]); const x = k ? st[k] : null; d.ok = !!(x && x.v); d.x = !!(x && x.x); d.gone = !!(x && x.d); });
-  return out.filter(d => !d.gone && (withRemoved || !d.x));
+  /* états : vérifié (v) · retiré de la liste (x) */
+  out.forEach(d => { const k = d.mks.find(m => st[m]); const x = k ? st[k] : null; d.ok = !!(x && x.v); d.x = !!(x && x.x); });
+  return out.filter(d => withRemoved || !d.x);
 }
 /* travail encore à vérifier (ni vérifié ni retiré) : pastille jaune, compteurs */
 const hwPending = ses => hwDueAt(ses).filter(d => !d.ok);
-function setHwSt(ses, mk, val) { const d = hwDueAt(ses, true).find(x => x.mk === mk); if (!d) return null; d.mks.forEach(k => { if (val) DB.hwSt[k] = val; else delete DB.hwSt[k]; }); return d; }
+function setHwSt(ses, mk, val) { const d = hwDueAt(ses, true).find(x => x.mk === mk); if (!d) return null; d.mks.forEach(k => delete DB.hwSt[k]); if (val) DB.hwSt[d.mk] = val; return d; }
 /* travail reporté depuis cette séance (reste affiché, grisé, avec « Annuler le report ») */
 function movedAway(ses) {
   const out = [], seen = new Set(), moves = DB.hwMove || {};
@@ -2920,23 +2958,25 @@ function movedAway(ses) {
 /* « donné le … » / « ajouté » · « reporté du … » */
 function dueMeta(d) {
   const a = d.man ? (d.src ? 'donné le ' + dayShort(d.src) : 'ajouté à la main') : 'donné le ' + dayShort(d.from.date);
-  return a + (d.rep ? ' · <b class="repd">reporté du ' + dayShort(d.rep) + '</b>' : '');
+  const part = d.sids && !d.sids.includes('*') && (d.sids.length < d.here || d.from.group !== d.g)
+    ? (d.man ? ` · <b class="hwgrp">${d.from.group === 'all' ? 'classe entière' : d.from.group} · ${plural(d.sids.length, 'élève')}</b>` : ` <b class="hwgrp">${d.from.group === 'all' ? 'à la classe' : 'au ' + d.from.group} · ${plural(d.sids.length, 'élève')}</b>`) : '';
+  return a + part + (d.rep ? ' · <b class="repd">reporté du ' + dayShort(d.rep) + '</b>' : '');
 }
 /* liste du travail à vérifier, avec « Reporter » (onglets Contenu et Devoirs, fenêtre de contenu) */
 function dueListHTML(ses, due, opts) {
   opts = opts || {};
   const moved = movedAway(ses);
   if (!due.length && !moved.length && !hwDueAt(ses, true).some(d => d.x)) return '';
-  const dest = g => repDest(ses.cid, ses.key, g);
+  const dest = d => hwRepDest(ses, d);
   const mli = m => `<li class="hwitem chkitem is-moved"><span class="hwt">${esc(m.text)}<span class="small hwm">→ reporté${m.to ? ' au ' + esc(dayShort(m.to)) : ''}</span></span><button type="button" class="btn ghost repbtn" data-act="due-unrep" data-mk="${esc(m.mk)}">Annuler le report</button></li>`;
   const at = `data-cid="${ses.cid}" data-key="${ses.key}"`;
-  const li = d => { const nx = !d.ok && dest(d.g);
+  const li = d => { const nx = !d.ok && dest(d);
     return `<li class="hwitem chkitem ${d.rep ? 'is-rep' : ''} ${d.ok ? 'is-ok' : ''}"><label class="vchk" title="Vérifié"><input type="checkbox" data-act="due-ok" ${at} data-mk="${esc(d.mk)}" ${d.ok ? 'checked' : ''} aria-label="Vérifié"></label>
       <span class="hwt">${esc(hwText(d.h))}<span class="small muted hwm">${d.ok ? '<b class="okd">Vérifié</b> · ' : ''}${dueMeta(d)}</span></span>
       ${nx ? `<button type="button" class="btn repbtn" data-act="due-rep" ${at} data-mk="${esc(d.mk)}" title="Reporter au ${esc(dayShort(nx.date))}">Reporter</button>` : ''}
       <button type="button" class="btn icon-btn ghost" data-act="due-x" ${at} data-mk="${esc(d.mk)}" aria-label="Retirer de la liste" title="Retirer de la liste (récupérable)">${ICON.close}</button></li>`; };
   const open = due.filter(d => !d.ok);
-  const all = open.length > 1 && open.some(d => dest(d.g)) ? `<button type="button" class="btn repall" data-act="due-rep-all" ${at}>Tout reporter</button>` : '';
+  const all = open.length > 1 && open.some(d => dest(d)) ? `<button type="button" class="btn repall" data-act="due-rep-all" ${at}>Tout reporter</button>` : '';
   const rm = hwDueAt(ses, true).filter(d => d.x);
   const rmLink = rm.length ? `<button type="button" class="rmlink" data-act="rm-toggle">${SHOWRM ? 'Masquer' : 'Afficher'} les devoirs retirés (${rm.length})</button>` : '';
   const rmList = rm.length && SHOWRM ? `<ul class="hwlist rmlist">${rm.map(d => `<li class="hwitem chkitem is-rm"><span class="hwt">${esc(hwText(d.h))}<span class="small muted hwm">${dueMeta(d)}</span></span>
@@ -2958,8 +2998,8 @@ function doReport(ses, mks, confirmed) {
     return;
   }
   let last = null;
-  pick.forEach(d => { const nx = repDest(ses.cid, ses.key, d.g); if (!nx) return; (d.mks || [d.mk]).forEach(mk => { const prev = DB.hwMove[mk]; DB.hwMove[mk] = {to: nx.key, o: d.rep || ses.date, f: ses.key, ...(prev ? {p: {to: prev.to, o: prev.o, f: prev.f}} : {})}; }); last = nx; });
-  if (!last) { toast('Aucune séance suivante pour ce groupe.'); return; }
+  pick.forEach(d => { const nx = hwRepDest(ses, d); if (!nx) return; DB.hwMove[d.mk] = {fl: 1, to: nx.key, o: d.rep || ses.date, f: ses.key}; if (!last || nx.date < last.date) last = nx; });
+  if (!last) { toast('Aucune séance suivante pour ces élèves.'); return; }
   if (!left) { removeObs(o => o.ses === ses.key && DV.has(o.cat)); delete DB.hwOk[ses.key]; }
   SESS_CACHE = {}; save();
   if (CT) renderContent(); renderKeep();
@@ -3011,8 +3051,7 @@ function openContent(ses) {
   renderContent();
 }
 function otherGroupSession(ses) {
-  if (ses.group !== 'G1' && ses.group !== 'G2') return null;
-  const og = ses.group === 'G1' ? 'G2' : 'G1';
+  const og = {G1: 'G2', G2: 'G1', Ga: 'Gb', Gb: 'Ga'}[ses.group]; if (!og) return null;
   const list = classSessions(ses.cid), i = list.findIndex(s => s.key === ses.key);
   const cand = list.slice(i + 1).find(s => !s.cancelled && s.group === og);
   return cand && (parseD(cand.date) - parseD(ses.date)) / 864e5 <= 10 ? cand : null;
@@ -3156,7 +3195,7 @@ function viewProg() {
   const c = cls(V.pcid);
   if (!c) return `${tabBar('prog')}<main class="main"><div class="wrap"><div class="empty"><p>Aucune classe pour l'instant.</p></div></div></main>`;
   const all = classSessions(c.id), groups = [...new Set(all.map(s => s.group))];
-  const opts = [...(groups.includes('G1') ? ['G1'] : []), ...(groups.includes('G2') ? ['G2'] : []), ...(groups.includes('all') ? ['all'] : [])];
+  const opts = [...['G1', 'G2', 'Ga', 'Gb'].filter(g => groups.includes(g)), ...(groups.includes('all') ? ['all'] : [])];
   if (!V.pg || (V.pg !== 'tout' && !opts.includes(V.pg))) V.pg = 'tout';
   const lvl = levelOf(c);
   const list = all.filter(s => V.pg === 'tout' || s.group === V.pg);
@@ -3375,10 +3414,11 @@ function viewDevoirs() {
   const list = studentsOf(ses.cid, ses.group), compact = list.length > 24;
   const due = hwDueAt(ses);
   const cnt = {devoir: 0, devoir_inc: 0, devoir_bac: 0}; let abs = 0, done = 0; const ok = !!DB.hwOk[ses.key];
-  const dg = new Set(due.map(d => d.from.group)), concerned = st => ses.group !== 'all' || !due.length || dg.has('all') || dg.has(st.group);
+  const concerned = st => !due.length || due.some(d => d.sids.includes('*') || d.sids.includes(st.id));
   const tiles = list.map(s => {
-    const a = isAbsentIn(ses.key, s.id), dv = dvOf(ses.key, s.id);
-    if (a) abs++; if (dv) cnt[dv]++; const fine = ok && !a && !dv && concerned(s); if (fine) done++;
+    const a = isAbsentIn(ses.key, s.id), dv = dvOf(ses.key, s.id), cc = concerned(s);
+    if (a) abs++; if (dv) cnt[dv]++; const fine = ok && !a && !dv && cc; if (fine) done++;
+    if (!cc && !dv && !a) return `<span class="tile dv-nc" aria-label="${esc(s.first + ' ' + s.last)} : pas de travail à vérifier aujourd'hui"><span class="ph">${photoHTML(s)}<span class="dv-tag nc">—</span></span><span class="nm">${(compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`) + dlIcon(s)}</span></span>`;
     const name = (compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`) + dlIcon(s);
     return `<button class="tile ${a ? 'is-absent' : ''} ${dv ? 'dv-on' : ''} ${fine ? 'dv-done' : ''}" data-act="dv-tap" ${a ? '' : 'data-long="dv"'} data-sid="${s.id}" aria-pressed="${!!dv}" aria-label="${esc(s.first + ' ' + s.last)}${dv ? ' : ' + CAT[dv].l : ''}">
       <span class="ph">${photoHTML(s)}${a ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${dv ? `<span class="dv-tag">${DV_SHORT[dv]}</span>` : fine ? '<span class="dv-tag ok">Fait</span>' : ''}</span>
@@ -3619,6 +3659,7 @@ const ACT = {
         <label class="f" for="se-first">Prénom<input type="text" id="se-first" value="${esc(s.first)}"></label>
         <label class="f" for="se-last">Nom<input type="text" id="se-last" value="${esc(s.last)}"></label>
         <label class="f" for="se-group">Demi-groupe<select id="se-group"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select></label>
+        ${hasG2(s.cid) || s.g2 ? `<label class="f" for="se-group2">Groupe a / b<select id="se-group2"><option value="" ${!s.g2 ? 'selected' : ''}>—</option><option ${s.g2 === 'Ga' ? 'selected' : ''}>Ga</option><option ${s.g2 === 'Gb' ? 'selected' : ''}>Gb</option></select></label>` : ''}
         <label class="f" for="se-cid">Classe<select id="se-cid">${opts}</select></label>
       </div>
       <div class="row" style="gap:16px"><label class="check"><input type="checkbox" id="se-pap" ${s.pap ? 'checked' : ''}> <span class="amen pap">${ICON.book}</span> PAP <span class="small muted">(apprentissage)</span></label>
@@ -3633,6 +3674,7 @@ const ACT = {
     if (!first || !last) { const e = $('#se-err'); e.textContent = 'Le prénom et le nom sont obligatoires.'; e.hidden = false; return; }
     const cid = $('#se-cid').value;
     s.first = first; s.last = last; s.group = $('#se-group').value;
+    if ($('#se-group2')) { const v = $('#se-group2').value; if (v) s.g2 = v; else delete s.g2; }
     if ($('#se-pap').checked) s.pap = true; else delete s.pap;
     if ($('#se-pai').checked) s.pai = true; else delete s.pai;
     const am = $('#se-amen').value.trim(); if (am) s.amen = am; else delete s.amen;
@@ -3656,6 +3698,7 @@ const ACT = {
     V.cid = null; save(); closeModal(); render();
   },
   'tr-grp': el => { TR.items[+el.dataset.i].group = el.dataset.g; renderKeep(); },
+  'tr-grp2': el => { TR.items[+el.dataset.i].g2 = el.dataset.g; renderKeep(); },
   'tr-skip': el => { const it = TR.items[+el.dataset.i]; it.sid = it.sid === 'skip' ? 'new' : 'skip'; renderKeep(); },
   'tr-cancel': () => { TR = null; back(); },
   'tr-go': () => commitTrombi(),
@@ -4025,6 +4068,8 @@ const CHG = {
   },
   group: el => { const s = stu(el.dataset.sid); s.group = el.value; save(); render(); },
   'class-pt': el => { cls(el.dataset.cid).pt = el.value; save(); },
+  'class-g2': el => { const c = cls(el.dataset.cid); if (el.checked) c.g2 = true; else delete c.g2; save(); render(); },
+  group2: el => { const s = stu(el.dataset.sid); if (el.value) s.g2 = el.value; else delete s.g2; SESS_CACHE = {}; save(); render(); },
   parity: el => { DB.settings.evenIsA = el.checked; save(); render(); },
   hol: el => { const h = DB.settings.holidays[+el.dataset.i]; const v = el.value.trim(); if (!v) return; h[el.dataset.f] = v; if (h.s && h.e && h.e < h.s) h.e = h.s; save(); },
   'period-date': el => { const p = DB.settings.periods[el.dataset.k][+el.dataset.i]; if (el.value) { p[el.dataset.f] = el.value; save(); } },
@@ -4037,7 +4082,7 @@ const CHG = {
   'class-level': el => { const c = cls(el.dataset.cid), v = el.value.trim(); if (c) { c.level = v || null; save(); } },
   'room-name': el => { const r = roomById(V.rid); const v = el.value.trim(); if (r && v) { r.name = v; save(); } },
   trombi: el => { const f = el.files[0]; el.value = ''; if (f) startTrombi(f, el.dataset.cid); },
-  'tr-sel': el => { const it = TR.items[+el.dataset.i]; it.sid = el.value; if (el.value && el.value !== 'new' && el.value !== 'skip') it.group = stu(el.value)?.group || it.group; renderKeep(); },
+  'tr-sel': el => { const it = TR.items[+el.dataset.i]; it.sid = el.value; if (el.value && el.value !== 'new' && el.value !== 'skip') { it.group = stu(el.value)?.group || it.group; it.g2 = stu(el.value)?.g2 || ''; } renderKeep(); },
   'tr-name': el => { const it = TR.items[+el.dataset.i]; it[el.dataset.k] = titleCase(el.value.trim()); renderKeep(); }
 };
 const FORMS = {
@@ -4054,7 +4099,7 @@ const FORMS = {
     toast((old ? 'Conseil modifié' : 'Conseil de classe ajouté') + (n ? ` · ${plural(n, 'cours annulé', 'cours annulés')}` : ''));
   },
   'new-class': () => { const name = $('#nc-name').value.trim(); if (!name) return; const c = {id: uid(), name, pt: $('#nc-pt').value, color: nextColor()}; DB.classes.push(c); V.cid = c.id; V.imp = true; IMP = null; save(); render(); toast('Classe créée. Importez maintenant la liste des élèves.'); },
-  'add-stu': f => { const first = titleCase($('#as-first').value.trim()), last = titleCase($('#as-last').value.trim()); if (!first || !last) return; DB.students.push({id: uid(), cid: f.dataset.cid, first, last, group: $('#as-group').value}); save(); render(); $('#as-first')?.focus(); },
+  'add-stu': f => { const first = titleCase($('#as-first').value.trim()), last = titleCase($('#as-last').value.trim()); if (!first || !last) return; const g2 = $('#as-group2') ? $('#as-group2').value : ''; DB.students.push({id: uid(), cid: f.dataset.cid, first, last, group: $('#as-group').value, ...(g2 ? {g2} : {})}); save(); render(); $('#as-first')?.focus(); },
   'add-slot': () => {
     const s = {id: uid(), day: +$('#sl-day').value, start: $('#sl-start').value, end: $('#sl-end').value, cid: $('#sl-cid').value, group: $('#sl-group').value, week: $('#sl-week').value};
     if (!s.start || !s.end || s.end <= s.start) { toast("L'heure de fin doit suivre l'heure de début."); return; }

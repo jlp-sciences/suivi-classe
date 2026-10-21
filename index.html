@@ -873,9 +873,61 @@ button.wpill{cursor:pointer}
 
 /* ---- v2.15 : devoirs élève par élève ---- */
 .hwm .hwgrp{font-weight:700;color:var(--ink)}
+.hwitem .hwcopy{min-height:32px;padding:2px 10px;font-size:13px;flex:none}
+.hwitem .hwlnk{font-size:12.5px;color:var(--muted);flex:none;display:inline-flex;gap:6px;align-items:center}
 .tile.dv-nc{cursor:default;opacity:.55}
 .tile.dv-nc .ph{filter:grayscale(.6)}
 .dv-tag.nc{background:var(--surface-2);color:var(--muted)}
+
+/* ---- v3.0 : onglet Contenu en une seule vue ---- */
+.hub2{max-width:980px;display:flex;flex-direction:column;gap:14px}
+.hstrip{display:grid;grid-template-columns:auto 1fr 1.25fr 1fr auto;gap:8px;align-items:stretch}
+.hstrip .hnav{align-self:center}
+.hcard{display:flex;flex-direction:column;gap:3px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);min-width:0;font:inherit;color:inherit;cursor:pointer}
+.hcard.empty{visibility:hidden}
+.hcard.is-cur{border-color:var(--pos);box-shadow:inset 0 0 0 1px var(--pos)}
+.hcard.sel{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.hcard.sel .hcr,.hcard.sel .hcc,.hcard.sel .muted{color:inherit;opacity:.85}
+.hcr{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.hcard.is-cur .hcr{color:var(--pos)}
+.hcard.sel.is-cur .hcr{color:inherit}
+.hcd{font-family:var(--serif);font-size:17px;font-weight:600}
+.hcc{font-size:13px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcdots{display:flex;gap:4px;flex-wrap:wrap;min-height:12px;align-items:center}
+.hcdots i{width:12px;height:12px;border-radius:3px;background:var(--tc)}
+.hcard.sel .hcdots i{box-shadow:0 0 0 1.5px var(--surface)}
+.hmain{display:flex;flex-direction:column;gap:12px}
+.hmain.is-cur{box-shadow:inset 0 4px 0 var(--pos)}
+.hhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hhd{display:flex;flex-direction:column;gap:1px}
+.hhd strong{font-family:var(--serif);font-size:22px}
+.hhead .grow{flex:1 1 auto}
+.hcr .hs{display:none}
+.hrel{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pos)}
+.hch{font-size:18px;margin:0;line-height:1.3}
+.hitems{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.hitems li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--tc) 9%,var(--surface));border-left:5px solid var(--tc);font-size:16px}
+.hty{flex:none;min-width:118px;font-size:12.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--tc)}
+.hil{flex:1;min-width:0;font-weight:500}
+.hst{flex:none;font-size:12.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+.hst.ok{background:color-mix(in srgb,var(--pos) 15%,transparent);color:var(--pos)}
+.hst.part{background:var(--warn-soft);color:var(--warn-ink)}
+.hst.not{background:color-mix(in srgb,var(--neg) 14%,transparent);color:var(--neg)}
+.hnone{margin:0;color:var(--muted);padding:14px;border:1px dashed var(--line-2);border-radius:10px}
+.hsec{display:flex;flex-direction:column;gap:6px}
+.hhw{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.hhw li{display:flex;flex-direction:column;gap:1px;padding:8px 12px;border-radius:10px;background:var(--surface-2)}
+.hhw li.is-ok{opacity:.7}
+.hhwt{font-weight:600}
+.hchecks .chksec:last-child{margin-bottom:0}
+.hchecks .chksec > .rmlink{align-self:flex-start}
+@media (max-width:700px){
+  .hstrip{grid-template-columns:auto 1fr 1fr 1fr auto;gap:5px}
+  .hcard{padding:7px 8px} .hcd{font-size:14px} .hcc{display:none} .hcr{font-size:10px}
+  .hcr .hl{display:none} .hcr .hs{display:inline}
+  .hstrip .hnav{min-width:34px;min-height:34px;padding:0}
+  .hitems li{flex-direction:column;align-items:flex-start;gap:2px;font-size:15px} .hty{min-width:0;font-size:11.5px}
+}
 </style>
 </head>
 <body>
@@ -910,7 +962,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '2.15', d: '2026-10-13'};
+const APP_VERSION = {n: '3.0', d: '2026-10-22'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -2937,27 +2989,35 @@ function hwDueAt(ses, withRemoved) {
       if (!sids.length) return;
       const mk = it.id + '@' + ses.key, gs = new Set(['all', p.group, ses.group]);
       sids.forEach(id => { const x = stu(id); if (x && x.group) gs.add(x.group); });
-      out.push({h: it.h, from: p, id: it.id, mk, mks: [mk, ...[...gs].map(g => it.id + '@' + g)], g: ses.group, sids, here, rep: reps.sort()[0] || null, man: !!it.man, src: it.src || null});
+      out.push({h: it.h, from: p, id: it.id, mk, mkAll: [mk], mks: [mk, ...[...gs].map(g => it.id + '@' + g)], g: ses.group, sids, here, rep: reps.sort()[0] || null, man: !!it.man, src: it.src || null, ln: it.h.ln || null, froms: [p]});
     });
   });
+  /* devoirs recopiés pour l'autre groupe : une seule ligne quand ils sont vérifiés à la même séance */
+  for (let i = 0; i < out.length; i++) { const a = out[i]; if (!a.ln) continue;
+    for (let j = out.length - 1; j > i; j--) { const b = out[j]; if (b.ln !== a.ln) continue;
+      a.sids = [...new Set([...a.sids, ...b.sids])]; a.mkAll.push(...b.mkAll); a.mks.push(...b.mks); a.froms.push(...b.froms);
+      a.rep = [a.rep, b.rep].filter(Boolean).sort()[0] || null; out.splice(j, 1); } }
   /* états : vérifié (v) · retiré de la liste (x) */
   out.forEach(d => { const k = d.mks.find(m => st[m]); const x = k ? st[k] : null; d.ok = !!(x && x.v); d.x = !!(x && x.x); });
+  out.forEach(d => { if (d.froms.length > 1) { const gs = [...new Set(d.froms.map(f => f.group))]; d.gl = gs; } });
   return out.filter(d => withRemoved || !d.x);
 }
 /* travail encore à vérifier (ni vérifié ni retiré) : pastille jaune, compteurs */
 const hwPending = ses => hwDueAt(ses).filter(d => !d.ok);
-function setHwSt(ses, mk, val) { const d = hwDueAt(ses, true).find(x => x.mk === mk); if (!d) return null; d.mks.forEach(k => delete DB.hwSt[k]); if (val) DB.hwSt[d.mk] = val; return d; }
+function setHwSt(ses, mk, val) { const d = hwDueAt(ses, true).find(x => x.mk === mk); if (!d) return null; d.mks.forEach(k => delete DB.hwSt[k]); if (val) d.mkAll.forEach(k => { DB.hwSt[k] = val; }); return d; }
 /* travail reporté depuis cette séance (reste affiché, grisé, avec « Annuler le report ») */
 function movedAway(ses) {
   const out = [], seen = new Set(), moves = DB.hwMove || {};
   const mine = Object.entries(moves).filter(([, mv]) => mv && mv.f === ses.key); if (!mine.length) return out;
   const text = {}; classSessions(ses.cid).forEach(p => { const ct = DB.content[p.key]; if (!ct) return; (ct.hw || []).forEach((h, i) => { text[h.id || p.key + '#' + i] = hwText(h); }); (ct.chk || []).forEach(m => { text[m.id] = m.text; }); });
-  mine.forEach(([mk, mv]) => { const id = mk.slice(0, mk.lastIndexOf('@')); if (text[id] == null || seen.has(id)) return; seen.add(id); const t = classSessions(ses.cid).find(x => x.key === mv.to); out.push({mk, text: text[id], to: t ? t.date : null}); });
+  mine.forEach(([mk, mv]) => { const id = mk.slice(0, mk.lastIndexOf('@')); if (text[id] == null || seen.has(id) || seen.has(text[id] + '>' + mv.to)) return; seen.add(id); seen.add(text[id] + '>' + mv.to); const t = classSessions(ses.cid).find(x => x.key === mv.to); out.push({mk, text: text[id], to: t ? t.date : null}); });
   return out;
 }
 /* « donné le … » / « ajouté » · « reporté du … » */
 function dueMeta(d) {
-  const a = d.man ? (d.src ? 'donné le ' + dayShort(d.src) : 'ajouté à la main') : 'donné le ' + dayShort(d.from.date);
+  const ds = d.froms ? [...new Set(d.froms.map(f => f.date))].sort() : [d.from.date];
+  const a = d.man ? (d.src ? 'donné le ' + dayShort(d.src) : 'ajouté à la main') : 'donné le ' + ds.map(dayShort).join(' et le ');
+  if (d.gl) return a + ` <b class="hwgrp">${d.gl.map(g => g === 'all' ? 'à la classe' : 'au ' + g).join(' et ')} · ${plural(d.sids.length, 'élève')}</b>` + (d.rep ? ' · <b class="repd">reporté du ' + dayShort(d.rep) + '</b>' : '');
   const part = d.sids && !d.sids.includes('*') && (d.sids.length < d.here || d.from.group !== d.g)
     ? (d.man ? ` · <b class="hwgrp">${d.from.group === 'all' ? 'classe entière' : d.from.group} · ${plural(d.sids.length, 'élève')}</b>` : ` <b class="hwgrp">${d.from.group === 'all' ? 'à la classe' : 'au ' + d.from.group} · ${plural(d.sids.length, 'élève')}</b>`) : '';
   return a + part + (d.rep ? ' · <b class="repd">reporté du ' + dayShort(d.rep) + '</b>' : '');
@@ -2998,7 +3058,7 @@ function doReport(ses, mks, confirmed) {
     return;
   }
   let last = null;
-  pick.forEach(d => { const nx = hwRepDest(ses, d); if (!nx) return; DB.hwMove[d.mk] = {fl: 1, to: nx.key, o: d.rep || ses.date, f: ses.key}; if (!last || nx.date < last.date) last = nx; });
+  pick.forEach(d => { const nx = hwRepDest(ses, d); if (!nx) return; d.mkAll.forEach(k => { DB.hwMove[k] = {fl: 1, to: nx.key, o: d.rep || ses.date, f: ses.key}; }); if (!last || nx.date < last.date) last = nx; });
   if (!last) { toast('Aucune séance suivante pour ces élèves.'); return; }
   if (!left) { removeObs(o => o.ses === ses.key && DV.has(o.cat)); delete DB.hwOk[ses.key]; }
   SESS_CACHE = {}; save();
@@ -3056,6 +3116,30 @@ function otherGroupSession(ses) {
   const cand = list.slice(i + 1).find(s => !s.cancelled && s.group === og);
   return cand && (parseD(cand.date) - parseD(ses.date)) / 864e5 <= 10 ? cand : null;
 }
+/* devoirs recopiés d'un groupe à l'autre : mêmes ln (lien) dans deux séances */
+function hwLinked(cid, ln, exceptKey) {
+  for (const x of classSessions(cid)) { if (x.key === exceptKey) continue; const ct = DB.content[x.key]; const h = ct && (ct.hw || []).find(y => y.ln === ln); if (h) return {ses: x, h}; }
+  return null;
+}
+const HW_FIELDS = ['kind', 'page', 'nums', 'name', 'all', 'from', 'to', 'what', 'detail', 'text', 'due', 'dueKey'];
+function syncLinkedHw(cid, key, d, before) {
+  const keys = classSessions(cid).map(x => x.key).filter(k => k !== key && DB.content[k]);
+  const lnNow = new Set(d.hw.map(h => h.ln).filter(Boolean));
+  /* modifications : recopiées dans les autres séances liées */
+  d.hw.forEach(h => { if (!h.ln) return; keys.forEach(k => { (DB.content[k].hw || []).forEach(y => { if (y.ln !== h.ln) return; HW_FIELDS.forEach(f => { if (h[f] === undefined) delete y[f]; else y[f] = h[f]; }); }); }); });
+  /* suppressions : un devoir lié retiré ici est retiré partout */
+  const gone = ((before && before.hw) || []).map(h => h.ln).filter(l => l && !lnNow.has(l) && !(CT.unlink || []).includes(l));
+  /* déliés : on retire le lien des deux côtés */
+  const strip = CT.unlink || [];
+  keys.forEach(k => { const ct = DB.content[k]; if (!ct.hw) return;
+    if (gone.length) ct.hw = ct.hw.filter(y => !gone.includes(y.ln));
+    ct.hw.forEach(y => { if (strip.includes(y.ln) && !lnNow.has(y.ln)) delete y.ln; });
+    if (ctEmpty(ct)) delete DB.content[k]; });
+  /* nouvelles copies demandées */
+  d.hw.forEach(h => { if (!h.cpTo) return; const t = h.cpTo; delete h.cpTo;
+    const ct = DB.content[t] || (DB.content[t] = {ch: d.ch, items: [], hw: []});
+    if (!(ct.hw || (ct.hw = [])).some(y => y.ln === h.ln)) { const x = {...h, id: uid()}; ct.hw.push(x); } });
+}
 function renderContent() {
   /* garder la position de défilement quand la fenêtre se redessine (ajout d'un TP, choix du type de devoir…) */
   const oldSc = $('#layer .sheet[aria-labelledby="ct-t"] .scroll'), keepTop = oldSc && CT && oldSc.dataset.key === CT.ses.key ? oldSc.scrollTop : null;
@@ -3079,7 +3163,11 @@ function renderContentInner() {
       <button type="button" class="btn icon-btn ghost" data-act="ct-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></div>
       <div class="row" style="gap:8px">${stSeg}${it.type === 'tp' || it.type === 'act' ? `<label class="gradebox"><input type="checkbox" data-act="ct-graded" data-i="${i}" ${it.graded ? 'checked' : ''}> Noté</label>` : ''}</div>${rep}</li>`;
   }).join('');
-  const hws = d.hw.map((h, i) => `<li class="hwitem ${CT.hw.edit === i ? 'editing' : ''}"><span>${esc(hwText(h))}</span><span class="small muted">${hwDueLabel(h, s, s.cid, s.group)}</span><button type="button" class="btn icon-btn ghost" data-act="hw-edit" data-i="${i}" aria-label="Modifier le devoir" title="Modifier">${ICON.edit}</button><button type="button" class="btn icon-btn ghost" data-act="hw-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></li>`).join('');
+  const og = otherGroupSession(s);
+  const lnk = h => { if (!og) return ''; const cp = h.ln && hwLinked(s.cid, h.ln, s.key);
+    return cp ? `<span class="hwlnk">Recopié pour le ${esc(cp.ses.group)} (${esc(dayShort(cp.ses.date))}) <button type="button" class="rmlink" data-act="hw-unlink" data-i="${d.hw.indexOf(h)}">Délier</button></span>`
+      : `<button type="button" class="btn hwcopy" data-act="hw-copy" data-i="${d.hw.indexOf(h)}" title="Recopier ce devoir dans la séance du ${esc(og.group)} du ${esc(dayShort(og.date))}">Recopier pour le ${esc(og.group)}</button>`; };
+  const hws = d.hw.map((h, i) => `<li class="hwitem ${CT.hw.edit === i ? 'editing' : ''}"><span>${esc(hwText(h))}</span><span class="small muted">${hwDueLabel(h, s, s.cid, s.group)}</span>${lnk(h)}<button type="button" class="btn icon-btn ghost" data-act="hw-edit" data-i="${i}" aria-label="Modifier le devoir" title="Modifier">${ICON.edit}</button><button type="button" class="btn icon-btn ghost" data-act="hw-del" data-i="${i}" aria-label="Retirer">${ICON.close}</button></li>`).join('');
   const k = CT.hw.kind;
   const fld = (id, ph, w) => `<input type="text" id="${id}" placeholder="${ph}" style="${w ? 'max-width:' + w : ''}">`;
   let fields = '';
@@ -3159,14 +3247,16 @@ function syncInputs() {
 function saveContent(fromCT) {
   const s = CT.ses, d = CT.data, lvl = levelOf(cls(s.cid));
   Object.entries(CT.titles).forEach(([n, t]) => { const ch = chaptersOf(lvl).find(x => x.n === +n); if (ch) ch.t = t; });
-  const live = DB.content[s.key]; // le travail à vérifier ajouté à la main est enregistré à part, au fil de l'eau
+  const live = DB.content[s.key], before = live ? JSON.parse(JSON.stringify(live)) : null; // le travail à vérifier ajouté à la main est enregistré à part, au fil de l'eau
   if (live && live.chk && live.chk.length) d.chk = live.chk; else delete d.chk;
   const empty = !d.items.length && !d.hw.length && d.ch == null && !d.note && !d.ready && !d.chk;
   if (empty) delete DB.content[s.key]; else DB.content[s.key] = d;
+  syncLinkedHw(s.cid, s.key, d, before); CT.unlink = [];
   const other = otherGroupSession(s);
   if (other && CT.other && !empty) {
     const cur = DB.content[other.key];
-    if (!cur || (!cur.items.length && !cur.hw.length)) DB.content[other.key] = {ch: d.ch, items: d.items.map(it => ({...it, id: uid(), st: 'prev', rep: null})), hw: d.hw.map(h => { const x = {...h, id: uid()}; delete x.dueKey; return x; })};
+    if (!cur || (!cur.items.length && !cur.hw.length)) DB.content[other.key] = {ch: d.ch, items: d.items.map(it => ({...it, id: uid(), st: 'prev', rep: null})), hw: d.hw.map(h => { if (!h.id) h.id = uid(); h.ln = h.ln || h.id; const x = {...h, id: uid()}; delete x.dueKey; return x; })};
+    if (d.hw.length) DB.content[s.key] = d;
   }
   SESS_CACHE = {};
 }
@@ -3397,15 +3487,75 @@ function sesHeader(ses, actions) {
 function cdtBtn(ses) { const on = !!DB.cdt[ses.key]; return `<button class="btn readybtn cdtbtn" data-act="cdt-toggle" data-key="${ses.key}" aria-pressed="${on}">${on ? '<i class="pdot pb">✓</i>Cahier de textes complété' : '<i class="pdot pbx">!</i>Cahier de textes à compléter'}</button>`; }
 function setCdt(key, on) { if (on) DB.cdt[key] = true; else delete DB.cdt[key]; save(); }
 function setReady(key, on) { const ct = DB.content[key] || (DB.content[key] = {ch: null, items: [], hw: []}); if (on) ct.ready = true; else { delete ct.ready; if (ctEmpty(ct)) delete DB.content[key]; } SESS_CACHE = {}; save(); }
+/* onglet Contenu : une seule vue — bandeau précédente · séance · suivante, contenu en grand, puis ce qu'il reste à voir en début d'heure */
+function hubList(ses) {
+  const list = classSessions(ses.cid).filter(x => !x.cancelled && compat(x.group, ses.group));
+  if (!list.some(x => x.key === ses.key)) { list.push(sesByKey(ses.cid, ses.key) || {...ses, start: '99:99'}); list.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start)); }
+  return list;
+}
+function hubRel(list, s, ses) {
+  const i = list.findIndex(x => x.key === s.key), j = list.findIndex(x => x.key === ses.key);
+  return s.key === ses.key ? (s.date === todayStr() ? "Aujourd'hui" : 'Cette séance') : i === j - 1 ? 'Séance précédente' : i === j + 1 ? 'Séance suivante' : i < j ? 'Plus tôt' : 'Plus tard';
+}
+function hubCard(list, s, ses, shown) {
+  if (!s) return '<span class="hcard empty"></span>';
+  const ct = DB.content[s.key], items = ct ? ct.items : [], c = cls(ses.cid);
+  const dots = items.slice(0, 8).map(it => `<i style="--tc:${(ITYPE[it.type] || ITYPE.autre).c}" title="${esc((ITYPE[it.type] || ITYPE.autre).l)}"></i>`).join('');
+  return `<button type="button" class="hcard ${s.key === ses.key ? 'is-cur' : ''} ${s.key === shown ? 'sel' : ''}" data-act="pg-step" data-key="${s.key}" aria-pressed="${s.key === shown}">
+    <span class="hcr"><span class="hl">${hubRel(list, s, ses)}</span><span class="hs">${{"Aujourd'hui": 'Auj.', 'Cette séance': 'Séance', 'Séance précédente': 'Préc.', 'Séance suivante': 'Suiv.', 'Plus tôt': 'Avant', 'Plus tard': 'Après'}[hubRel(list, s, ses)]}</span>${s.group !== 'all' ? ' · ' + s.group : ''}</span>
+    <span class="hcd">${cap(dayShort(s.date))}</span>
+    <span class="hcc">${ct && ct.ch != null ? esc(chapShort(levelOf(c), ct.ch)) : '&nbsp;'}</span>
+    <span class="hcdots">${dots || '<span class="small muted">Rien de prévu</span>'}</span></button>`;
+}
+function hubContent(list, s, ses) {
+  const c = cls(ses.cid), lvl = levelOf(c), ct = DB.content[s.key], st = sesStarted(s), cur = s.key === ses.key;
+  const ST = {done: ['ok', 'Fait'], part: ['part', 'En partie'], not: ['not', 'Pas fait']};
+  const items = ct && ct.items.length ? `<ol class="hitems">${ct.items.map(it => { const ty = ITYPE[it.type] || ITYPE.autre, x = st && ST[it.st];
+    return `<li style="--tc:${ty.c}"><span class="hty">${esc(ty.l)}</span><span class="hil">${esc(it.label || '')}${it.graded && (it.type === 'tp' || it.type === 'act') ? ' <span class="bnote">noté</span>' : ''}${it.rep ? ` <span class="small muted">→ reporté au ${esc(fmtShort(it.rep))}</span>` : ''}</span>${x ? `<span class="hst ${x[0]}">${x[1]}</span>` : ''}</li>`; }).join('')}</ol>`
+    : `<p class="hnone">Rien de renseigné pour cette séance.${cur ? ' Touchez le crayon pour préparer le déroulé.' : ''}</p>`;
+  const hw = ct && ct.hw.length ? `<ul class="hhw">${ct.hw.map(h => { const cp = h.ln && hwLinked(ses.cid, h.ln, s.key);
+    return `<li><span class="hhwt">${esc(hwText(h))}</span><span class="small muted">${esc(cap(hwDueLabel(h, s, ses.cid, s.group)))}${cp ? ' · aussi au ' + esc(cp.ses.group) : ''}</span></li>`; }).join('')}</ul>` : '';
+  return `<section class="card hmain ${cur ? 'is-cur' : ''}">
+    <div class="hhead"><div class="hhd"><span class="hrel">${hubRel(list, s, ses)}${s.group !== 'all' ? ' · ' + s.group : ''}</span><strong>${cap(fmtDay(s.date))}</strong><span class="small muted">${esc(s.label || '')}</span></div>
+      <span class="grow"></span>${apprChip(s.key)}${cur ? '' : `<button class="btn" data-act="pg-step" data-key="${ses.key}">Revenir à cette séance</button>`}
+      <button class="btn ${cur ? 'primary' : ''} icon-btn" data-act="pg-edit" data-key="${s.key}" aria-label="Modifier cette séance" title="Modifier">${ICON.edit}</button></div>
+    <h2 class="hch">${ct && ct.ch != null ? esc(chapterLabel(lvl, ct.ch)) : '<span class="muted">Chapitre non renseigné</span>'}</h2>
+    ${items}
+    ${hw ? `<div class="hsec"><div class="lbl">Travail donné</div>${hw}</div>` : ''}
+    ${ct && ct.note ? `<div class="hsec"><div class="lbl">Commentaire</div><p class="pgnote big">${esc(ct.note)}</p></div>` : ''}
+  </section>`;
+}
+function hubChecks(ses, ck) {
+  const line = (s, txt, btn) => s ? `<li class="chk"><span class="thumb">${photoHTML(s)}</span><span class="cn"><b>${esc(s.first + ' ' + s.last)}</b><span class="small">${txt}</span></span>${btn}</li>` : '';
+  const fold = (k, title, arr, render, extra) => { if (!arr.length) return ''; const open = V.hubOpen && V.hubOpen[k], vis = open ? arr : arr.slice(0, 3);
+    return `<div class="chksec"><div class="lbl">${title} <span class="chip neu">${arr.length}</span>${extra || ''}</div><ul class="chklist">${vis.map(render).join('')}</ul>${arr.length > 3 ? `<button type="button" class="rmlink" data-act="hub-fold" data-k="${k}">${open ? 'Réduire' : `Voir les ${arr.length - 3} autres`}</button>` : ''}</div>`; };
+  const allSeen = l => l.length > 1 ? ` <button type="button" class="rmlink" data-act="obs-seen-all" data-ids="${l.map(o => o.id).join(',')}">Tout marquer vu</button>` : '';
+  const dl = o => `<b class="obsd">le ${esc(dayShort(o.date))}</b>`;
+  const hwOpen = ck.hw.filter(d => !d.ok);
+  let h = '';
+  if (ck.hw.length) h += `<div class="chksec"><div class="lbl">Travail à vérifier <span class="chip ${hwOpen.length ? 'warn' : 'pos'}">${hwOpen.length ? hwOpen.length : '✓'}</span> <button type="button" class="rmlink" data-act="stab" data-s="devoirs">Ouvrir l'onglet Devoirs</button></div>
+    <ul class="hhw">${ck.hw.map(d => `<li class="${d.ok ? 'is-ok' : ''}"><span class="hhwt">${d.ok ? '✓ ' : ''}${esc(hwText(d.h))}</span><span class="small muted">${dueMeta(d)}</span></li>`).join('')}</ul></div>`;
+  h += fold('catch', 'Rattrapages en cours', ck.catch, c => line(stu(c.sid), esc(catchText(c)), `<button class="btn" data-act="catch-done" data-id="${c.id}">Rattrapé</button>`));
+  h += fold('dev', 'Devoirs non faits', ck.dev, o => line(stu(o.sid), dl(o) + ' · ' + esc(CAT[o.cat].l) + (o.note ? ' · ' + esc(o.note) : ''), `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`), allSeen(ck.dev));
+  h += fold('mat', 'Oubli de matériel', ck.mat, o => line(stu(o.sid), dl(o) + (o.note ? ' · ' + esc(o.note) : ''), `<button class="btn" data-act="obs-seen" data-oid="${o.id}">Vu</button>`), allSeen(ck.mat));
+  return h ? `<section class="card hchecks"><h2 class="h2s">À voir en début d'heure</h2>${h}</section>` : '';
+}
 function viewHub() {
   const ses = V.ses;
   const ck = checkItems(ses);
   const rdy = !!(DB.content[ses.key] && DB.content[ses.key].ready);
-  return `${sesHeader(ses, `<button class="btn readybtn" data-act="ready-toggle" aria-pressed="${rdy}">${rdy ? '<i class="pdot pg">✓</i>Séance prête' : '<i class="pdot pr">!</i>Marquer comme prête'}</button>${cdtBtn(ses)}<button class="btn primary icon-btn" data-act="hub-content" aria-label="Modifier le contenu de la séance" title="Modifier le contenu">${ICON.edit}</button>`)}
-  <main class="main"><div class="wrap hub" style="max-width:1300px">
-    <section class="card"><h2 class="h2s">Progression</h2>${progressHTML(ses)}</section>
-    <div class="hubcol"><section class="card"><h2 class="h2s">À vérifier${ck.n ? ` <span class="chip warn">${ck.n}</span>` : ''}</h2>${checkListHTML(ses, ck)}</section>
-    ${detailHTML(ses)}</div>
+  const list = hubList(ses);
+  let shown = V.pgSel && list.find(x => x.key === V.pgSel) ? V.pgSel : ses.key;
+  const i = list.findIndex(x => x.key === shown), s = list[i];
+  return `${sesHeader(ses, `<button class="btn readybtn" data-act="ready-toggle" aria-pressed="${rdy}">${rdy ? '<i class="pdot pg">✓</i>Séance prête' : '<i class="pdot pr">!</i>Marquer comme prête'}</button>${cdtBtn(ses)}`)}
+  <main class="main"><div class="wrap hub2">
+    <nav class="hstrip" aria-label="Séances">
+      <button class="btn icon-btn hnav" data-act="pg-step" data-key="${list[i - 1] ? list[i - 1].key : ''}" ${list[i - 1] ? '' : 'disabled'} aria-label="Séance précédente">${ICON.back}</button>
+      ${hubCard(list, list[i - 1], ses, shown)}${hubCard(list, s, ses, shown)}${hubCard(list, list[i + 1], ses, shown)}
+      <button class="btn icon-btn hnav" data-act="pg-step" data-key="${list[i + 1] ? list[i + 1].key : ''}" ${list[i + 1] ? '' : 'disabled'} aria-label="Séance suivante">${ICON.next}</button>
+    </nav>
+    ${hubContent(list, s, ses)}
+    ${hubChecks(ses, ck)}
   </div></main>`;
 }
 /* onglet Devoirs : un toucher = non fait, un 2e toucher = annuler, appui long = incomplet / bâclé */
@@ -3845,7 +3995,9 @@ const ACT = {
     SESS_CACHE = {}; save(); if (CT) renderContent(); renderKeep(); toast('Supprimé définitivement'); },
   'rm-toggle': () => { if (CT) syncInputs(); SHOWRM = !SHOWRM; if (CT) renderContent(); renderKeep(); },
   'obs-seen-all': el => { const ids = new Set(el.dataset.ids.split(',')); DB.obs.forEach(o => { if (ids.has(o.id)) o.seen = true; }); save(); refreshChecks(); toast('Tout marqué comme vu'); },
-  'due-unrep': el => { if (CT) syncInputs(); const mk = el.dataset.mk, mv = DB.hwMove[mk]; if (!mv) return; if (mv.p) DB.hwMove[mk] = mv.p; else delete DB.hwMove[mk]; SESS_CACHE = {}; save(); if (CT) renderContent(); renderKeep(); toast('Report annulé : le travail est de nouveau à vérifier ici'); },
+  'due-unrep': el => { if (CT) syncInputs(); const mk = el.dataset.mk, mv = DB.hwMove[mk]; if (!mv) return; if (mv.p) DB.hwMove[mk] = mv.p; else delete DB.hwMove[mk];
+    if (mv.fl) { const id = mk.slice(0, mk.lastIndexOf('@')), suf = mk.slice(mk.lastIndexOf('@')); let ln = null; Object.values(DB.content).forEach(ct => (ct.hw || []).forEach(h => { if (h.id === id && h.ln) ln = h.ln; }));
+      if (ln) Object.values(DB.content).forEach(ct => (ct.hw || []).forEach(h => { if (h.ln === ln && DB.hwMove[h.id + suf]) delete DB.hwMove[h.id + suf]; })); } SESS_CACHE = {}; save(); if (CT) renderContent(); renderKeep(); toast('Report annulé : le travail est de nouveau à vérifier ici'); },
   'due-rep-go': () => { const p = PENDREP; PENDREP = null; closeModal(); if (p) doReport(p.ses, p.mks, true); },
   'chk-add': el => {
     syncInputs(); const s = CT.ses;
@@ -3878,7 +4030,7 @@ const ACT = {
   'ct-graded': el => { syncInputs(); const it = CT.data.items[+el.dataset.i]; if (!it) return; if (it.graded) delete it.graded; else it.graded = true; renderContent(); },
   'hw-allq': el => { syncInputs(); const nm = $('#hw-name') ? $('#hw-name').value : ''; CT.hw.allq = el.checked; renderContent(); if ($('#hw-name')) $('#hw-name').value = nm; },
   'hw-add': () => { syncInputs(); const h = readHwForm(); if (!h) { toast('Complétez le devoir (page, numéros ou texte).'); return; }
-    if (CT.hw.edit != null && CT.data.hw[CT.hw.edit]) { h.id = CT.data.hw[CT.hw.edit].id; CT.data.hw[CT.hw.edit] = h; } else CT.data.hw.push(h);
+    if (CT.hw.edit != null && CT.data.hw[CT.hw.edit]) { const o = CT.data.hw[CT.hw.edit]; h.id = o.id; if (o.ln) h.ln = o.ln; CT.data.hw[CT.hw.edit] = h; } else CT.data.hw.push(h);
     CT.hw.edit = null; CT.hw.allq = true; CT.hw.due = 'next'; renderContent(); },
   'hw-edit': el => {
     syncInputs(); const i = +el.dataset.i, h = CT.data.hw[i]; if (!h) return;
@@ -3891,6 +4043,9 @@ const ACT = {
   },
   'hw-cancel': () => { syncInputs(); CT.hw.edit = null; CT.hw.due = 'next'; CT.hw.allq = true; renderContent(); },
   'hw-del': el => { syncInputs(); CT.hw.edit = null; CT.data.hw.splice(+el.dataset.i, 1); renderContent(); },
+  'hw-copy': el => { syncInputs(); const h = CT.data.hw[+el.dataset.i], og = otherGroupSession(CT.ses); if (!h || !og) return;
+    if (!h.id) h.id = uid(); h.ln = h.ln || h.id; h.cpTo = og.key; saveContent(); save(); renderContent(); renderKeep(); toast(`Recopié pour le ${og.group} (${dayShort(og.date)})`); },
+  'hw-unlink': el => { syncInputs(); const h = CT.data.hw[+el.dataset.i]; if (!h || !h.ln) return; (CT.unlink || (CT.unlink = [])).push(h.ln); delete h.ln; saveContent(); save(); renderContent(); renderKeep(); toast('Les deux devoirs sont maintenant indépendants'); },
   'ct-save': () => {
     syncInputs();
     const pending = $('#hw-kind') && readHwForm();
@@ -3993,6 +4148,7 @@ const ACT = {
   appr: el => { const k = V.ses.key, v = el.dataset.v; if (DB.appr[k] === v) delete DB.appr[k]; else DB.appr[k] = v; save(); renderKeep(); },
   'pg-sel': el => { V.pgSel = V.pgSel === el.dataset.key ? null : el.dataset.key; renderKeep(); if (V.pgSel) $('.pgdetail')?.scrollIntoView({block: 'nearest', behavior: 'smooth'}); },
   'pg-step': el => { if (el.dataset.key) { V.pgSel = el.dataset.key; renderKeep(); } },
+  'hub-fold': el => { V.hubOpen = V.hubOpen || {}; V.hubOpen[el.dataset.k] = !V.hubOpen[el.dataset.k]; renderKeep(); },
   'pg-close': () => { V.pgSel = null; renderKeep(); },
   'pg-edit': el => { const s = el.dataset.key === V.ses.key ? V.ses : sesByKey(V.ses.cid, el.dataset.key); if (s) openContent({...s, cid: V.ses.cid}); },
   'p-step': el => { const nx = bilanStep(P.sid, +el.dataset.d); if (nx) openPanel(nx); },
@@ -4606,7 +4762,7 @@ async function init() {
     DB.settings.appVersion = APP_VERSION.n; save();
     if (!first && !IS_DEMO) toast(`Mise à jour installée : ${versionLabel().toLowerCase()}`);
   }
-  setInterval(() => { if (V.name === 'today' && !$('#modal').innerHTML && document.visibilityState === 'visible') render(); }, 60000);
+  setInterval(() => { if (V.name === 'today' && !$('#modal').innerHTML && document.visibilityState === 'visible') renderKeep(); }, 60000);
   if (gotLink) { STACK = []; V = {name: 'settings', tab: 'sync'}; render(); toast('Configuration OneDrive reçue : touchez « Se connecter à OneDrive ».'); }
   if (loggedNow && V.name === 'settings') render();
   if (syncConnected()) {

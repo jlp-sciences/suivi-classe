@@ -717,11 +717,13 @@ button.wpill{cursor:pointer}
 }
 
 /* ---- conseils de classe ---- */
-.blk.cons{background:color-mix(in srgb,var(--cc) 35%,#23262c);border:1px solid color-mix(in srgb,var(--cc) 60%,#23262c);box-shadow:inset 0 4px 0 var(--cc);z-index:2}
-.blk.cons .bc,.blk.cons .bit,.blk.cons .bil{color:#fff}
+.blk.cons{background:repeating-linear-gradient(135deg,var(--surface) 0 6px,color-mix(in srgb,var(--cc) 28%,var(--surface)) 6px 12px) !important;border:2px dashed color-mix(in srgb,var(--cc) 75%,var(--ink)) !important;box-shadow:none !important;z-index:2}
+.blk.cons .bc,.blk.cons .bit,.blk.cons .bil{color:var(--ink)}
+.blk.cons .consk{font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--ink);background:var(--surface);padding:0 4px;border-radius:3px;align-self:flex-start;line-height:16px}
 .blk.cons .bc{font-size:14px}
-.slot.conscard{background:color-mix(in srgb,var(--cc) 30%,#23262c);border-color:color-mix(in srgb,var(--cc) 55%,#23262c);color:#fff}
-.slot.conscard .small.muted,.slot.conscard .time,.slot.conscard .cls{color:#fff}
+.slot.conscard{background:repeating-linear-gradient(135deg,var(--surface) 0 8px,color-mix(in srgb,var(--cc) 24%,var(--surface)) 8px 16px);border:2px dashed color-mix(in srgb,var(--cc) 75%,var(--ink));color:var(--ink)}
+.slot.conscard .small.muted,.slot.conscard .time,.slot.conscard .cls{color:var(--ink)}
+.slot.conscard .consk,.slot.vdccard .vdck{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:1px 6px;border-radius:4px;background:var(--surface);border:1px solid var(--line-2)}
 .stable li.editing{outline:2px solid var(--ink);outline-offset:2px;border-radius:8px}
 
 /* ---- labos v3 ---- */
@@ -928,6 +930,11 @@ button.wpill{cursor:pointer}
   .hstrip .hnav{min-width:34px;min-height:34px;padding:0}
   .hitems li{flex-direction:column;align-items:flex-start;gap:2px;font-size:15px} .hty{min-width:0;font-size:11.5px}
 }
+
+/* ---- 3.02 : vie de classe ---- */
+.blk.vdc{background:color-mix(in srgb,var(--cc) 8%,var(--surface)) !important;border-style:solid;box-shadow:inset 4px 0 0 color-mix(in srgb,var(--cc) 60%,var(--muted)) !important}
+.btag.vdc{background:var(--muted);color:#fff;font-size:9px}
+.slot.vdccard{background:color-mix(in srgb,var(--cc) 6%,var(--surface));box-shadow:inset 5px 0 0 color-mix(in srgb,var(--cc) 60%,var(--muted))}
 </style>
 </head>
 <body>
@@ -962,7 +969,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.0', d: '2026-10-22'};
+const APP_VERSION = {n: '3.03', d: '2026-10-27'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1076,6 +1083,7 @@ function migrate(core) {
   return d;
 }
 
+let TESTING = false; // vrai pendant l'auto-vérification : rien n'est enregistré
 const Store = {
   db: null,
   async open() {
@@ -1091,7 +1099,7 @@ const Store = {
   },
   run(name, mode, fn) {
     return new Promise((res, rej) => {
-      if (!this.db) return res(null);
+      if (!this.db || (TESTING && mode === 'readwrite')) return res(null);
       try { const tx = this.db.transaction(name, mode); const out = fn(tx.objectStore(name)); tx.oncomplete = () => res(out && out.result); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); }
       catch (e) { rej(e); }
     });
@@ -1110,13 +1118,13 @@ const Store = {
   putPhoto(id, url) { return this.run('photos', 'readwrite', s => s.put(url, id)); },
   delPhoto(id) { return this.run('photos', 'readwrite', s => s.delete(id)); },
   async replaceAll() {
-    if (!this.db) return;
+    if (!this.db || TESTING) return;
     await this.run('photos', 'readwrite', s => s.clear());
     await new Promise((res, rej) => { const tx = this.db.transaction('photos', 'readwrite'); const st = tx.objectStore('photos'); Object.entries(PHOTOS).forEach(([k, v]) => st.put(v, k)); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
     await this.saveCore();
   }
 };
-function save() { syncSoon(); if (!STORAGE_OK) return; Store.saveCore().catch(() => toast("Enregistrement impossible sur cet appareil. Faites une sauvegarde dès que possible.")); }
+function save() { if (TESTING) return; syncSoon(); if (!STORAGE_OK) return; Store.saveCore().catch(() => toast("Enregistrement impossible sur cet appareil. Faites une sauvegarde dès que possible.")); }
 
 const cls = id => DB.classes.find(c => c.id === id);
 const stu = id => DB.students.find(s => s.id === id);
@@ -1201,7 +1209,7 @@ function slotsOn(date) {
   const wd = parseD(date).getDay(), wt = weekType(date);
   return DB.slots.filter(s => s.day === wd && (s.week === 'all' || s.week === wt) && cls(s.cid) && slotValid(s, date)).sort((a, b) => a.start.localeCompare(b.start));
 }
-const sesFromSlot = (date, s) => ({key: date + '|' + s.id, date, cid: s.cid, group: s.group, label: fmtT(s.start) + ' – ' + fmtT(s.end)});
+const sesFromSlot = (date, s) => ({key: date + '|' + s.id, date, cid: s.cid, group: s.group, label: fmtT(s.start) + ' – ' + fmtT(s.end), ...(s.vdc ? {vdc: true} : {})});
 const sesOther = (date, cid, group) => ({key: date + '|x|' + cid + '|' + group, date, cid, group, label: 'Hors emploi du temps'});
 function sesSummary(key) {
   const m = {};
@@ -1237,7 +1245,7 @@ function render() {
 }
 /* se souvenir de la page ouverte, pour la retrouver après un rafraîchissement */
 const NAV_KEY = 'suivi-classe-nav';
-function saveNav() { try { localStorage.setItem(NAV_KEY, JSON.stringify({t: Date.now(), V, STACK: STACK.slice(-10)})); } catch (e) {} }
+function saveNav() { if (TESTING) return; try { localStorage.setItem(NAV_KEY, JSON.stringify({t: Date.now(), V, STACK: STACK.slice(-10)})); } catch (e) {} }
 function navValid(v) {
   if (!v || !v.name) return false;
   if (v.name === 'today' || v.name === 'settings') return true;
@@ -1262,6 +1270,7 @@ function restoreNav() {
 /* ---------- toast ---------- */
 let toastTimer;
 function toast(msg, action) {
+  if (TESTING) return;
   if (UNDO && !action && JSON.stringify(DB) !== UNDO.cp) { UNDO.shown = true; showUndo(msg, UNDO); return; }
   toastRaw(msg, action);
 }
@@ -1336,6 +1345,10 @@ function slotCard(d, s, FM) {
   const chip = stateChip(st) || `<span class="status">${st.k === 'empty' ? 'Aucun élève' : 'À venir'}</span>`;
   const right = (isNow ? '<span class="status now">En cours</span>' : '') + chip + (isNow ? '<span class="open">Ouvrir</span>' : '');
   const ctS = DB.content[d + '|' + s.id];
+  if (s.vdc) return `<li><button class="slot vdccard ${isNow ? 'now' : ''} ${d < t ? 'past' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
+    <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="vdck">Vie de classe</span></span>${ctS && ctS.note ? `<span class="small muted">${esc(ctS.note)}</span>` : ''}</span>
+    ${right}</button></li>`;
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''} ${st.k !== 'cancel' && hasEval(ctS) ? 'has-eval' : st.k !== 'cancel' && isGraded(ctS) ? 'has-graded' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
     <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; const hs = hwState(sesFromSlot(d, s)); return (hs ? `<span class="dlab">${hwDot(hs)}${hs === 'todo' ? 'Devoir à vérifier' : 'Devoirs vérifiés'}</span>` : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const ct = DB.content[d + '|' + s.id]; return ct && ct.ch != null ? ' · ' + esc(chapterLabel(levelOf(c), ct.ch)) : ''; })()}</span>${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.items.length || st.k === 'cancel') return ''; return `<span class="slitems">${ct.items.map(it => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim(); return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}${it.graded && (it.type === 'tp' || it.type === 'act') ? '<span class="bnote">noté</span>' : ''}</span>`; }).join('')}</span>`; })()}${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.hw || !ct.hw.length || st.k === 'cancel') return ''; const ses = sesFromSlot(d, s); return `<span class="slitems slhw"><span class="slhwt">Travail donné</span>${ct.hw.map(h => `<span class="bit"><i class="bty" style="--tc:var(--sc-hw)">${esc(cap(hwDueLabel(h, ses, s.cid, s.group)))}</i><span class="bil">${esc(hwText(h))}</span></span>`).join('')}</span>`; })()}</span>
@@ -1371,6 +1384,7 @@ function bilanDot(st) {
 }
 function slotDots(d, x, st) {
   if (st && st.k === 'cancel') return '';
+  if (x.vdc) return `<span class="bdots">${bilanDot(st)}</span>`; // vie de classe : seulement le bilan
   const ct = DB.content[d + '|' + x.id], ready = !!(ct && ct.ready);
   const pend = !ready && !sesStarted({date: d, start: x.start});
   return `<span class="bdots">${hwDot(hwState(sesFromSlot(d, x)))}${cdtDot(d + '|' + x.id)}${ready ? '<i class="pdot pg" title="Séance prête">✓</i>' : pend ? '<i class="pdot pr" title="Séance pas encore prête">!</i>' : ''}${bilanDot(st)}</span>`;
@@ -1393,7 +1407,8 @@ const consCancel = key => { const v = DB.cancelled[key]; if (typeof v !== 'strin
 function consBlkHTML(k, o) {
   const c = cls(k.cid);
   return `<button class="blk cons ${o.h < 58 ? 'short' : ''}" style="top:${o.top}px;height:${o.h}px;left:calc(${o.lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)}" data-act="cons-open" data-cid="${k.cid}" data-id="${k.id}" aria-label="${esc('Conseil de classe ' + (c ? c.name : '') + ', ' + fmtT(k.s))}">
-    <span class="btop"><span class="bc">Conseil ${esc(c ? c.name : '')}</span></span>
+    <span class="consk">Conseil de classe</span>
+    <span class="btop"><span class="bc">${esc(c ? c.name : '')}</span></span>
     <span class="bit"><span class="bil">${fmtT(k.s)} – ${fmtT(k.e)}</span></span>
     ${k.note ? `<span class="bit"><span class="bil">${esc(k.note)}</span></span>` : ''}</button>`;
 }
@@ -1401,7 +1416,7 @@ function consCard(k) {
   const c = cls(k.cid);
   return `<li><button class="slot conscard" style="--cc:${ccol(c)}" data-act="cons-open" data-cid="${k.cid}" data-id="${k.id}">
     <span class="time">${fmtT(k.s)} – ${fmtT(k.e)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">Conseil de classe · ${esc(c ? c.name : '')}</span></span>${k.note ? `<span class="small muted">${esc(k.note)}</span>` : ''}</span></button></li>`;
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="consk">Conseil de classe</span><span class="cls">${esc(c ? c.name : '')}</span></span>${k.note ? `<span class="small muted">${esc(k.note)}</span>` : ''}</span></button></li>`;
 }
 /* ajustement de la hauteur de la grille, mesuré après affichage (pour que toute la semaine tienne à l'écran) */
 let WEEK_FIX = 0, WEEK_FIX_KEY = '';
@@ -1418,7 +1433,7 @@ const ITY_SHORT = {tp: 'TP', act: 'Activité', exo: 'Exercices', cours: 'Cours',
 /* un créneau de la vue semaine : classe · groupe · chapitre, puis un élément de la séance par ligne, puis pastilles */
 function blkHTML(d, x, c, st, o) {
   const key = d + '|' + x.id, ct = DB.content[key], ev = hasEval(ct), gr = !ev && isGraded(ct), cancel = st.k === 'cancel';
-  const items = ct && !cancel ? ct.items : [];
+  const items = ct && !cancel ? (x.vdc ? (ct.note ? [{type: 'vdcnote', label: ct.note}] : []) : ct.items) : [];
   const chip = cancel ? `<span class="chip neu">${consCancel(key) ? 'Annulé · conseil' : 'Annulé'}</span>` : '';
   const dots = slotDots(d, x, st), nd = (dots.match(/class="pdot/g) || []).length;
   const LINE = 16, base = o.h - 13 - 19 - 1; // hauteur sans marges/bordure (2 px si encadré), ni ligne de titre, ni espacement
@@ -1428,11 +1443,12 @@ function blkHTML(d, x, c, st, o) {
   const fit = Math.max(0, Math.floor(avail / LINE));
   const show = items.slice(0, fit), more = items.length - show.length;
   const line = (it, last) => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim();
+    if (it.type === 'vdcnote') return `<span class="bit"><span class="bil">${esc(lab)}</span></span>`;
     return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}${it.graded && (it.type === 'tp' || it.type === 'act') ? '<span class="bnote">noté</span>' : ''}${last && more ? `<span class="bmore">+${more}</span>` : ''}</span>`; };
   const lines = show.map((it, i) => line(it, i === show.length - 1)).join('');
   const hl = V.hl && blkMatches(V.hl, d, x, st) ? 'hl hl-' + V.hl : '';
-  return `<button class="blk ${ev ? 'has-eval' : ''} ${gr ? 'has-graded' : ''} ${o.past ? 'past' : ''} ${o.isNow ? 'now' : ''} ${cancel ? 'cancel' : ''} ${o.h < 58 ? 'short' : ''} ${lines ? '' : 'noitems'} ${dotLine ? 'dotline' : ''} ${hl}" style="top:${o.top}px;height:${o.h}px;left:calc(${x._lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)};--dw:${nd ? nd * 19 + 4 : 0}px" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + o.g + ', ' + fmtT(x.start))}">
-    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span>${ev && !cancel ? '<span class="btag ev">ÉVAL</span>' : gr && !cancel ? '<span class="btag gr">NOTÉ</span>' : ''}${chip && o.h < 44 ? chip.replace('class="chip neu"', 'class="chip neu bchip"') : ''}</span>
+  return `<button class="blk ${ev ? 'has-eval' : ''} ${gr ? 'has-graded' : ''} ${o.past ? 'past' : ''} ${o.isNow ? 'now' : ''} ${cancel ? 'cancel' : ''} ${o.h < 58 ? 'short' : ''} ${lines ? '' : 'noitems'} ${dotLine ? 'dotline' : ''} ${x.vdc ? 'vdc' : ''} ${hl}" style="top:${o.top}px;height:${o.h}px;left:calc(${x._lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)};--dw:${nd ? nd * 19 + 4 : 0}px" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + o.g + ', ' + fmtT(x.start))}">
+    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null && !x.vdc ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span>${x.vdc && !cancel ? '<span class="btag vdc">VIE DE CLASSE</span>' : ''}${ev && !cancel ? '<span class="btag ev">ÉVAL</span>' : gr && !cancel ? '<span class="btag gr">NOTÉ</span>' : ''}${chip && o.h < 44 ? chip.replace('class="chip neu"', 'class="chip neu bchip"') : ''}</span>
     ${lines ? `<span class="bits">${lines}</span>` : ''}
     ${chip && o.h >= 44 ? `<span class="bfoot">${chip}</span>` : ''}${dots}</button>`;
 }
@@ -1441,6 +1457,7 @@ function blkMatches(kind, d, x, st) {
   const key = d + '|' + x.id;
   if (DB.cancelled[key]) return false;
   if (kind === 'bilan') return st.k === 'none' || st.k === 'part';
+  if (x.vdc) return false;
   if (kind === 'prep') return !sesStarted({date: d, start: x.start}) && !(DB.content[key] && DB.content[key].ready);
   if (kind === 'cdt') return sesStarted({date: d, start: x.start}) && !DB.cdt[key];
   return false;
@@ -1864,6 +1881,7 @@ function egForm(o) {
       <label class="f" for="eg-group">Groupe${sel('eg-group', x.group || 'all', [['all', 'Classe entière'], ['G1', 'Demi-groupe G1'], ['G2', 'Demi-groupe G2'], ...(DB.classes.some(c => hasG2(c.id)) || G2SET.includes(x.group) ? [['Ga', 'Demi-groupe Ga'], ['Gb', 'Demi-groupe Gb']] : [])])}</label>
       <label class="f" for="eg-from">${o.slot ? 'Changement à partir du' : 'Valable à partir du'}<input type="date" id="eg-from" value="${o.slot && past ? t : (x.from || '')}"></label>
     </div>
+    <label class="check"><input type="checkbox" id="eg-vdc" ${x.vdc ? 'checked' : ''}> <span>Heure de vie de classe <span class="small muted">(pas un cours : ni chapitre, ni devoirs, ni cahier de textes ; appel, bilan et commentaire possibles)</span></span></label>
     <p class="small muted">${o.slot ? (past ? 'Ce cours a déjà eu lieu : les séances avant cette date gardent leur contenu, leurs bilans et leurs devoirs. Les séances déjà préparées après cette date suivent le nouveau créneau, dans l\'ordre.' : 'Ce cours n\'a pas encore eu lieu : la modification s\'applique à toute l\'année.') : 'Laissez la date vide pour un cours valable toute l\'année.'}</p>
     <div class="ft">${o.slot ? '<button class="btn ghost" data-act="eg-del" style="margin-right:auto;color:var(--neg)">Supprimer…</button>' : ''}<button class="btn" data-act="m-close">Annuler</button><button class="btn ink" data-act="eg-save">Enregistrer</button></div>`);
 }
@@ -1907,7 +1925,223 @@ function setBackup() {
       <h3 style="font-size:17px">Fin d'année</h3>
       <p class="small muted" style="margin:0">Efface toutes les classes, photos et observations de cet appareil. Faites une sauvegarde avant.</p>
       <div><button class="btn danger" data-act="wipe">Tout effacer…</button></div>
-    </section>`;
+    </section>
+    <section class="card" style="display:flex;flex-direction:column;gap:10px"><h3 style="font-size:17px">Vérifier l'application</h3>
+      <p class="small muted" style="margin:0">Lance une série de vérifications automatiques (emploi du temps, devoirs, groupes, salles, progression…) sur des élèves fictifs. Vos données ne sont pas touchées.</p>
+      <div><button class="btn" data-act="selftest">Vérifier l'application</button></div></section>`;
+}
+
+/* ---------- auto-vérification : tests intégrés ----------
+   Lancés par Réglages › Sauvegarde › « Vérifier l'application » (et avant chaque livraison).
+   Ils travaillent sur une copie fictive en mémoire : rien n'est enregistré, ni synchronisé, et les vraies données sont remises à la fin. */
+async function runSelfTests() {
+  const snap = {DB, PHOTOS, V, STACK: STACK.slice(), CT, SHOWRM};
+  const out = []; let cur = '';
+  const ok = (cond, msg) => out.push({g: cur, ok: !!cond, msg});
+  const eq = (a, b, msg) => { const A = JSON.stringify(a), B = JSON.stringify(b); out.push({g: cur, ok: A === B, msg: A === B ? msg : `${msg} — obtenu ${A}, attendu ${B}`}); };
+  const group = async (name, fn) => { cur = name; try { await fn(); } catch (e) { out.push({g: name, ok: false, msg: 'erreur : ' + ((e && e.message) || e)}); } finally { CT = null; SESS_CACHE = {}; } };
+  const html = s => new DOMParser().parseFromString('<div>' + s + '</div>', 'text/html').body.firstChild;
+  TESTING = true;
+  try {
+    loadDemo(); PHOTOS = {}; SESS_CACHE = {};
+    /* semaine de test : trois semaines de cours complètes de suite, si possible dans le futur */
+    const yb = yearBounds(), full = m => [0, 1, 2, 3, 4].every(i => !holidayOn(addDays(m, i)));
+    const ok3 = m => full(m) && full(addDays(m, 7)) && full(addDays(m, 14));
+    let W = null;
+    if (yb) { for (let m = mondayOf(addDays(todayStr(), 8)); m <= addDays(yb.e, -20); m = addDays(m, 7)) if (ok3(m)) { W = m; break; }
+      if (!W) for (let m = mondayOf(yb.s); m <= addDays(yb.e, -20); m = addDays(m, 7)) if (ok3(m)) { W = m; break; } }
+    cur = 'Préparation'; ok(W, 'semaine de test trouvée dans l\'année scolaire');
+    if (!W) throw new Error('aucune semaine de test');
+    const D = (w, d) => addDays(W, w * 7 + d - 1);
+    /* classe fictive : 8 élèves, G1/G2 (TP) et Ga/Gb (2e répartition) */
+    DB.classes.push({id: 'tA', name: 'Test A', pt: 'trimestre', color: '#888', g2: true});
+    for (let i = 0; i < 8; i++) DB.students.push({id: 'y' + i, cid: 'tA', first: 'Élève' + i, last: 'Test', group: i < 4 ? 'G1' : 'G2', g2: [0, 1, 4, 5].includes(i) ? 'Ga' : 'Gb'});
+    const slot = (id, cid, day, start, end, group, extra) => DB.slots.push({id, cid, day, start, end, group, week: 'all', ...(extra || {})});
+    slot('sMo', 'tA', 1, '08:00', '09:00', 'all'); slot('sTa', 'tA', 2, '10:00', '11:00', 'Ga'); slot('sTb', 'tA', 2, '11:00', '12:00', 'Gb');
+    slot('sWe', 'tA', 3, '08:00', '09:00', 'G1'); slot('sTh', 'tA', 4, '08:00', '09:00', 'G2'); slot('sFr', 'tA', 5, '08:00', '09:00', 'all');
+    slot('sVc', 'tA', 2, '16:00', '17:00', 'all', {vdc: true});
+    SESS_CACHE = {};
+    const S = (w, d, id) => ({...classSessions('tA').find(x => x.key === D(w, d) + '|' + id), cid: 'tA'});
+    const Mo = S(0, 1, 'sMo'), Ta = S(0, 2, 'sTa'), Tb = S(0, 2, 'sTb'), We = S(0, 3, 'sWe'), Th = S(0, 4, 'sTh'), Fr = S(0, 5, 'sFr');
+    const due = ses => hwDueAt(ses).map(d => d.id + ':' + d.sids.join(','));
+
+    await group('Groupes et élèves', () => {
+      eq(studentsOf('tA').length, 8, 'classe entière : 8 élèves');
+      eq(studentsOf('tA', 'G1').map(s => s.id), ['y0', 'y1', 'y2', 'y3'], 'G1');
+      eq(studentsOf('tA', 'Ga').map(s => s.id), ['y0', 'y1', 'y4', 'y5'], 'Ga');
+      eq(studentsOf('tA', 'Gb').length, 4, 'Gb : 4 élèves');
+      eq(groupsOf('tA'), ['G1', 'G2', 'Ga', 'Gb'], 'groupes proposés');
+      ok(inGroup(stu('y4'), 'G2') && inGroup(stu('y4'), 'Ga') && !inGroup(stu('y4'), 'Gb'), 'un élève appartient à ses deux groupes');
+    });
+
+    await group('Emploi du temps', () => {
+      const wt = weekType(D(0, 4));
+      slot('sAB', 'tA', 4, '14:00', '15:00', 'all', {week: wt});
+      slot('sFrom', 'tA', 1, '14:00', '15:00', 'all', {from: D(1, 1)});
+      ok(slotsOn(D(0, 4)).some(x => x.id === 'sAB') && !slotsOn(D(1, 4)).some(x => x.id === 'sAB'), `créneau semaine ${wt} seulement`);
+      ok(!slotsOn(D(0, 1)).some(x => x.id === 'sFrom') && slotsOn(D(1, 1)).some(x => x.id === 'sFrom'), 'créneau valable « à partir du »');
+      let hol = null; for (let d = yb.s; d <= yb.e && !hol; d = addDays(d, 1)) if (holidayOn(d) && parseD(d).getDay() >= 1 && parseD(d).getDay() <= 5) hol = d;
+      ok(!hol || !slotsOn(hol).length, 'aucun cours pendant les vacances');
+      DB.slots = DB.slots.filter(x => x.id !== 'sAB' && x.id !== 'sFrom'); SESS_CACHE = {};
+      eq(classSessions('tA').filter(x => x.date >= D(0, 1) && x.date <= D(0, 5)).length, 6, '6 séances dans la semaine (vie de classe exclue)');
+    });
+
+    await group('Conseils de classe', () => {
+      const k = {id: 'k1', date: D(0, 4), s: '07:30', e: '08:30', note: ''};
+      cls('tA').councils = [k];
+      applyCouncil('k1', null, k);
+      eq(DB.cancelled[Th.key], 'cons:k1', 'le cours qui chevauche le conseil est annulé');
+      ok(consCancel(Th.key), 'annulation marquée « conseil »');
+      V = {name: 'today', tab: 'edt', mode: 'week', date: D(0, 1)};
+      const w = html(viewWeek());
+      ok(w.querySelector('.blk.cons .consk'), 'vue semaine : créneau « Conseil de classe » distinct');
+      applyCouncil('k1', k, null); cls('tA').councils = [];
+      ok(!DB.cancelled[Th.key], 'conseil supprimé : le cours est rétabli');
+    });
+
+    await group('Vie de classe', () => {
+      const vc = DB.slots.find(x => x.id === 'sVc'), d = D(0, 2);
+      ok(!classSessions('tA').some(x => x.slot === 'sVc'), 'absente de la progression et des devoirs');
+      const dots = html(slotDots(d, vc, {k: 'none'}));
+      eq(dots.querySelectorAll('.pdot').length, 1, 'une seule pastille (le bilan)');
+      ok(!blkMatches('prep', d, vc, {k: 'none'}) && !blkMatches('cdt', d, vc, {k: 'none'}) && blkMatches('bilan', d, vc, {k: 'none'}), 'ni « à préparer » ni cahier de textes, mais bilan');
+      V = {name: 'today', tab: 'edt', mode: 'week', date: D(0, 1)};
+      ok(html(viewWeek()).querySelector('.blk.vdc .btag.vdc'), 'étiquette « VIE DE CLASSE » dans la semaine');
+      DB.content[Ta.key] = {ch: null, items: [], hw: [{id: 'HV', kind: 'autre', text: 'devoir avant la vie de classe'}]}; SESS_CACHE = {};
+      eq(hwDueAt(sesFromSlot(d, vc)).length, 0, 'aucun devoir à vérifier pendant la vie de classe');
+      delete DB.content[Ta.key]; SESS_CACHE = {};
+    });
+
+    await group('Devoirs vérifiés élève par élève', async () => {
+      DB.content[Ta.key] = {ch: null, items: [], hw: [{id: 'HA', kind: 'autre', text: 'exos Ga'}]};
+      DB.content[Mo.key] = {ch: null, items: [], hw: [{id: 'HM', kind: 'autre', text: 'exos lundi'}]};
+      SESS_CACHE = {};
+      eq(due(Ta), ['HM:y0,y1,y4,y5'], 'devoir de classe entière : le Ga le rend le mardi (Ga)');
+      eq(due(Tb), ['HM:y2,y3,y6,y7'], '… et le Gb à son créneau Gb');
+      eq(due(We), ['HA:y0,y1'], 'devoir donné au Ga : ses élèves du G1 le rendent au TP G1');
+      eq(due(Th), ['HA:y4,y5'], '… et ceux du G2 au TP G2');
+      eq(due(Fr), [], 'rien de plus le vendredi');
+      ok(/ou le/.test(hwDueLabel(DB.content[Ta.key].hw[0], Ta, 'tA', 'Ga')), 'date de rendu : plusieurs dates affichées');
+      ok(/au Ga · 2 élèves/.test(dueMeta(hwDueAt(We)[0])), 'mention « au Ga · 2 élèves »');
+      /* vérifié */
+      const d = hwDueAt(We)[0]; setHwSt(We, d.mk, {v: 1});
+      ok(hwDueAt(We)[0].ok && !hwDueAt(Th)[0].ok, '« vérifié » ne concerne que la séance cochée'); setHwSt(We, d.mk, null);
+      /* report */
+      doReport(We, [d.mk], true);
+      eq(due(We), [], 'report : retiré de la séance');
+      eq(due(Fr), ['HA:y0,y1'], 'report : passe à la séance suivante de ces élèves');
+      ok(movedAway(We).length === 1, 'report : trace « reporté » visible');
+      ACT['due-unrep']({dataset: {mk: movedAway(We)[0].mk}});
+      eq(due(We), ['HA:y0,y1'], 'annuler le report : de nouveau à vérifier');
+      /* séance annulée */
+      DB.cancelled[We.key] = true; SESS_CACHE = {};
+      const f = hwDueAt(Fr).find(x => x.id === 'HA');
+      ok(f && f.rep === We.date, 'séance annulée : devoir repoussé au cours suivant (« reporté du … »)');
+      delete DB.cancelled[We.key]; SESS_CACHE = {};
+      /* retiré / supprimé */
+      setHwSt(We, d.mk, {x: 1}); eq(due(We), [], 'retiré de la liste'); ok(hwDueAt(We, true).some(x => x.x), '… mais récupérable'); setHwSt(We, d.mk, null);
+      setHwSt(We, d.mk, {d: 1}); ok(!due(We).length && !due(Th).length, 'supprimé définitivement : disparaît partout');
+      Object.keys(DB.hwSt).forEach(k => { if (k.startsWith('HA@')) delete DB.hwSt[k]; });
+      /* anciens reports (par groupe) */
+      DB.hwMove['HM@all'] = {to: Fr.key, o: Mo.date, f: Mo.key}; SESS_CACHE = {};
+      eq(due(Fr), ['HM:y0,y1,y2,y3,y4,y5,y6,y7'], 'ancien report (avant 2.15) toujours respecté'); delete DB.hwMove['HM@all'];
+      /* onglet Devoirs : élèves non concernés grisés */
+      V = {name: 'grid', ses: We, stab: 'devoirs'};
+      eq(html(viewDevoirs()).querySelectorAll('.tile.dv-nc').length, 2, 'onglet Devoirs : les 2 élèves sans travail sont grisés');
+      delete DB.content[Ta.key]; delete DB.content[Mo.key];
+    });
+
+    await group('Devoirs recopiés pour l\'autre groupe', () => {
+      DB.classes.push({id: 'tC', name: 'Test C', pt: 'trimestre', color: '#888'});
+      for (let i = 0; i < 8; i++) DB.students.push({id: 'c' + i, cid: 'tC', first: 'C' + i, last: 'Test', group: i < 4 ? 'G1' : 'G2'});
+      slot('cA', 'tC', 2, '08:00', '09:00', 'G1'); slot('cB', 'tC', 2, '09:00', '10:00', 'G2'); slot('cC', 'tC', 4, '10:00', '11:00', 'all');
+      SESS_CACHE = {};
+      const C = (d, id) => ({...classSessions('tC').find(x => x.key === D(0, d) + '|' + id), cid: 'tC'});
+      const A = C(2, 'cA'), B = C(2, 'cB'), Cc = C(4, 'cC');
+      DB.content[A.key] = {ch: null, items: [], hw: [{id: 'h1', kind: 'autre', text: 'p. 45'}]};
+      const open = ses => { CT = {ses: {key: ses.key, cid: ses.cid, group: ses.group, date: ses.date, label: ses.label}, data: JSON.parse(JSON.stringify(DB.content[ses.key])), titles: {}, hw: {kind: 'manuel', due: 'next'}, other: false}; };
+      open(A); const h = CT.data.hw[0]; h.ln = h.id; h.cpTo = otherGroupSession(A).key; saveContent();
+      ok(DB.content[B.key] && DB.content[B.key].hw.some(x => x.ln === 'h1'), 'recopié dans la séance du G2');
+      const dd = hwDueAt(Cc);
+      ok(dd.length === 1 && dd[0].sids.length === 8 && /au G1 et au G2/.test(dueMeta(dd[0])), 'une seule ligne « au G1 et au G2 · 8 élèves »');
+      open(A); CT.data.hw[0].text = 'p. 46'; saveContent();
+      eq(DB.content[B.key].hw.find(x => x.ln === 'h1').text, 'p. 46', 'modifier l\'un modifie l\'autre');
+      setHwSt(Cc, hwDueAt(Cc)[0].mk, {v: 1}); ok(hwDueAt(Cc)[0].ok, 'vérifié pour les deux groupes'); setHwSt(Cc, hwDueAt(Cc)[0].mk, null);
+      open(A); CT.unlink = ['h1']; delete CT.data.hw[0].ln; saveContent();
+      eq(hwDueAt(Cc).length, 2, 'délier : deux devoirs indépendants');
+      open(A); CT.data.hw[0].ln = CT.data.hw[0].id; CT.data.hw[0].cpTo = B.key; saveContent(); // nouvelle copie liée
+      eq(DB.content[B.key].hw.length, 2, 'recopier à nouveau : nouvelle copie liée');
+      open(B); CT.data.hw = CT.data.hw.filter(x => x.ln !== 'h1'); saveContent();
+      ok(!(DB.content[A.key] && DB.content[A.key].hw.length), 'supprimer l\'un supprime l\'autre');
+    });
+
+    await group('Salles et placement', () => {
+      const rooms = defaultRooms(), sz = r => roomUnits(r).reduce((a, u) => a + u.size, 0);
+      eq(rooms.map(r => r.id), ['lab-pc1', 'lab-pc2', 'lab-pc3', 'lab-pc4', 'lab-pc5', 'lab-pc6'], '6 salles par défaut');
+      eq(rooms.map(r => roomUnits(r).length + '/' + sz(r)), ['4/24', '6/24', '9/36', '9/36', '12/24', '9/24'], 'îlots et places par salle');
+      const c = DB.classes.find(x => x.name === '3e 4'), ids = studentsOf(c.id, 'G1').map(s => s.id), room = rooms.find(r => r.id === 'lab-pc3');
+      const use = roomUnits(room).map(u => u.num);
+      DB.tog[c.id] = [[ids[0], ids[1], ids[2]]]; DB.sep[c.id] = [[ids[3], ids[4]]];
+      const r = randomPlacement(c.id, 'G1', room, use), n = use.map(u => (r.g[u] || []).filter(Boolean).length);
+      eq(n.reduce((a, b) => a + b, 0), ids.length, 'tous les élèves sont placés');
+      ok(n.every(x => x > 0), 'toutes les paillasses choisies reçoivent des élèves');
+      ok(Math.max(...n) - Math.min(...n) <= 2, 'répartition équilibrée');
+      const where = id => use.find(u => (r.g[u] || []).includes(id));
+      ok(new Set([ids[0], ids[1], ids[2]].map(where)).size === 1, '« Ensemble » : groupe réuni');
+      ok(where(ids[3]) !== where(ids[4]), '« À séparer » : élèves séparés');
+      delete DB.tog[c.id]; delete DB.sep[c.id];
+    });
+
+    await group('Progression', () => {
+      DB.content[Ta.key] = {ch: null, items: [], hw: [{id: 'HP', kind: 'autre', text: 'devoir progression'}]};
+      DB.content[We.key] = {ch: 1, items: [{id: 'e1', type: 'eval', label: 'Contrôle', st: 'prev'}], hw: []};
+      SESS_CACHE = {};
+      const d0 = hwDueAt(We).find(x => x.id === 'HP');
+      V = {name: 'today', tab: 'prog', pcid: 'tA', pg: 'tout', pAll: true};
+      let p = html(viewProg());
+      ok(p.querySelector('.prow.has-eval .btag.ev'), 'évaluation : cadre et étiquette ÉVAL');
+      ok([...p.querySelectorAll('.hwv')].some(x => /À vérifier/.test(x.textContent)), 'travail encore à vérifier affiché');
+      setHwSt(We, d0.mk, {v: 1}); p = html(viewProg());
+      ok(![...p.querySelectorAll('.hwv')].some(x => /devoir progression/.test(x.textContent) && x.closest('[data-key="' + We.key + '"]')), 'travail vérifié masqué dans la Progression');
+      ok(!p.textContent.includes('Vérifié ✓'), 'aucune ligne « Vérifié »');
+      setHwSt(We, d0.mk, null); delete DB.content[Ta.key]; delete DB.content[We.key];
+    });
+
+    await group('Suivi et absences', () => {
+      DB.obs.push({id: 'oa', sid: 'y0', cid: 'tA', ses: Mo.key, date: Mo.date, cat: 'absent', t: 1, note: ''});
+      const per = periodsFor(cls('tA')), sp = Math.max(0, per.findIndex(p => Mo.date >= p.s && Mo.date <= p.e));
+      V = {name: 'today', tab: 'suivi', sv: 'grid', scid: 'tA', sp};
+      let h = html(viewSuivi());
+      ok(h.querySelector('.stile .absgh b') && h.querySelector('.stile .absgh b').textContent === '1', 'vue grille : fantôme avec le nombre d\'absences');
+      V.sv = 'list'; h = html(viewSuivi());
+      ok(h.querySelector('.srow .absgh'), 'vue liste : fantôme dans la colonne Abs.');
+      DB.obs = DB.obs.filter(o => o.id !== 'oa');
+    });
+
+    await group('Données et compatibilité', () => {
+      const copy = migrate(JSON.parse(JSON.stringify(DB)));
+      eq([copy.classes.length, copy.students.length, copy.slots.length], [DB.classes.length, DB.students.length, DB.slots.length], 'relecture d\'une sauvegarde sans perte');
+      ok(copy.settings.labsV5, 'salles à jour (migration)');
+    });
+  } catch (e) { out.push({g: cur || 'Tests', ok: false, msg: 'arrêt : ' + ((e && e.message) || e)}); }
+  finally {
+    DB = snap.DB; PHOTOS = snap.PHOTOS; V = snap.V; STACK = snap.STACK; CT = snap.CT; SHOWRM = snap.SHOWRM; SESS_CACHE = {};
+    TESTING = false;
+  }
+  return {n: out.length, fail: out.filter(x => !x.ok), list: out};
+}
+async function selfTestModal() {
+  openModal('<h2>Vérification de l\'application</h2><p class="muted">Vérification en cours…</p>');
+  await new Promise(r => setTimeout(r, 30));
+  const r = await runSelfTests(); render();
+  const groups = [...new Set(r.list.map(x => x.g))];
+  openModal(`<h2>Vérification de l'application</h2>
+    <p class="${r.fail.length ? '' : 'muted'}" style="font-weight:600;color:${r.fail.length ? 'var(--neg)' : 'var(--pos)'}">${r.fail.length ? `${plural(r.fail.length, 'problème trouvé', 'problèmes trouvés')} sur ${r.n} vérifications` : `${r.n} vérifications · tout est correct`}</p>
+    <ul class="small" style="max-height:50vh;overflow:auto;padding-left:18px;margin:0">${groups.map(g => { const l = r.list.filter(x => x.g === g), bad = l.filter(x => !x.ok);
+      return `<li><b>${esc(g)}</b> : ${bad.length ? `<span style="color:var(--neg)">${bad.length} problème(s)</span><ul>${bad.map(x => `<li>${esc(x.msg)}</li>`).join('')}</ul>` : `${l.length} ✓`}</li>`; }).join('')}</ul>
+    <p class="small muted">Vos données n'ont pas été modifiées : la vérification utilise des élèves fictifs, en mémoire.${r.fail.length ? ' Faites une capture de cet écran et envoyez-la pour correction.' : ''}</p>
+    <div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`);
+  return r;
 }
 
 /* ---------- modales ---------- */
@@ -2181,7 +2415,22 @@ function viewTrombi() {
     <div class="tr-grid">${cards}</div>
   </div></main>`;
 }
-function renderKeep() { const m = $('.main'), top = m ? m.scrollTop : 0; render(); const m2 = $('.main'); if (m2) m2.scrollTop = top; }
+function renderKeep() {
+  const m = $('.main'), top = m ? m.scrollTop : 0, wy = window.scrollY;
+  render();
+  const put = () => { const m2 = $('.main'); if (m2 && Math.abs(m2.scrollTop - top) > 1) m2.scrollTop = top; if (wy && Math.abs(window.scrollY - wy) > 1) window.scrollTo(0, wy); };
+  const t0 = Date.now(); put(); requestAnimationFrame(put); setTimeout(() => { if (LAST_TOUCH <= t0) put(); }, 250); // une 2e fois quand les photos sont décodées
+}
+/* redessin automatique (synchronisation, horloge) : jamais pendant que l'on fait défiler ou que l'on touche l'écran */
+let LAST_TOUCH = 0, AUTO_T = null;
+['touchstart', 'touchmove', 'wheel', 'pointerdown'].forEach(ev => window.addEventListener(ev, () => { LAST_TOUCH = Date.now(); }, {passive: true, capture: true}));
+function autoRender() {
+  clearTimeout(AUTO_T);
+  const wait = 1200 - (Date.now() - LAST_TOUCH);
+  if (wait > 0) { AUTO_T = setTimeout(autoRender, wait + 100); return; }
+  if ($('#modal').innerHTML || $('#layer').innerHTML || (typeof DRAG !== 'undefined' && DRAG)) return;
+  renderKeep();
+}
 async function commitTrombi() {
   const cid = TR.cid; let added = 0, photos = 0;
   for (const it of TR.items) {
@@ -2915,7 +3164,7 @@ function classSessions(cid) {
   if (SESS_CACHE[cid]) return SESS_CACHE[cid];
   const out = [], yb = yearBounds();
   if (yb) for (let d = yb.s; d <= yb.e; d = addDays(d, 1)) {
-    slotsOn(d).forEach(s => { if (s.cid === cid) out.push({key: d + '|' + s.id, date: d, start: s.start, end: s.end, group: s.group, slot: s.id, label: fmtT(s.start) + ' – ' + fmtT(s.end), cancelled: !!DB.cancelled[d + '|' + s.id]}); });
+    slotsOn(d).forEach(s => { if (s.cid === cid && !s.vdc) out.push({key: d + '|' + s.id, date: d, start: s.start, end: s.end, group: s.group, slot: s.id, label: fmtT(s.start) + ' – ' + fmtT(s.end), cancelled: !!DB.cancelled[d + '|' + s.id]}); });
   }
   Object.keys(DB.content).forEach(k => {
     const p = k.split('|'); if (p[1] !== 'x' || p[2] !== cid) return;
@@ -3101,7 +3350,7 @@ function ctButton(ses) {
 let CT = null;
 function openContent(ses) {
   const src = DB.content[ses.key];
-  CT = {ses: {key: ses.key, cid: ses.cid, group: ses.group, date: ses.date, label: ses.label},
+  CT = {ses: {key: ses.key, cid: ses.cid, group: ses.group, date: ses.date, label: ses.label, ...(ses.vdc ? {vdc: true} : {})},
     data: src ? JSON.parse(JSON.stringify(src)) : {ch: null, items: [], hw: []},
     titles: {}, hw: {kind: 'manuel', due: 'next'}, other: true};
   if (CT.data.ch == null) { // proposer le chapitre de la séance précédente
@@ -3148,6 +3397,16 @@ function renderContent() {
 }
 function renderContentInner() {
   const s = CT.ses, c = cls(s.cid), lvl = levelOf(c), d = CT.data;
+  if (s.vdc) { $('#layer').innerHTML = `<div class="scrim" data-act="ct-close"></div>
+  <aside class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="ct-t">
+    <div class="scroll">
+      <div class="hd"><div style="flex:1 1 200px;min-width:0"><h2 id="ct-t">Vie de classe</h2><div class="small muted">${dot(c)} ${esc(c.name)} · ${fmtLong(s.date)}${s.label ? ', ' + esc(s.label) : ''}</div></div>
+        <button class="btn icon-btn ghost" data-act="ct-close" aria-label="Fermer">${ICON.close}</button></div>
+      <section class="ctsec" style="--sc:var(--sc-no)"><h3 class="sech"><label for="ct-note">Préparation et commentaire</label> <span class="sub">· visible par vous seul</span></h3>
+        <textarea id="ct-note" rows="8" data-inp="ct-note" placeholder="ex. Point sur le travail des délégués · rappel du règlement · préparer le conseil de classe">${esc(d.note || '')}</textarea></section>
+    </div>
+    <div class="ft"><span class="grow"></span><button class="btn" data-act="ct-close">Annuler</button><button class="btn ink" data-act="ct-save">Enregistrer</button></div>
+  </aside>`; return; }
   const started = sesStarted(classSessions(s.cid).find(x => x.key === s.key) || {date: s.date, start: '00:00'});
   const chs = chaptersOf(lvl).slice().sort((a, b) => a.n - b.n);
   const chBtns = chs.map(ch => `<button type="button" class="gchip" data-act="ct-ch" data-n="${ch.n}" aria-pressed="${d.ch === ch.n}">Ch. ${ch.n}</button>`).join('');
@@ -3304,7 +3563,8 @@ function viewProg() {
     else { const sts = ct.items.map(i => i.st); status = sts.every(x => x === 'done') ? 'Fait' : sts.some(x => x === 'not' || x === 'part') ? (sts.every(x => x === 'not') ? 'Pas fait' : 'En partie') : 'À renseigner'; cl = status === 'Fait' ? 'pos' : status === 'À renseigner' ? 'muted' : 'warn'; }
     const items = ct ? ct.items.map(it => `${ityChip(it.type)}${it.label ? ' <span>' + esc(it.label) + '</span>' : ''}${st && it.st && it.st !== 'done' && it.st !== 'prev' ? ` <span class="small st-${it.st}">(${it.st === 'part' ? 'en partie' : 'pas fait'})</span>` : ''}`).join(' ') : '';
     const given = ct && ct.hw.length ? ct.hw.map(h => `<span class="hwl"><b>${cap(esc(hwDueLabel(h, s, c.id, s.group)))}</b> : ${esc(hwText(h))}</span>`).join('') : '';
-    const due = s.cancelled ? '' : hwDueAt({...s, cid: c.id}).map(d => `<span class="hwl hwv"><b>${d.ok ? 'Vérifié ✓' : 'À vérifier'}</b> (${dueMeta(d)}) : ${esc(hwText(d.h))}</span>`).join('');
+    /* seul ce qui reste à vérifier est affiché (le vérifié est visible en ouvrant la séance) */
+    const due = s.cancelled ? '' : hwDueAt({...s, cid: c.id}).filter(d => !d.ok).map(d => `<span class="hwl hwv"><b>À vérifier</b> : ${esc(hwText(d.h))}</span>`).join('');
     const hw = given + due;
     const note = ct && ct.note ? `<span class="pnote">${esc(ct.note)}</span>` : '';
     const now = hi && s.key === hi.key;
@@ -3459,7 +3719,7 @@ function viewSession() {
   const ses = V.ses; if (!ses || !cls(ses.cid)) { setTimeout(() => { STACK = []; V = homeV(); render(); }, 0); return ''; }
   if (!V.stab || (V.stab === 'plan' && !sesHasPlan(ses))) V.stab = V.stab === 'plan' ? 'bilan' : 'contenu';
   if (V.stab === 'contenu') return viewHub();
-  if (V.stab === 'devoirs') return viewDevoirs();
+  if (V.stab === 'devoirs' && !ses.vdc) return viewDevoirs();
   if (V.stab === 'plan') return ses.room && roomById(ses.room) ? viewPlan() : viewPlanPick();
   return viewGrid();
 }
@@ -3470,7 +3730,7 @@ function sesTabs(ses) {
   const t = (k, l, bd) => `<button type="button" role="tab" data-act="stab" data-s="${k}" aria-selected="${V.stab === k}">${l}${bd || ''}</button>`;
   return `<nav class="tabs stabs" role="tablist" aria-label="Séance">
     ${t('contenu', 'Contenu', ck.n ? `<span class="bd warn">${ck.n}</span>` : '')}
-    ${t('devoirs', 'Devoirs', ndv ? `<span class="bd dv">${ndv}</span>` : hw ? '<span class="bd dot" title="Travail à vérifier aujourd\'hui"></span>' : '')}
+    ${ses.vdc ? '' : t('devoirs', 'Devoirs', ndv ? `<span class="bd dv">${ndv}</span>` : hw ? '<span class="bd dot" title="Travail à vérifier aujourd\'hui"></span>' : '')}
     ${sesHasPlan(ses) ? t('plan', 'Plan', ses.room && roomById(ses.room) ? `<span class="small muted" style="font-weight:400">· ${esc(roomById(ses.room).name)}</span>` : '') : ''}
     ${t('bilan', 'Bilan', DB.appr[ses.key] ? '<span class="bd ok">✓</span>' : '')}
   </nav>`;
@@ -3542,6 +3802,16 @@ function hubChecks(ses, ck) {
 }
 function viewHub() {
   const ses = V.ses;
+  if (ses.vdc) { const ct = DB.content[ses.key], ck = checkItems(ses);
+    return `${sesHeader(ses, '')}
+  <main class="main"><div class="wrap hub2">
+    <section class="card hmain is-cur">
+      <div class="hhead"><div class="hhd"><span class="hrel">Vie de classe</span><strong>${cap(fmtDay(ses.date))}</strong><span class="small muted">${esc(ses.label || '')}</span></div>
+        <span class="grow"></span>${apprChip(ses.key)}<button class="btn primary icon-btn" data-act="hub-content" aria-label="Préparer" title="Préparer">${ICON.edit}</button></div>
+      ${ct && ct.note ? `<p class="pgnote big" style="white-space:pre-wrap">${esc(ct.note)}</p>` : '<p class="hnone">Rien de préparé. Touchez le crayon pour noter ce que vous voulez aborder.</p>'}
+    </section>
+    ${hubChecks(ses, {...ck, hw: []})}
+  </div></main>`; }
   const ck = checkItems(ses);
   const rdy = !!(DB.content[ses.key] && DB.content[ses.key].ready);
   const list = hubList(ses);
@@ -3734,7 +4004,7 @@ const ACT = {
     const key = V.ses.key, sid = P.sid;
     const isAbs = DB.obs.some(o => o.ses === key && o.sid === sid && o.cat === 'absent');
     if (isAbs) { removeObs(o => o.ses === key && o.sid === sid && o.cat === 'absent'); removeAutoCatch(sid, key); }
-    else { removeObs(o => o.ses === key && o.sid === sid); addObs(sid, 'absent'); addAutoCatch(sid, V.ses); } // absent : exclusif
+    else { removeObs(o => o.ses === key && o.sid === sid); addObs(sid, 'absent'); if (!V.ses.vdc) addAutoCatch(sid, V.ses); } // absent : exclusif
     const nx = !isAbs && bilanMode() ? bilanStep(sid, 1) : null;
     save(); closeLayer(); renderKeep(); if (nx) openPanel(nx);
   },
@@ -4148,6 +4418,7 @@ const ACT = {
   appr: el => { const k = V.ses.key, v = el.dataset.v; if (DB.appr[k] === v) delete DB.appr[k]; else DB.appr[k] = v; save(); renderKeep(); },
   'pg-sel': el => { V.pgSel = V.pgSel === el.dataset.key ? null : el.dataset.key; renderKeep(); if (V.pgSel) $('.pgdetail')?.scrollIntoView({block: 'nearest', behavior: 'smooth'}); },
   'pg-step': el => { if (el.dataset.key) { V.pgSel = el.dataset.key; renderKeep(); } },
+  selftest: () => { selfTestModal(); },
   'hub-fold': el => { V.hubOpen = V.hubOpen || {}; V.hubOpen[el.dataset.k] = !V.hubOpen[el.dataset.k]; renderKeep(); },
   'pg-close': () => { V.pgSel = null; renderKeep(); },
   'pg-edit': el => { const s = el.dataset.key === V.ses.key ? V.ses : sesByKey(V.ses.cid, el.dataset.key); if (s) openContent({...s, cid: V.ses.cid}); },
@@ -4171,18 +4442,19 @@ const ACT = {
   },
   'eg-save': () => {
     const o = EG_EDIT; if (!o) return;
-    const v = {cid: $('#eg-cid').value, day: +$('#eg-day').value, start: $('#eg-s').value, end: $('#eg-e').value, week: $('#eg-week').value, group: $('#eg-group').value};
+    const v = {cid: $('#eg-cid').value, day: +$('#eg-day').value, start: $('#eg-s').value, end: $('#eg-e').value, week: $('#eg-week').value, group: $('#eg-group').value, vdc: $('#eg-vdc') && $('#eg-vdc').checked ? true : undefined};
     const D = $('#eg-from').value || '';
     if (!v.start || !v.end || v.end <= v.start) { toast("L'heure de fin doit suivre l'heure de début."); return; }
+    if (!v.vdc) delete v.vdc;
     if (!o.slot) { const s = {id: uid(), ...v}; if (D) s.from = D; DB.slots.push(s); save(); closeModal(); render(); toast('Cours ajouté'); return; }
-    const old = o.slot, same = ['cid', 'day', 'start', 'end', 'week', 'group'].every(k => String(old[k]) === String(v[k]));
+    const old = o.slot, same = ['cid', 'day', 'start', 'end', 'week', 'group'].every(k => String(old[k]) === String(v[k])) && !!old.vdc === !!v.vdc;
     if (same) { closeModal(); return; }
     const t = todayStr(), eff = D || t, yb = yearBounds();
     const oldKeys = slotDatesFrom(old, eff, yb ? yb.e : eff).map(d => d + '|' + old.id);
     let ns, n;
     if (slotHasPast(old, eff)) {
       old.to = addDays(eff, -1); ns = {id: uid(), ...v, from: eff}; if (old.toKeep) delete old.toKeep; DB.slots.push(ns);
-    } else { Object.assign(old, v); ns = old; }
+    } else { Object.assign(old, v); if (!v.vdc) delete old.vdc; ns = old; }
     const newKeys = slotDatesFrom(ns, eff, yb ? yb.e : eff).map(d => d + '|' + ns.id);
     n = moveFutureContent(oldKeys, newKeys);
     save(); closeModal(); render(); toast('Cours modifié' + (n ? ` · ${plural(n, 'séance préparée déplacée', 'séances préparées déplacées')}` : ''));
@@ -4427,7 +4699,7 @@ function mergeWith(remote, got, opts = {}) {
 function afterApply(n) {
   if (STORAGE_OK) Store.saveCore().catch(() => {});
   if (!navValid(V)) { STACK = []; V = homeV(); }
-  if (!$('#modal').innerHTML && !$('#layer').innerHTML && !DRAG) renderKeep();
+  if (!$('#modal').innerHTML && !$('#layer').innerHTML && !DRAG) autoRender();
   if (n && $('#toast').hidden) toast(`Mis à jour depuis l'autre appareil (${plural(n, 'modification')}).`);
 }
 
@@ -4574,7 +4846,7 @@ async function syncNow(manual) {
     const wasDue = !!backupDue();
     SM.last = Date.now(); await persistSM();
     setSync('ok');
-    if (wasDue && V.name === 'today' && !$('#modal').innerHTML && !$('#layer').innerHTML) renderKeep();
+    if (wasDue && V.name === 'today' && !$('#modal').innerHTML && !$('#layer').innerHTML) autoRender();
     if (total && $('#toast').hidden) toast(`Mis à jour depuis l'autre appareil (${plural(total, 'modification')}).`);
     else if (manual) toast('Synchronisation terminée.');
   } catch (e) {
@@ -4590,7 +4862,7 @@ async function syncNow(manual) {
 }
 let syncT = null;
 function syncSoon(delay = 2500) {
-  if (IS_DEMO) return; clearTimeout(syncT);
+  if (IS_DEMO || TESTING) return; clearTimeout(syncT);
   syncT = setTimeout(() => { const ch = syncTrack(); if (ch) { SM.dirty = true; persistSM(); } if ((ch || SM.dirty) && syncConnected()) syncNow(); }, delay);
 }
 
@@ -4762,7 +5034,7 @@ async function init() {
     DB.settings.appVersion = APP_VERSION.n; save();
     if (!first && !IS_DEMO) toast(`Mise à jour installée : ${versionLabel().toLowerCase()}`);
   }
-  setInterval(() => { if (V.name === 'today' && !$('#modal').innerHTML && document.visibilityState === 'visible') renderKeep(); }, 60000);
+  setInterval(() => { if (V.name === 'today' && !$('#modal').innerHTML && document.visibilityState === 'visible') autoRender(); }, 60000);
   if (gotLink) { STACK = []; V = {name: 'settings', tab: 'sync'}; render(); toast('Configuration OneDrive reçue : touchez « Se connecter à OneDrive ».'); }
   if (loggedNow && V.name === 'settings') render();
   if (syncConnected()) {

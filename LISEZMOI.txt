@@ -1,0 +1,52 @@
+SUIVI DE CLASSE — INSTALLATION SUR LA TABLETTE
+==============================================
+
+L'app doit être mise en ligne une fois pour pouvoir s'installer sur la
+tablette et fonctionner hors ligne. On utilise GitHub Pages (gratuit).
+Le site ne contient que le programme : aucune donnée d'élève n'y est
+envoyée. Listes, photos et observations restent sur la tablette.
+
+Durée : 10 minutes environ, depuis un ordinateur.
+
+1. METTRE L'APP EN LIGNE
+   a. Créez un compte gratuit sur https://github.com
+   b. Cliquez sur « New repository ».
+      Nom : suivi-classe — Visibilité : Public — « Create repository ».
+   c. Cliquez sur « uploading an existing file ».
+      Glissez les 6 fichiers de ce dossier (pas le zip lui-même) :
+      index.html, manifest.webmanifest, sw.js,
+      icon-192.png, icon-512.png, icon-maskable.png
+      Puis « Commit changes ».
+   d. Onglet « Settings » > « Pages ».
+      Source : « Deploy from a branch » — Branch : main, dossier / (root)
+      — « Save ».
+   e. Patientez 1 à 2 minutes. L'adresse de votre app sera :
+      https://VOTRE-PSEUDO.github.io/suivi-classe/
+
+2. INSTALLER SUR LA TABLETTE
+   a. Ouvrez cette adresse dans Chrome.
+   b. Menu ⋮ > « Installer l'application » (ou « Ajouter à l'écran
+      d'accueil »).
+   c. Ouvrez toujours l'app depuis son icône.
+
+3. PREMIERS RÉGLAGES (dans l'app, bouton Réglages)
+   a. Classes et élèves : créez chaque classe (semestres ou trimestres),
+      importez la liste (copier-coller depuis le tableur ou fichier CSV :
+      Nom ; Prénom ; Groupe G1/G2).
+   b. Photos : une par une, ou « Photos en lot » avec des fichiers nommés
+      NOM_Prénom.jpg
+   c. Emploi du temps : ajoutez chaque créneau (jour, heures, classe,
+      groupe, semaine A / B / toutes).
+   d. Périodes : vérifiez les dates des semestres et des trimestres.
+
+4. SAUVEGARDE
+   - En fin de journée, l'app propose « Sauvegarder ».
+   - « Envoyer vers OneDrive » ouvre le menu Partager : choisissez
+     OneDrive (compte de l'établissement), dossier « Suivi de classe ».
+   - Pour récupérer vos données : Réglages > Sauvegarde > Restaurer.
+   - Ne jamais effacer les « cookies et données des sites » de Chrome.
+
+MISE À JOUR DE L'APP
+   Remplacez index.html sur GitHub (« Add file » > « Upload files »).
+   La tablette prend la nouvelle version à la deuxième ouverture.
+   Vos données ne sont pas touchées.

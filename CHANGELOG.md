@@ -1,5 +1,10 @@
 # Historique des versions
 
+## 3.04 — 3 novembre 2026
+- Résumé automatique de l'élève (fiche et Suivi) : points forts / à améliorer, devoirs, matériel, retards, absences, tendance sur 3 semaines.
+- Notes de suivi dans la fiche élève (conseil de classe, rencontre parents, autre), synchronisées.
+- Saisie des notes du conseil élève par élève (depuis le créneau du conseil ou l'onglet Suivi).
+
 ## 3.03 — 27 octobre 2026
 - Tests intégrés : Réglages › Sauvegarde › « Vérifier l'application » (60 vérifications sur des élèves fictifs).
 - Tests de non-régression en ligne de commande (`tests/run_all.py`).

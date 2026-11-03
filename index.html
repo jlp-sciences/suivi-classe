@@ -935,6 +935,26 @@ button.wpill{cursor:pointer}
 .blk.vdc{background:color-mix(in srgb,var(--cc) 8%,var(--surface)) !important;border-style:solid;box-shadow:inset 4px 0 0 color-mix(in srgb,var(--cc) 60%,var(--muted)) !important}
 .btag.vdc{background:var(--muted);color:#fff;font-size:9px}
 .slot.vdccard{background:color-mix(in srgb,var(--cc) 6%,var(--surface));box-shadow:inset 5px 0 0 color-mix(in srgb,var(--cc) 60%,var(--muted))}
+
+/* ---- 3.04 : résumé de l'élève et notes de suivi ---- */
+.sumcard{display:flex;flex-direction:column;gap:4px}
+.fichesum{margin:0 0 16px}
+.sumbig{font-family:var(--serif);font-size:22px;font-weight:600;margin:2px 0 0;line-height:1.25}
+.sumfacts{margin:0;font-weight:600;color:var(--ink-2)}
+.sumshort{display:block;font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.sumshort i{font-style:normal;font-weight:800}
+.sumshort i.up{color:var(--pos)} .sumshort i.down{color:var(--neg)} .sumshort i.hasnote{color:var(--ink-2)}
+.stile .sumshort{padding:0 10px}
+.notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.notes li{padding:8px 12px;border-radius:10px;background:var(--surface-2)}
+.notes .nh{display:flex;align-items:center;gap:8px}
+.notes .nh .btn{min-height:32px;min-width:32px}
+.notes p{margin:2px 0 0;white-space:pre-wrap}
+.noteform{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--line-2);border-radius:10px;margin-bottom:10px}
+.nwst{display:flex;gap:14px;align-items:center;margin:10px 0}
+.nwph{width:72px;height:72px;border-radius:12px}
+.sumline{font-weight:600;margin-top:2px}
+#nw-text{width:100%}
 </style>
 </head>
 <body>
@@ -969,7 +989,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.03', d: '2026-10-27'};
+const APP_VERSION = {n: '3.04', d: '2026-11-03'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1048,7 +1068,7 @@ const SEATDEF = {
 const FIXED = {board: [560, 56], desk: [240, 96]};
 const ITEM_LABEL = {ilot: 'Îlot de 4', ilot6: 'Îlot de 6', simple: 'Paillasse de 2', double: 'Paillasses face à face', L: 'Paillasse en L (3)', board: 'Tableau', desk: 'Bureau'};
 const isFixed = it => !!FIXED[it.type];
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 const MIG_STAMP = new Map(); // enregistrements créés par une migration : datés « anciens » pour la synchro (une vraie modification l'emporte toujours)
@@ -1061,6 +1081,7 @@ function migrate(core) {
   if (!d.cancelled || typeof d.cancelled !== 'object') d.cancelled = {};
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
   if (!Array.isArray(d.catchup)) d.catchup = [];
+  if (!Array.isArray(d.notes)) d.notes = [];
   ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   /* labos v3 : on repart des 6 labos par défaut et de plans vides (une seule fois par appareil).
      Les labos par défaut sont marqués « anciens » pour la synchro : une disposition déjà retouchée sur un autre appareil l'emporte. */
@@ -1654,6 +1675,82 @@ function addObs(sid, cat, note = '', t = Date.now()) {
 const removeObs = pred => { DB.obs = DB.obs.filter(o => !pred(o)); };
 
 /* ---------- vue : fiche élève ---------- */
+/* ---------- résumé de l'élève (calculé sur la tablette, à partir des observations de la période) ---------- */
+const SUM_POS = {actif: 'implication active', participe: 'participation', moteur: 'rôle moteur', question: 'bonnes questions', aide: 'entraide', soigne: 'travail soigné', progres: 'efforts'};
+const SUM_NEG = {bavarde: 'bavardages', samuse: 'dissipation', agite: 'agitation', passif: 'passivité', comportement: 'comportement à reprendre', securite: 'sécurité en TP'};
+function stuSummary(s, per, full) {
+  const obs = DB.obs.filter(o => o.sid === s.id && o.date >= per.s && o.date <= per.e && CAT[o.cat]);
+  const n = k => obs.filter(o => o.cat === k).length, cnt = {}; obs.forEach(o => { cnt[o.cat] = (cnt[o.cat] || 0) + 1; });
+  const top = (map, min) => Object.keys(map).filter(k => (cnt[k] || 0) >= min).sort((a, b) => cnt[b] - cnt[a]);
+  const nPos = obs.filter(o => CAT[o.cat].t === 'pos').length, nBeh = Object.keys(SUM_NEG).reduce((a, k) => a + n(k), 0), nRas = n('ras');
+  const seen = new Set(obs.filter(o => o.cat !== 'absent').map(o => o.ses || o.date)).size;
+  const pos = top(SUM_POS, 2).slice(0, 2), neg = top(SUM_NEG, 2).slice(0, 2);
+  let head;
+  if (seen < 3) head = 'Peu observé';
+  else if (pos.length && neg.length) head = cap(pos.map(k => SUM_POS[k]).join(', ')) + ' mais ' + neg.map(k => SUM_NEG[k]).join(', ');
+  else if (pos.length) head = cap(pos.map(k => SUM_POS[k]).join(', '));
+  else if (neg.length) head = cap(neg.map(k => SUM_NEG[k]).join(', '));
+  else if (nRas >= Math.max(3, (nPos + nBeh) * 2)) head = 'Discret';
+  else head = 'Rien de marquant';
+  const facts = [];
+  const dv = n('devoir'), di = n('devoir_inc'), db = n('devoir_bac');
+  if (dv) facts.push(plural(dv, 'devoir non fait', 'devoirs non faits'));
+  if (di || db) facts.push([di && plural(di, 'devoir incomplet', 'devoirs incomplets'), db && plural(db, 'devoir bâclé', 'devoirs bâclés')].filter(Boolean).join(', '));
+  if (n('materiel')) facts.push(plural(n('materiel'), 'oubli de matériel', 'oublis de matériel'));
+  if (n('retard')) facts.push(plural(n('retard'), 'retard'));
+  if (n('absent')) facts.push(plural(n('absent'), 'absence'));
+  /* tendance : les 3 dernières semaines comparées au début de la période */
+  let trend = '';
+  const cut = addDays(todayStr() < per.e ? todayStr() : per.e, -21), sc = o => CAT[o.cat].t === 'pos' ? 1 : CAT[o.cat].t === 'neg' ? -1 : 0;
+  const a = obs.filter(o => o.date < cut && o.cat !== 'absent'), b = obs.filter(o => o.date >= cut && o.cat !== 'absent');
+  const sa = new Set(a.map(o => o.ses || o.date)).size, sb = new Set(b.map(o => o.ses || o.date)).size;
+  if (sa >= 3 && sb >= 3) { const d = b.reduce((x, o) => x + sc(o), 0) / sb - a.reduce((x, o) => x + sc(o), 0) / sa; if (d >= 0.5) trend = 'en progrès depuis 3 semaines'; else if (d <= -0.5) trend = 'en baisse depuis 3 semaines'; }
+  const line = [head, ...facts, trend].filter(Boolean).join(' · ');
+  if (!full) return {head, line, trend};
+  const det = (map, t) => Object.keys(cnt).filter(k => CAT[k].t === t).sort((x, y) => cnt[y] - cnt[x]).map(k => `${CAT[k].l.toLowerCase()} ${cnt[k]}`).join(', ');
+  const detail = `Sur ${plural(seen, 'séance observée', 'séances observées')} : ${plural(nPos, 'positive')}${nPos ? ' (' + det(null, 'pos') + ')' : ''} · ${plural(obs.filter(o => CAT[o.cat].t === 'neg').length, 'négative')}${obs.some(o => CAT[o.cat].t === 'neg') ? ' (' + det(null, 'neg') + ')' : ''} · ${nRas} RAS`;
+  return {head, line, trend, detail, facts};
+}
+/* ---------- notes de suivi (conseil de classe, rencontre parents…) ---------- */
+const NOTE_K = [['conseil', 'Conseil de classe'], ['parents', 'Rencontre parents'], ['autre', 'Autre']];
+const NOTE_L = Object.fromEntries(NOTE_K);
+let NOTE_EDIT = null; // {sid, id|null}
+function notesCard(s) {
+  const list = DB.notes.filter(x => x.sid === s.id).sort((a, b) => b.date.localeCompare(a.date) || (b.t || 0) - (a.t || 0));
+  const ed = NOTE_EDIT && NOTE_EDIT.sid === s.id ? NOTE_EDIT : null, cur = ed && ed.id ? DB.notes.find(x => x.id === ed.id) : null;
+  const form = ed ? `<div class="noteform">
+      <div class="row" style="gap:8px"><div class="seg" role="group" aria-label="Type">${NOTE_K.map(([k, l]) => `<button type="button" data-act="note-k" data-k="${k}" aria-pressed="${(ed.k || (cur ? cur.kind : 'conseil')) === k}">${l}</button>`).join('')}</div>
+        <input type="date" id="nt-date" value="${esc(ed.date || (cur ? cur.date : todayStr()))}" style="width:auto"></div>
+      <textarea id="nt-text" rows="4" placeholder="ex. Encouragements · doit s'investir davantage à l'oral · parents attentifs au travail à la maison">${esc(ed.text != null ? ed.text : cur ? cur.text : '')}</textarea>
+      <div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" data-act="note-cancel">Annuler</button><button class="btn ink" data-act="note-save" data-sid="${s.id}">Enregistrer la note</button></div></div>` : '';
+  return `<section class="card notescard"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="font-size:16px;margin:0">Notes de suivi</h2>${ed ? '' : `<button class="btn" data-act="note-new" data-sid="${s.id}">+ Ajouter une note</button>`}</div>
+    <p class="small muted" style="margin:0 0 8px">Conseil de classe, rencontre avec les parents… Visible par vous seul ; non compté dans les observations.</p>
+    ${form}
+    ${list.length ? `<ul class="notes">${list.map(x => `<li><div class="nh"><b>${esc(NOTE_L[x.kind] || 'Note')}</b><span class="small muted">${esc(cap(fmtLong(x.date)))}</span><span class="grow"></span><button class="btn ghost icon-btn" data-act="note-edit" data-sid="${s.id}" data-id="${x.id}" aria-label="Modifier">${ICON.edit}</button><button class="btn ghost icon-btn" data-act="note-del" data-id="${x.id}" aria-label="Supprimer">${ICON.close}</button></div><p>${esc(x.text)}</p></li>`).join('')}</ul>` : ed ? '' : '<p class="muted" style="margin:0">Aucune note pour l\'instant.</p>'}
+  </section>`;
+}
+/* saisie des notes du conseil, élève par élève */
+let NW = null; // {cid, kid, i}
+function noteWalk() {
+  const c = cls(NW.cid), k = (c.councils || []).find(x => x.id === NW.kid); if (!k) { closeModal(); return; }
+  const list = studentsOf(c.id), s = list[NW.i]; if (!s) { closeModal(); return; }
+  const cur = DB.notes.find(x => x.sid === s.id && x.ref === k.id);
+  const periods = periodsFor(c), pi = Math.max(0, periods.findIndex(p => k.date >= p.s && k.date <= p.e)), sm = stuSummary(s, periods[pi], true);
+  const done = list.filter(x => DB.notes.some(n => n.sid === x.id && n.ref === k.id && n.text)).length;
+  openModal(`<h2 class="row" style="gap:10px">${dot(c)}Notes du conseil · ${esc(c.name)}</h2>
+    <p class="small muted" style="margin:0">${esc(cap(fmtLong(k.date)))} · élève ${NW.i + 1} / ${list.length} · ${plural(done, 'note saisie', 'notes saisies')}</p>
+    <div class="nwst"><span class="thumb nwph">${photoHTML(s)}</span><div><b style="font-size:18px">${esc(s.first + ' ' + s.last)}</b>${amenIcons(s)}<div class="sumline">${esc(sm.line)}</div><div class="small muted">${esc(periods[pi].n)} · ${esc(sm.detail)}</div></div></div>
+    <textarea id="nw-text" rows="4" placeholder="Ce qui a été dit au conseil (appréciation, mention, avertissement, conseil donné…)">${esc(cur ? cur.text : '')}</textarea>
+    <div class="ft"><button class="btn" data-act="nw-go" data-d="-1" ${NW.i ? '' : 'disabled'}>‹ Précédent</button><span class="grow"></span><button class="btn" data-act="nw-close">Terminer</button><button class="btn ink" data-act="nw-go" data-d="1">${NW.i < list.length - 1 ? 'Suivant ›' : 'Enregistrer et terminer'}</button></div>`);
+  setTimeout(() => { const t = $('#nw-text'); if (t) t.focus(); }, 30);
+}
+function nwSave() {
+  const t = $('#nw-text'); if (!t || !NW) return; const c = cls(NW.cid), k = (c.councils || []).find(x => x.id === NW.kid), s = studentsOf(c.id)[NW.i]; if (!k || !s) return;
+  const v = t.value.trim(), cur = DB.notes.find(x => x.sid === s.id && x.ref === k.id);
+  if (cur) { if (v) { cur.text = v; cur.t = Date.now(); } else DB.notes = DB.notes.filter(x => x !== cur); }
+  else if (v) DB.notes.push({id: uid(), sid: s.id, cid: c.id, kind: 'conseil', ref: k.id, date: k.date, text: v, t: Date.now()});
+  save();
+}
 function viewFiche() {
   const s = stu(V.sid); if (!s) { back(); return ''; }
   const c = cls(s.cid), periods = periodsFor(c);
@@ -1680,7 +1777,7 @@ function viewFiche() {
     <button class="btn icon-btn" data-act="stu-edit" data-sid="${s.id}" aria-label="Modifier l'élève" title="Modifier">${ICON.edit}</button>
     <button class="btn" data-act="export-stu">${ICON.down}Exporter</button>
   </header>
-  <main class="main"><div class="fiche">
+  <main class="main">${(() => { const sm = stuSummary(s, per, true); return `<section class="card sumcard fichesum"><div class="lbl" style="margin:0">Résumé · ${esc(per.n)}</div><p class="sumbig">${esc(sm.head)}</p>${sm.facts.length || sm.trend ? `<p class="sumfacts">${esc([...sm.facts, sm.trend].filter(Boolean).join(' · '))}</p>` : ''}<p class="small muted" style="margin:0">${esc(sm.detail)}</p></section>`; })()}<div class="fiche">
     <aside style="display:flex;flex-direction:column;gap:12px">
       <div class="bigph">${photoHTML(s)}</div>
       <span class="btn filebtn">${PHOTOS[s.id] ? 'Changer la photo' : 'Ajouter une photo'}<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de l'élève"></span>
@@ -1693,6 +1790,7 @@ function viewFiche() {
       <p class="small muted" style="margin:0">${esc(per.n)} : du ${fmtShort(per.s)} au ${fmtShort(per.e)}</p>
     </aside>
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      ${notesCard(s)}
       <section class="card"><h2 style="font-size:16px;margin-bottom:12px">Répartition</h2>${synth}${bars.length || rasRow ? `<div class="bars">${bars.map(b => `<div class="barrow"><span>${esc(b.l)}</span><span class="tr"><span class="fl ${b.t}" style="display:block;width:${(cnt[b.k] / max * 100).toFixed(1)}%"></span></span><b>${cnt[b.k]}</b></div>`).join('')}${rasRow}</div>` : '<p class="muted" style="margin:0">Rien à afficher pour l\'instant.</p>'}</section>
       ${(() => { const cs = DB.catchup.filter(x => x.sid === s.id).sort((a, b) => b.date.localeCompare(a.date)); if (!cs.length) return '';
         return `<section class="card"><h2 style="font-size:16px;margin-bottom:8px">Rattrapages</h2><ul class="log">${cs.map(x => `<li><span class="d">${fmtShort(x.date)}</span><span class="n">${esc(catchText(x))}</span>${x.done ? `<span class="chip pos">Rattrapé le ${fmtShort(x.done)}</span>` : '<span class="chip warn">En cours</span>'}<button type="button" class="x" data-act="catch-toggle" data-id="${x.id}">${x.done ? 'Rouvrir' : 'Rattrapé'}</button></li>`).join('')}</ul></section>`; })()}
@@ -2116,6 +2214,22 @@ async function runSelfTests() {
       V.sv = 'list'; h = html(viewSuivi());
       ok(h.querySelector('.srow .absgh'), 'vue liste : fantôme dans la colonne Abs.');
       DB.obs = DB.obs.filter(o => o.id !== 'oa');
+    });
+
+    await group('Résumé de l\'élève et notes de suivi', () => {
+      const per = {n: 'test', s: D(0, 1), e: D(2, 5)}, sx = stu('y0'), add = (cat, d, i) => DB.obs.push({id: 'os' + cat + i, sid: 'y0', cid: 'tA', ses: D(0, d) + '|s' + i, date: D(0, d), cat, t: i, note: ''});
+      ['actif', 'actif', 'actif', 'bavarde', 'bavarde', 'devoir', 'ras'].forEach((c, i) => add(c, 1 + (i % 5), i));
+      const sm = stuSummary(sx, per, true);
+      eq(sm.head, 'Implication active mais bavardages', 'résumé : points forts et points à améliorer');
+      ok(sm.facts.includes('1 devoir non fait'), 'résumé : devoirs non faits comptés');
+      ok(/séances observées/.test(sm.detail), 'résumé : détail des chiffres');
+      DB.obs = DB.obs.filter(o => !o.id.startsWith('os'));
+      eq(stuSummary(sx, per).head, 'Peu observé', 'résumé : trop peu d\'observations');
+      DB.notes.push({id: 'n1', sid: 'y0', cid: 'tA', kind: 'parents', date: D(0, 2), text: 'Parents rencontrés', t: 1});
+      V = {name: 'fiche', sid: 'y0', p: 0};
+      ok(/Parents rencontrés/.test(html(viewFiche()).textContent), 'note de suivi affichée dans la fiche');
+      ok(recordsOf(DB, {}).has('notes:n1'), 'note de suivi synchronisée');
+      DB.notes = DB.notes.filter(n => n.id !== 'n1');
     });
 
     await group('Données et compatibilité', () => {
@@ -3017,7 +3131,7 @@ function viewSuivi() {
     const noPN = recent && !mine.some(o => isPN(o) && o.date >= d21), rasR = mine.some(o => o.cat === 'ras' && o.date >= d21);
     const disc = noPN && rasR, peu = noPN && !rasR; // discret : vu (RAS) sans se faire remarquer · peu observé : aucune observation
     return {s, pos: n('pos'), neg: n('neg'), ras: inP.filter(o => o.cat === 'ras').length, abs: inP.filter(o => o.cat === 'absent').length,
-      last: lastO ? `${fmtShort(lastO.date)} · ${CAT[lastO.cat].l}${lastO.note ? ' — ' + lastO.note : ''}` : '—', surv, peu, disc};
+      last: lastO ? `${fmtShort(lastO.date)} · ${CAT[lastO.cat].l}${lastO.note ? ' — ' + lastO.note : ''}` : '—', surv, peu, disc, sum: stuSummary(s, per)};
   });
   const nS = rows.filter(r => r.surv).length, nP = rows.filter(r => r.peu).length, nD = rows.filter(r => r.disc).length;
   if (V.sf === 'surv') rows = rows.filter(r => r.surv); else if (V.sf === 'peu') rows = rows.filter(r => r.peu); else if (V.sf === 'disc') rows = rows.filter(r => r.disc);
@@ -3031,11 +3145,12 @@ function viewSuivi() {
     return `<button class="tile stile" data-act="fiche-open" data-sid="${r.s.id}" aria-label="${esc(r.s.first + ' ' + r.s.last)}">
       <span class="ph">${photoHTML(r.s)}${r.abs ? ghostIcon(r.abs, 'gh-tile') : ''}<span class="stags">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></span>
       <span class="nm">${esc(r.s.first)} <span>${esc(r.s.last)}</span>${dlIcon(r.s)}${amenIcons0(r.s)}</span>
+      <span class="sumshort" title="${esc(r.sum.line)}">${esc(r.sum.head)}${r.sum.trend ? ` <i class="${/progrès/.test(r.sum.trend) ? 'up' : 'down'}">${/progrès/.test(r.sum.trend) ? '↗' : '↘'}</i>` : ''}${DB.notes.some(n => n.sid === r.s.id) ? ' <i class="hasnote" title="Notes de suivi">✎</i>' : ''}</span>
       <span class="sbar">${tot ? `<i class="sp" style="width:${w(r.pos)}%"></i><i class="sr" style="width:${w(r.ras)}%"></i><i class="sn" style="width:${w(r.neg)}%"></i>` : ''}</span>
       <span class="scnt"><b class="pos">+${r.pos}</b><span>${r.ras} RAS</span><b class="neg">−${r.neg}</b></span></button>`; }).join('');
   const body = rows.map(r => `<button class="srow" data-act="fiche-open" data-sid="${r.s.id}">
       <span class="thumb">${photoHTML(r.s)}</span>
-      <span class="nm">${esc(r.s.first)} <span class="muted">${esc(r.s.last)}</span>${amenIcons(r.s)}</span>
+      <span class="nm">${esc(r.s.first)} <span class="muted">${esc(r.s.last)}</span>${amenIcons(r.s)}<span class="sumshort" title="${esc(r.sum.line)}">${esc(r.sum.head)}${r.sum.trend ? ` <i class="${/progrès/.test(r.sum.trend) ? 'up' : 'down'}">${/progrès/.test(r.sum.trend) ? '↗' : '↘'}</i>` : ''}${DB.notes.some(n => n.sid === r.s.id) ? ' <i class="hasnote" title="Notes de suivi">✎</i>' : ''}</span></span>
       <span class="muted small">${stuGroups(r.s) || '—'}</span>
       <span class="num pos">+${r.pos}</span><span class="num neg">−${r.neg}</span><span class="num">${r.ras}</span><span class="num">${r.abs ? ghostIcon(r.abs) : '<span class="muted">0</span>'}</span>
       <span class="last small">${esc(r.last)}</span>
@@ -3048,6 +3163,7 @@ function viewSuivi() {
       <button class="gchip" data-act="sui-f" data-v="surv" aria-pressed="${V.sf === 'surv'}"><span class="chip neg">${nS}</span> à surveiller</button>
       <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button>
       <button class="gchip" data-act="sui-f" data-v="disc" aria-pressed="${V.sf === 'disc'}"><span class="chip disc">${nD}</span> discret${nD > 1 ? 's' : ''}</button></div>
+    ${(() => { const ks = (c.councils || []).filter(k => k.date >= addDays(todayStr(), -60)).sort((a, b) => a.date.localeCompare(b.date)); const k = ks.filter(x => x.date <= todayStr()).pop() || ks[0]; return k ? `<div class="row" style="gap:8px"><button class="btn" data-act="nw-open" data-cid="${c.id}" data-id="${k.id}">✎ Notes du conseil du ${esc(dayShort(k.date))}</button><span class="small muted">${plural(DB.notes.filter(n => n.ref === k.id && n.text).length, 'note saisie', 'notes saisies')} sur ${studentsOf(c.id).length}</span></div>` : ''; })()}
     ${apprBlockHTML(c, per)}
     ${sv === 'grid' ? `<div class="row" style="gap:8px"><span class="small muted">Trier :</span>${['name', 'pos', 'neg', 'ras', 'abs'].map(k => `<button type="button" class="gchip" data-act="sui-sort" data-k="${k}" aria-pressed="${sk === k}">${{name: 'Nom', pos: 'Positif', neg: 'Négatif', ras: 'RAS', abs: 'Absences'}[k]}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`).join('')}</div>
     <div class="tiles stiles">${grid || '<p class="muted">Aucun élève dans ce filtre.</p>'}</div>` : `<section class="card stable-card">
@@ -4384,7 +4500,7 @@ const ACT = {
     openModal(`<h2 class="row" style="gap:10px">${dot(c)}Conseil de classe · ${esc(c.name)}</h2>
       <p>${esc(cap(fmtLong(k.date)))}, ${fmtT(k.s)} – ${fmtT(k.e)}${k.note ? ' · ' + esc(k.note) : ''}</p>
       ${keys.length ? `<p class="small muted" style="margin:0 0 6px">Cours au même moment :</p><ul class="stable">${keys.map(line).join('')}</ul>` : ''}
-      <div class="ft"><button class="btn" data-act="m-close">Fermer</button><button class="btn" data-act="settings" data-tab="classes" data-cid="${c.id}">Modifier dans Réglages</button></div>`); },
+      <div class="ft"><button class="btn" data-act="m-close">Fermer</button><button class="btn" data-act="settings" data-tab="classes" data-cid="${c.id}">Modifier dans Réglages</button><button class="btn ink" data-act="nw-open" data-cid="${c.id}" data-id="${k.id}">✎ Saisir les notes du conseil</button></div>`); },
   tv: () => { V.tv = V.tv === false; try { localStorage.setItem('suivi-classe-tv', V.tv ? '1' : '0'); } catch (e) {} renderKeep(); },
   hl: el => { V.hl = V.hl === el.dataset.k ? null : el.dataset.k; renderKeep(); },
   'cdt-first': el => { V.date = el.dataset.date; V.mode = 'week'; render(); },
@@ -4419,6 +4535,18 @@ const ACT = {
   'pg-sel': el => { V.pgSel = V.pgSel === el.dataset.key ? null : el.dataset.key; renderKeep(); if (V.pgSel) $('.pgdetail')?.scrollIntoView({block: 'nearest', behavior: 'smooth'}); },
   'pg-step': el => { if (el.dataset.key) { V.pgSel = el.dataset.key; renderKeep(); } },
   selftest: () => { selfTestModal(); },
+  'nw-open': el => { NW = {cid: el.dataset.cid, kid: el.dataset.id, i: 0}; const c = cls(NW.cid), list = studentsOf(NW.cid); const j = list.findIndex(s => !DB.notes.some(n => n.sid === s.id && n.ref === NW.kid && n.text)); if (j > 0) NW.i = j; noteWalk(); },
+  'nw-go': el => { nwSave(); const n = studentsOf(NW.cid).length, d = +el.dataset.d; if (d > 0 && NW.i >= n - 1) { NW = null; closeModal(); renderKeep(); toast('Notes du conseil enregistrées'); return; } NW.i = Math.max(0, Math.min(n - 1, NW.i + d)); noteWalk(); },
+  'nw-close': () => { nwSave(); NW = null; closeModal(); renderKeep(); },
+  'note-new': el => { NOTE_EDIT = {sid: el.dataset.sid, id: null}; renderKeep(); setTimeout(() => $('#nt-text') && $('#nt-text').focus(), 30); },
+  'note-edit': el => { NOTE_EDIT = {sid: el.dataset.sid, id: el.dataset.id}; renderKeep(); setTimeout(() => $('#nt-text') && $('#nt-text').focus(), 30); },
+  'note-k': el => { NOTE_EDIT.text = $('#nt-text').value; NOTE_EDIT.date = $('#nt-date').value; NOTE_EDIT.k = el.dataset.k; renderKeep(); },
+  'note-cancel': () => { NOTE_EDIT = null; renderKeep(); },
+  'note-save': el => { const ed = NOTE_EDIT; if (!ed) return; const text = $('#nt-text').value.trim(), date = $('#nt-date').value || todayStr(); if (!text) { $('#nt-text').focus(); return; }
+    const cur = ed.id && DB.notes.find(x => x.id === ed.id), s = stu(el.dataset.sid), kind = ed.k || (cur ? cur.kind : 'conseil');
+    if (cur) Object.assign(cur, {text, date, kind, t: Date.now()}); else DB.notes.push({id: uid(), sid: s.id, cid: s.cid, kind, date, text, t: Date.now()});
+    NOTE_EDIT = null; save(); renderKeep(); toast('Note enregistrée'); },
+  'note-del': el => { const x = DB.notes.find(n => n.id === el.dataset.id); if (!x) return; DB.notes = DB.notes.filter(n => n !== x); save(); renderKeep(); toast('Note supprimée', {label: 'Annuler', fn: () => { DB.notes.push(x); save(); renderKeep(); }}); },
   'hub-fold': el => { V.hubOpen = V.hubOpen || {}; V.hubOpen[el.dataset.k] = !V.hubOpen[el.dataset.k]; renderKeep(); },
   'pg-close': () => { V.pgSel = null; renderKeep(); },
   'pg-edit': el => { const s = el.dataset.key === V.ses.key ? V.ses : sesByKey(V.ses.cid, el.dataset.key); if (s) openContent({...s, cid: V.ses.cid}); },
@@ -4598,7 +4726,7 @@ async function showPersist() {
 /* Chaque enregistrement (élève, observation, contenu de séance…) porte une date de modification.
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
-const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup'];
+const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup', 'notes'];
 const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog'];
 const SYNC_SET = ['evenIsA', 'holidays', 'periods'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};

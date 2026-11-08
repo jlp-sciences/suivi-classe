@@ -81,8 +81,10 @@ async def main():
             await pg.evaluate("V.stab = 'contenu'; render(); openContent(V.ses)"); await pg.wait_for_timeout(150)
             check(await pg.locator('#ct-t').count() == 1, f'{w}x{h} : éditeur de contenu ouvert')
             await pg.evaluate("closeLayer(); CT = null; go({name: 'settings', tab: 'classes'})"); await pg.wait_for_timeout(100)
-            for t in ['edt', 'periodes', 'sauvegarde', 'sync']:
+            for t in ['edt', 'periodes', 'etiquettes', 'sauvegarde', 'sync']:
                 await pg.evaluate(f"V.tab = '{t}'; render()"); await pg.wait_for_timeout(80)
+            await pg.evaluate("go({name: 'bul', cid: DB.classes[0].id, p: 0})"); await pg.wait_for_timeout(100)
+            check(await pg.locator('.bullist li').count() > 0, f'{w}x{h} : page Appréciations')
             await pg.close()
 
         print('4. Position gardée lors des mises à jour automatiques')

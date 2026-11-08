@@ -518,7 +518,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:50
 .stat.neg{background:var(--neg-soft);border-color:transparent;color:var(--neg-ink)}
 .stat span{font-size:14px}
 .bars{display:flex;flex-direction:column;gap:9px}
-.barrow{display:grid;grid-template-columns:150px minmax(0,1fr) 28px;align-items:center;gap:10px;font-size:14px}
+.barrow{display:grid;grid-template-columns:150px minmax(0,1fr) 78px;align-items:center;gap:10px;font-size:14px}
 .barrow .tr{height:12px;border-radius:6px;background:var(--surface-2);overflow:hidden}
 .barrow .fl{height:100%;border-radius:6px}
 .fl.pos{background:var(--pos)} .fl.neg{background:var(--neg)}
@@ -955,6 +955,29 @@ button.wpill{cursor:pointer}
 .nwph{width:72px;height:72px;border-radius:12px}
 .sumline{font-weight:600;margin-top:2px}
 #nw-text{width:100%}
+
+/* ---- 3.05 : étiquettes, comptes en séances, appréciations ---- */
+.cat.given{opacity:.55;cursor:default}
+.catcols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.catset{display:flex;flex-direction:column;gap:4px}
+.catset .check{min-height:40px}
+@media (max-width:640px){.catcols{grid-template-columns:1fr}}
+.barrow b .pc{font-weight:500;color:var(--muted);font-size:12px}
+.barrow b{white-space:nowrap;text-align:right}
+.bulcard{display:flex;flex-direction:column;gap:6px}
+.bulcard textarea,.bullist textarea{width:100%}
+.bulcnt{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;align-self:flex-end}
+.bulcnt.over{color:var(--neg);font-weight:700}
+.bulsteps{display:flex;flex-direction:column;gap:14px}
+.bstep{display:flex;gap:12px;align-items:flex-start}
+.bstep > b{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center}
+.bstep > div{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.bstep p{margin:0} .bstep textarea{width:100%}
+.bullist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.bullist li{display:flex;flex-direction:column;gap:6px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.bullist .bh{display:flex;align-items:center;gap:10px;min-width:0}
+.bullist .bh .thumb{width:36px;height:36px;flex:none}
+.bullist .bh .sumshort{min-width:0}
 </style>
 </head>
 <body>
@@ -989,7 +1012,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.04', d: '2026-11-03'};
+const APP_VERSION = {n: '3.05', d: '2026-11-08'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1014,7 +1037,7 @@ const ICON = {
 const CATS = [
   ['participe','Participe','pos'],['moteur','Moteur/rice','pos'],['actif','Actif/ve','pos'],['question','Bonne question','pos'],
   ['aide','Aide un camarade','pos'],['soigne','Travail soigné','pos'],['progres','Progrès / effort','pos'],
-  ['materiel','Oubli de matériel','neg'],['devoir','Devoir non fait','neg'],['bavarde','Bavard/e','neg'],['samuse',"S'amuse",'neg'],['agite','Agité/e','neg'],
+  ['materiel','Oubli de matériel','neg'],['blouse','Oubli de blouse','neg'],['devoir','Devoir non fait','neg'],['bavarde','Bavard/e','neg'],['samuse',"S'amuse",'neg'],['agite','Agité/e','neg'],
   ['passif','Passif/ve','neg'],['retard','Retard','neg'],['securite','Sécurité TP','neg'],['comportement','Comportement','neg'],
   ['devoir_inc','Devoir incomplet','neg'],['devoir_bac','Devoir bâclé','neg'],
   ['ras','RAS','neu'],['absent','Absent/e','abs']
@@ -1023,6 +1046,8 @@ const CATS = [
 const DV = new Set(['devoir', 'devoir_inc', 'devoir_bac']);
 const DV_SHORT = {devoir: 'Non fait', devoir_inc: 'Incomplet', devoir_bac: 'Bâclé'};
 const PANEL_HIDE = new Set(['devoir_inc', 'devoir_bac']);
+/* étiquettes masquées dans le panneau (Réglages › Étiquettes) : les observations déjà saisies restent */
+const catShown = k => !PANEL_HIDE.has(k) && !((DB.settings.hiddenCats || []).includes(k));
 /* appréciation de la classe pour une séance */
 const APPR = [['dyn', 'Dynamique'], ['bien', 'Plutôt bien'], ['passive', 'Passive'], ['penible', 'Pénible']];
 const APPR_L = Object.fromEntries(APPR);
@@ -1068,7 +1093,7 @@ const SEATDEF = {
 const FIXED = {board: [560, 56], desk: [240, 96]};
 const ITEM_LABEL = {ilot: 'Îlot de 4', ilot6: 'Îlot de 6', simple: 'Paillasse de 2', double: 'Paillasses face à face', L: 'Paillasse en L (3)', board: 'Tableau', desk: 'Bureau'};
 const isFixed = it => !!FIXED[it.type];
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], bul:{}, appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 const MIG_STAMP = new Map(); // enregistrements créés par une migration : datés « anciens » pour la synchro (une vraie modification l'emporte toujours)
@@ -1082,7 +1107,7 @@ function migrate(core) {
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
   if (!Array.isArray(d.catchup)) d.catchup = [];
   if (!Array.isArray(d.notes)) d.notes = [];
-  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   /* labos v3 : on repart des 6 labos par défaut et de plans vides (une seule fois par appareil).
      Les labos par défaut sont marqués « anciens » pour la synchro : une disposition déjà retouchée sur un autre appareil l'emporte. */
   if (!(core && core.settings && core.settings.labsV3)) {
@@ -1258,6 +1283,7 @@ function render() {
   else if (V.name === 'proj') app.innerHTML = viewProj();
   else if (V.name === 'roomedit') app.innerHTML = viewRoomEdit();
   else if (V.name === 'fiche') app.innerHTML = viewFiche();
+  else if (V.name === 'bul') app.innerHTML = viewBul();
   else if (V.name === 'settings') app.innerHTML = viewSettings();
   else if (V.name === 'trombi') app.innerHTML = viewTrombi();
   saveNav();
@@ -1272,6 +1298,7 @@ function navValid(v) {
   if (v.name === 'today' || v.name === 'settings') return true;
   if (v.name === 'grid') return !!(v.ses && cls(v.ses.cid));
   if (v.name === 'fiche') return !!stu(v.sid);
+  if (v.name === 'bul') return !!cls(v.cid);
   if (v.name === 'plan' || v.name === 'proj') return !!(cls(v.cid) && roomById(v.rid));
   if (v.name === 'roomedit') return !!roomById(v.rid);
   return false;
@@ -1620,8 +1647,8 @@ function renderPanel() {
   if (P.sids) return renderGroupPanel();
   const s = stu(P.sid), ses = V.ses, c = cls(s.cid);
   const list = DB.obs.filter(o => o.ses === ses.key && o.sid === s.id);
-  const isAbs = list.some(o => o.cat === 'absent');
-  const catBtns = t => CATS.filter(x => x.t === t && !PANEL_HIDE.has(x.k)).map(x => `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
+  const isAbs = list.some(o => o.cat === 'absent'), given = new Set(list.map(o => o.cat));
+  const catBtns = t => CATS.filter(x => x.t === t && catShown(x.k)).map(x => given.has(x.k) ? `<button type="button" class="cat ${t} given" disabled aria-disabled="true" title="Déjà noté pendant cette séance">✓ ${esc(x.l)}</button>` : `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
   const done = list.length ? `<div><div class="lbl" style="margin-bottom:6px">Déjà noté pendant cette séance</div><div class="done">${list.map(o => {
       const c2 = CAT[o.cat]; const sign = c2.t === 'pos' ? '+ ' : c2.t === 'neg' ? '− ' : '';
       return `<span class="chip ${DV.has(o.cat) ? 'dv' : c2.t}">${sign}${esc(c2.l)}<button type="button" data-act="p-del" data-oid="${o.id}" aria-label="Retirer ${esc(c2.l)}">×</button></span>`; }).join('')}</div></div>` : '';
@@ -1651,7 +1678,7 @@ function renderPanel() {
 }
 function renderGroupPanel() {
   const ses = V.ses, studs = P.sids.map(stu).filter(Boolean);
-  const catBtns = t => CATS.filter(x => x.t === t && !PANEL_HIDE.has(x.k)).map(x => `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
+  const catBtns = t => CATS.filter(x => x.t === t && catShown(x.k)).map(x => `<button type="button" class="cat ${t}" data-act="p-tog" data-cat="${x.k}" aria-pressed="${P.sel.has(x.k)}">${esc(x.l)}</button>`).join('');
   $('#layer').innerHTML = `<div class="scrim" data-act="p-close"></div>
   <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="p-name">
     <div class="scroll">
@@ -1669,7 +1696,10 @@ function renderGroupPanel() {
   </aside>`;
 }
 function addObs(sid, cat, note = '', t = Date.now()) {
-  const ses = V.ses; const o = {id: uid(), sid, cid: ses.cid, date: ses.date, ses: ses.key, lbl: ses.label, cat, note, t};
+  const ses = V.ses;
+  const ex = DB.obs.find(o => o.ses === ses.key && o.sid === sid && o.cat === cat); // une seule fois par séance, même si l'élève bavarde plusieurs fois
+  if (ex) { if (note && !(ex.note || '').includes(note)) ex.note = ex.note ? ex.note + ' · ' + note : note; return ex; }
+  const o = {id: uid(), sid, cid: ses.cid, date: ses.date, ses: ses.key, lbl: ses.label, cat, note, t};
   DB.obs.push(o); return o;
 }
 const removeObs = pred => { DB.obs = DB.obs.filter(o => !pred(o)); };
@@ -1678,15 +1708,27 @@ const removeObs = pred => { DB.obs = DB.obs.filter(o => !pred(o)); };
 /* ---------- résumé de l'élève (calculé sur la tablette, à partir des observations de la période) ---------- */
 const SUM_POS = {actif: 'implication active', participe: 'participation', moteur: 'rôle moteur', question: 'bonnes questions', aide: 'entraide', soigne: 'travail soigné', progres: 'efforts'};
 const SUM_NEG = {bavarde: 'bavardages', samuse: 'dissipation', agite: 'agitation', passif: 'passivité', comportement: 'comportement à reprendre', securite: 'sécurité en TP'};
+/* séances suivies par l'élève sur la période (passées, non annulées, de ses groupes, hors absences) */
+function stuSesCount(s, per) {
+  const t = todayStr(), abs = new Set(DB.obs.filter(o => o.sid === s.id && o.cat === 'absent').map(o => o.ses));
+  return classSessions(s.cid).filter(x => x.date >= per.s && x.date <= per.e && x.date <= t && !x.cancelled && (x.group === 'all' || inGroup(s, x.group)) && !abs.has(x.key)).length;
+}
+/* comptes « en séances » : une étiquette compte une fois par séance */
+function stuCounts(s, per) {
+  const obs = DB.obs.filter(o => o.sid === s.id && o.date >= per.s && o.date <= per.e && CAT[o.cat]), seen = new Set(), cnt = {};
+  obs.forEach(o => { const k = (o.ses || o.date) + '|' + o.cat; if (seen.has(k)) return; seen.add(k); cnt[o.cat] = (cnt[o.cat] || 0) + 1; });
+  return {obs, cnt};
+}
+const pcR = (a, b) => b ? Math.round(a / b * 100) : 0;
 function stuSummary(s, per, full) {
-  const obs = DB.obs.filter(o => o.sid === s.id && o.date >= per.s && o.date <= per.e && CAT[o.cat]);
-  const n = k => obs.filter(o => o.cat === k).length, cnt = {}; obs.forEach(o => { cnt[o.cat] = (cnt[o.cat] || 0) + 1; });
+  const {obs, cnt} = stuCounts(s, per);
+  const n = k => cnt[k] || 0;
   const top = (map, min) => Object.keys(map).filter(k => (cnt[k] || 0) >= min).sort((a, b) => cnt[b] - cnt[a]);
-  const nPos = obs.filter(o => CAT[o.cat].t === 'pos').length, nBeh = Object.keys(SUM_NEG).reduce((a, k) => a + n(k), 0), nRas = n('ras');
+  const nPos = Object.keys(cnt).filter(k => CAT[k].t === 'pos').reduce((a, k) => a + cnt[k], 0), nBeh = Object.keys(SUM_NEG).reduce((a, k) => a + n(k), 0), nRas = n('ras');
   const seen = new Set(obs.filter(o => o.cat !== 'absent').map(o => o.ses || o.date)).size;
   const pos = top(SUM_POS, 2).slice(0, 2), neg = top(SUM_NEG, 2).slice(0, 2);
-  let head;
-  if (seen < 3) head = 'Peu observé';
+  let head; const nS0 = stuSesCount(s, per);
+  if (seen < 3 || (nS0 >= 6 && seen / nS0 < 0.3)) head = 'Peu observé';
   else if (pos.length && neg.length) head = cap(pos.map(k => SUM_POS[k]).join(', ')) + ' mais ' + neg.map(k => SUM_NEG[k]).join(', ');
   else if (pos.length) head = cap(pos.map(k => SUM_POS[k]).join(', '));
   else if (neg.length) head = cap(neg.map(k => SUM_NEG[k]).join(', '));
@@ -1697,6 +1739,7 @@ function stuSummary(s, per, full) {
   if (dv) facts.push(plural(dv, 'devoir non fait', 'devoirs non faits'));
   if (di || db) facts.push([di && plural(di, 'devoir incomplet', 'devoirs incomplets'), db && plural(db, 'devoir bâclé', 'devoirs bâclés')].filter(Boolean).join(', '));
   if (n('materiel')) facts.push(plural(n('materiel'), 'oubli de matériel', 'oublis de matériel'));
+  if (n('blouse')) facts.push(plural(n('blouse'), 'oubli de blouse', 'oublis de blouse'));
   if (n('retard')) facts.push(plural(n('retard'), 'retard'));
   if (n('absent')) facts.push(plural(n('absent'), 'absence'));
   /* tendance : les 3 dernières semaines comparées au début de la période */
@@ -1707,9 +1750,11 @@ function stuSummary(s, per, full) {
   if (sa >= 3 && sb >= 3) { const d = b.reduce((x, o) => x + sc(o), 0) / sb - a.reduce((x, o) => x + sc(o), 0) / sa; if (d >= 0.5) trend = 'en progrès depuis 3 semaines'; else if (d <= -0.5) trend = 'en baisse depuis 3 semaines'; }
   const line = [head, ...facts, trend].filter(Boolean).join(' · ');
   if (!full) return {head, line, trend};
-  const det = (map, t) => Object.keys(cnt).filter(k => CAT[k].t === t).sort((x, y) => cnt[y] - cnt[x]).map(k => `${CAT[k].l.toLowerCase()} ${cnt[k]}`).join(', ');
-  const detail = `Sur ${plural(seen, 'séance observée', 'séances observées')} : ${plural(nPos, 'positive')}${nPos ? ' (' + det(null, 'pos') + ')' : ''} · ${plural(obs.filter(o => CAT[o.cat].t === 'neg').length, 'négative')}${obs.some(o => CAT[o.cat].t === 'neg') ? ' (' + det(null, 'neg') + ')' : ''} · ${nRas} RAS`;
-  return {head, line, trend, detail, facts};
+  const nS = stuSesCount(s, per);
+  const det = t => Object.keys(cnt).filter(k => CAT[k].t === t).sort((x, y) => cnt[y] - cnt[x]).map(k => `${CAT[k].l.toLowerCase()} ${cnt[k]}/${nS} (${pcR(cnt[k], nS)} %)`).join(', ');
+  const nNeg = Object.keys(cnt).filter(k => CAT[k].t === 'neg').length;
+  const detail = `Sur ${plural(nS, 'séance suivie', 'séances suivies')}${nS ? '' : ''} : ${nPos ? 'positives — ' + det('pos') : 'aucune positive'} · ${nNeg ? 'négatives — ' + det('neg') : 'aucune négative'} · RAS ${nRas}/${nS} (${pcR(nRas, nS)} %)`;
+  return {head, line, trend, detail, facts, nS, cnt};
 }
 /* ---------- notes de suivi (conseil de classe, rencontre parents…) ---------- */
 const NOTE_K = [['conseil', 'Conseil de classe'], ['parents', 'Rencontre parents'], ['autre', 'Autre']];
@@ -1751,20 +1796,76 @@ function nwSave() {
   else if (v) DB.notes.push({id: uid(), sid: s.id, cid: c.id, kind: 'conseil', ref: k.id, date: k.date, text: v, t: Date.now()});
   save();
 }
+/* ---------- appréciations de bulletin ---------- */
+const BUL_MAX = 250;
+const bulKey = (sid, per) => sid + '|' + per.n + '|' + per.s;
+const stuLabel = (s, list) => { const same = list.filter(x => x.first === s.first); return s.first + (same.length > 1 || true ? ' ' + (s.last || '').slice(0, 1) + '.' : ''); };
+function bulCard(s, per) {
+  const k = bulKey(s.id, per), cur = DB.bul[k] ? DB.bul[k].text : '';
+  return `<section class="card bulcard"><div class="row" style="justify-content:space-between"><h2 style="font-size:16px;margin:0">Appréciation · ${esc(per.n)}</h2><button class="btn" data-act="bul-copy" data-k="${esc(k)}">Copier</button></div>
+    <textarea rows="3" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Appréciation du bulletin (250 caractères au plus) — saisie ici ou importée depuis « Appréciations » dans l'onglet Suivi">${esc(cur)}</textarea>
+    <span class="bulcnt ${cur.length > BUL_MAX ? 'over' : ''}">${cur.length} / ${BUL_MAX}</span></section>`;
+}
+function bulExportText(c, per) {
+  const list = studentsOf(c.id);
+  const lines = list.map((s, i) => {
+    const sm = stuSummary(s, per, true), notes = DB.notes.filter(n => n.sid === s.id && n.date >= addDays(per.s, -30) && n.date <= addDays(per.e, 30)).map(n => `${NOTE_L[n.kind] || 'Note'} (${dayShort(n.date)}) : ${n.text.replace(/\s+/g, ' ')}`);
+    const cur = DB.bul[bulKey(s.id, per)];
+    return `[${i + 1}] ${stuLabel(s, list)} — ${sm.line} — ${sm.detail}${notes.length ? ' — Notes : ' + notes.join(' | ') : ''}${cur ? ' — Appréciation actuelle : ' + cur.text : ''}`;
+  });
+  return `APPRÉCIATIONS À RÉDIGER — ${c.name} — ${levelOf(c) === '2de' ? 'Physique-chimie Seconde' : levelOf(c) === '1re' ? 'Enseignement scientifique' : 'Physique-chimie'} — ${per.n} (du ${fmtShort(per.s)} au ${fmtShort(per.e)})
+Consignes : ${BUL_MAX} caractères maximum, espaces compris, le plus court possible tout en étant utile ; ton adapté au profil (encourageant, factuel et positif, ou direct et bienveillant) ; phrases complètes, pas de formules toutes faites ; terminer par une perspective ou un conseil quand c'est possible.
+Répondre avec une ligne par élève, au format exact : [numéro] appréciation
+
+${lines.join('\n')}`;
+}
+function bulImport(c, per, text) {
+  const list = studentsOf(c.id); let n = 0; const bad = [];
+  text.split(/\r?\n/).forEach(line => {
+    const m = line.match(/^\s*\[(\d+)\]\s*(.+)$/); if (!m) return;
+    const s = list[+m[1] - 1]; if (!s) { bad.push(m[1]); return; }
+    let v = m[2].trim(); const lab = stuLabel(s, list);
+    if (v.startsWith(lab)) v = v.slice(lab.length).replace(/^\s*[:—–-]\s*/, '');
+    v = v.replace(/^["«]\s*|\s*["»]$/g, '').trim(); if (!v) return;
+    DB.bul[bulKey(s.id, per)] = {text: v, t: Date.now()}; n++;
+  });
+  if (n) save();
+  return {n, bad};
+}
+function viewBul() {
+  const c = cls(V.cid); if (!c) { back(); return ''; }
+  const periods = periodsFor(c); if (V.p == null || V.p >= periods.length) V.p = currentPeriodIndex(periods);
+  const per = periods[V.p], list = studentsOf(c.id), done = list.filter(s => DB.bul[bulKey(s.id, per)]).length;
+  const seg = periods.slice(0, -1).map((p, i) => `<button type="button" data-act="period" data-i="${i}" aria-pressed="${i === V.p}">${esc(p.n)}</button>`).join('');
+  return `
+  <header class="bar"><button class="btn ghost" data-act="back">${ICON.back}Retour</button>
+    <div class="ttl"><h1>Appréciations</h1><div class="sub">${esc(c.name)} · ${plural(done, 'appréciation', 'appréciations')} sur ${list.length}</div></div><span class="grow"></span><div class="seg" role="group" aria-label="Période">${seg}</div></header>
+  <main class="main"><div class="wrap" style="max-width:980px;display:flex;flex-direction:column;gap:14px">
+    <section class="card bulsteps">
+      <div class="bstep"><b>1</b><div><strong>Copier le récapitulatif de la classe</strong><p class="small muted">Résumé, chiffres, tendance et notes de suivi de chaque élève (prénom et initiale du nom), avec vos consignes de rédaction.</p><button class="btn ink" data-act="bul-export">Copier pour Claude</button></div></div>
+      <div class="bstep"><b>2</b><div><strong>Le coller dans la conversation avec Claude</strong><p class="small muted">Claude répond avec une ligne par élève : <code>[numéro] appréciation</code>.</p></div></div>
+      <div class="bstep"><b>3</b><div><strong>Coller la réponse ici</strong><textarea id="bul-in" rows="4" placeholder="[1] …&#10;[2] …"></textarea><button class="btn ink" data-act="bul-import" style="margin-top:6px">Importer les appréciations</button></div></div>
+    </section>
+    <section class="card"><h2 style="font-size:16px;margin:0 0 8px">Relire et copier vers École Directe</h2>
+      <ul class="bullist">${list.map((s, i) => { const k = bulKey(s.id, per), cur = DB.bul[k] ? DB.bul[k].text : '';
+        return `<li><div class="bh"><span class="thumb">${photoHTML(s)}</span><b>${i + 1}. ${esc(s.first + ' ' + s.last)}</b><span class="small muted sumshort" style="flex:1">${esc(stuSummary(s, per).head)}</span><span class="bulcnt ${cur.length > BUL_MAX ? 'over' : ''}">${cur.length} / ${BUL_MAX}</span><button class="btn" data-act="bul-copy" data-k="${esc(k)}" ${cur ? '' : 'disabled'}>Copier</button></div>
+          <textarea rows="2" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Pas encore d'appréciation">${esc(cur)}</textarea></li>`; }).join('')}</ul></section>
+  </div></main>`;
+}
 function viewFiche() {
   const s = stu(V.sid); if (!s) { back(); return ''; }
   const c = cls(s.cid), periods = periodsFor(c);
   if (V.p == null || V.p >= periods.length) V.p = currentPeriodIndex(periods);
   const per = periods[V.p];
   const obs = DB.obs.filter(o => o.sid === s.id && o.date >= per.s && o.date <= per.e).sort((a, b) => b.date.localeCompare(a.date) || b.t - a.t);
-  const cnt = {}; obs.forEach(o => cnt[o.cat] = (cnt[o.cat] || 0) + 1);
+  const cnt = stuCounts(s, per).cnt, nS = stuSesCount(s, per);
   const tot = t => obs.filter(o => CAT[o.cat]?.t === t).length;
   const bars = CATS.filter(x => (x.t === 'pos' || x.t === 'neg') && cnt[x.k]).sort((a, b) => cnt[b.k] - cnt[a.k]);
   const max = Math.max(1, cnt.ras || 0, ...bars.map(b => cnt[b.k]));
   const nP = tot('pos'), nN = tot('neg'), nR = cnt.ras || 0, nT = nP + nN + nR, pc = v => nT ? Math.round(v / nT * 100) : 0;
   const synth = nT ? `<div class="synth" role="img" aria-label="Positives ${pc(nP)} %, RAS ${pc(nR)} %, négatives ${pc(nN)} %"><span class="sp" style="width:${(nP / nT * 100).toFixed(1)}%"></span><span class="sr" style="width:${(nR / nT * 100).toFixed(1)}%"></span><span class="sn" style="width:${(nN / nT * 100).toFixed(1)}%"></span></div>
     <div class="synleg"><span><i style="background:var(--pos)"></i>Positives ${nP} · ${pc(nP)} %</span><span><i style="background:var(--ras)"></i>RAS ${nR} · ${pc(nR)} %</span><span><i style="background:var(--neg)"></i>Négatives ${nN} · ${pc(nN)} %</span></div>` : '';
-  const rasRow = nR ? `<div class="barrow rasrow"><span>RAS (rien à signaler)</span><span class="tr"><span class="fl ras" style="display:block;width:${(nR / max * 100).toFixed(1)}%"></span></span><b>${nR}</b></div>` : '';
+  const rasRow = nR ? `<div class="barrow rasrow"><span>RAS (rien à signaler)</span><span class="tr"><span class="fl ras" style="display:block;width:${(nR / max * 100).toFixed(1)}%"></span></span><b>${nR}<span class="pc">${nS ? ' · ' + pcR(nR, nS) + ' %' : ''}</span></b></div>` : '';
   const seg = periods.map((p, i) => `<button type="button" data-act="period" data-i="${i}" aria-pressed="${i === V.p}">${esc(p.n)}</button>`).join('');
   const log = obs.length ? `<ul class="log">${obs.map(o => `<li><span class="d">${fmtShort(o.date)}</span>${catChip(o.cat)}<span class="n">${esc(o.note)}${o.note ? '' : `<span class="muted small">${esc(o.lbl || '')}</span>`}</span><button type="button" class="x" data-act="o-del" data-oid="${o.id}">Supprimer</button></li>`).join('')}</ul>`
     : `<p class="muted">Aucune observation sur cette période.</p>`;
@@ -1790,8 +1891,9 @@ function viewFiche() {
       <p class="small muted" style="margin:0">${esc(per.n)} : du ${fmtShort(per.s)} au ${fmtShort(per.e)}</p>
     </aside>
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      ${per.n !== 'Année' ? bulCard(s, per) : ''}
       ${notesCard(s)}
-      <section class="card"><h2 style="font-size:16px;margin-bottom:12px">Répartition</h2>${synth}${bars.length || rasRow ? `<div class="bars">${bars.map(b => `<div class="barrow"><span>${esc(b.l)}</span><span class="tr"><span class="fl ${b.t}" style="display:block;width:${(cnt[b.k] / max * 100).toFixed(1)}%"></span></span><b>${cnt[b.k]}</b></div>`).join('')}${rasRow}</div>` : '<p class="muted" style="margin:0">Rien à afficher pour l\'instant.</p>'}</section>
+      <section class="card"><h2 style="font-size:16px;margin-bottom:12px">Répartition</h2>${synth}${bars.length || rasRow ? `<div class="bars">${bars.map(b => `<div class="barrow"><span>${esc(b.l)}</span><span class="tr"><span class="fl ${b.t}" style="display:block;width:${(cnt[b.k] / max * 100).toFixed(1)}%"></span></span><b>${cnt[b.k]}<span class="pc">${nS ? ' · ' + pcR(cnt[b.k], nS) + ' %' : ''}</span></b></div>`).join('')}${rasRow}</div><p class="small muted" style="margin:8px 0 0">Nombre de séances (une étiquette compte une fois par séance) et pourcentage des ${plural(nS, 'séance suivie', 'séances suivies')} sur la période.</p>` : '<p class="muted" style="margin:0">Rien à afficher pour l\'instant.</p>'}</section>
       ${(() => { const cs = DB.catchup.filter(x => x.sid === s.id).sort((a, b) => b.date.localeCompare(a.date)); if (!cs.length) return '';
         return `<section class="card"><h2 style="font-size:16px;margin-bottom:8px">Rattrapages</h2><ul class="log">${cs.map(x => `<li><span class="d">${fmtShort(x.date)}</span><span class="n">${esc(catchText(x))}</span>${x.done ? `<span class="chip pos">Rattrapé le ${fmtShort(x.done)}</span>` : '<span class="chip warn">En cours</span>'}<button type="button" class="x" data-act="catch-toggle" data-id="${x.id}">${x.done ? 'Rouvrir' : 'Rattrapé'}</button></li>`).join('')}</ul></section>`; })()}
       <section class="card"><h2 style="font-size:16px;margin-bottom:8px">Chronologie</h2>${log}</section>
@@ -1802,17 +1904,25 @@ function viewFiche() {
 /* ---------- vue : réglages ---------- */
 function viewSettings() {
   const tab = V.tab || 'classes';
-  const tabs = [['classes','Classes et élèves'],['edt','Emploi du temps'],['periodes','Périodes et vacances'],['sauvegarde','Sauvegarde'],['sync','Synchronisation']];
+  const tabs = [['classes','Classes et élèves'],['edt','Emploi du temps'],['periodes','Périodes et vacances'],['etiquettes','Étiquettes'],['sauvegarde','Sauvegarde'],['sync','Synchronisation']];
   let body = '';
   if (tab === 'classes') body = setClasses();
   if (tab === 'edt') body = setEdt();
   if (tab === 'periodes') body = setPeriodes();
   if (tab === 'sauvegarde') body = setBackup();
+  if (tab === 'etiquettes') body = setCats();
   if (tab === 'sync') body = setSync2();
   return `
   <header class="bar"><button class="btn ghost" data-act="home">${ICON.back}Accueil</button><div class="ttl"><h1>Réglages</h1></div><span class="grow"></span><span class="small muted">${versionLabel()}</span></header>
   <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${k === tab}" data-act="tab" data-tab="${k}">${l}</button>`).join('')}</nav>
   <main class="main"><div class="wrap" style="max-width:1100px">${body}</div></main>`;
+}
+function setCats() {
+  const hid = new Set(DB.settings.hiddenCats || []);
+  const col = (t, title) => `<div><div class="lbl" style="margin-bottom:6px">${title}</div><div class="catset">${CATS.filter(x => x.t === t && !PANEL_HIDE.has(x.k)).map(x => `<label class="check"><input type="checkbox" data-chg="cat-show" data-k="${x.k}" ${hid.has(x.k) ? '' : 'checked'}> <span class="chip ${t}">${esc(x.l)}</span></label>`).join('')}</div></div>`;
+  return `<section class="card" style="display:flex;flex-direction:column;gap:14px"><h3 style="font-size:17px">Étiquettes affichées dans le bilan</h3>
+    <p class="small muted" style="margin:0">Décochez les étiquettes que vous n'utilisez pas : elles disparaissent du panneau de bilan. Les observations déjà saisies sont conservées et restent dans les statistiques. « RAS » et « Absent/e » sont toujours affichés.</p>
+    <div class="catcols">${col('pos', 'Positives')}${col('neg', 'Négatives')}</div></section>`;
 }
 let CONS_EDIT = null;
 function councilsCard(c) {
@@ -2222,7 +2332,7 @@ async function runSelfTests() {
       const sm = stuSummary(sx, per, true);
       eq(sm.head, 'Implication active mais bavardages', 'résumé : points forts et points à améliorer');
       ok(sm.facts.includes('1 devoir non fait'), 'résumé : devoirs non faits comptés');
-      ok(/séances observées/.test(sm.detail), 'résumé : détail des chiffres');
+      ok(/suivie/.test(sm.detail) && /%/.test(sm.detail), 'résumé : détail en séances avec pourcentages');
       DB.obs = DB.obs.filter(o => !o.id.startsWith('os'));
       eq(stuSummary(sx, per).head, 'Peu observé', 'résumé : trop peu d\'observations');
       DB.notes.push({id: 'n1', sid: 'y0', cid: 'tA', kind: 'parents', date: D(0, 2), text: 'Parents rencontrés', t: 1});
@@ -2230,6 +2340,23 @@ async function runSelfTests() {
       ok(/Parents rencontrés/.test(html(viewFiche()).textContent), 'note de suivi affichée dans la fiche');
       ok(recordsOf(DB, {}).has('notes:n1'), 'note de suivi synchronisée');
       DB.notes = DB.notes.filter(n => n.id !== 'n1');
+    });
+
+    await group('Étiquettes et appréciations', () => {
+      ok(CAT.blouse && CAT.blouse.t === 'neg', 'étiquette « Oubli de blouse »');
+      V = {name: 'grid', ses: We, stab: 'bilan'};
+      const a1 = addObs('y0', 'bavarde'), a2 = addObs('y0', 'bavarde', 'encore');
+      ok(a1 === a2 && DB.obs.filter(o => o.ses === We.key && o.sid === 'y0' && o.cat === 'bavarde').length === 1, 'une étiquette compte une fois par séance');
+      DB.obs = DB.obs.filter(o => o !== a1);
+      DB.settings.hiddenCats = ['question']; ok(!catShown('question') && catShown('aide'), 'étiquette masquée dans le panneau');
+      DB.settings.hiddenCats = [];
+      const per = periodsFor(cls('tA'))[0], txt = bulExportText(cls('tA'), per);
+      ok(/\[1\] Élève0 T\./.test(txt) && /250 caractères/.test(txt), 'récapitulatif pour les appréciations');
+      const r = bulImport(cls('tA'), per, '[1] Bon trimestre, continuez ainsi.\n[2] Élève1 T. : Des efforts à poursuivre.\n[99] x');
+      eq([r.n, r.bad], [2, ['99']], 'import des appréciations');
+      eq(DB.bul[bulKey('y1', per)].text, 'Des efforts à poursuivre.', 'appréciation rangée au bon élève (nom retiré)');
+      ok(recordsOf(DB, {}).has('bul:' + bulKey('y0', per)), 'appréciations synchronisées');
+      DB.bul = {};
     });
 
     await group('Données et compatibilité', () => {
@@ -3164,6 +3291,7 @@ function viewSuivi() {
       <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button>
       <button class="gchip" data-act="sui-f" data-v="disc" aria-pressed="${V.sf === 'disc'}"><span class="chip disc">${nD}</span> discret${nD > 1 ? 's' : ''}</button></div>
     ${(() => { const ks = (c.councils || []).filter(k => k.date >= addDays(todayStr(), -60)).sort((a, b) => a.date.localeCompare(b.date)); const k = ks.filter(x => x.date <= todayStr()).pop() || ks[0]; return k ? `<div class="row" style="gap:8px"><button class="btn" data-act="nw-open" data-cid="${c.id}" data-id="${k.id}">✎ Notes du conseil du ${esc(dayShort(k.date))}</button><span class="small muted">${plural(DB.notes.filter(n => n.ref === k.id && n.text).length, 'note saisie', 'notes saisies')} sur ${studentsOf(c.id).length}</span></div>` : ''; })()}
+    <div class="row" style="gap:8px"><button class="btn" data-act="bul-open" data-cid="${c.id}">✎ Appréciations ${esc(per.n !== 'Année' ? 'du ' + per.n : '')}</button><span class="small muted">${per.n !== 'Année' ? plural(studentsOf(c.id).filter(s => DB.bul[bulKey(s.id, per)]).length, 'rédigée', 'rédigées') + ' sur ' + studentsOf(c.id).length : ''}</span></div>
     ${apprBlockHTML(c, per)}
     ${sv === 'grid' ? `<div class="row" style="gap:8px"><span class="small muted">Trier :</span>${['name', 'pos', 'neg', 'ras', 'abs'].map(k => `<button type="button" class="gchip" data-act="sui-sort" data-k="${k}" aria-pressed="${sk === k}">${{name: 'Nom', pos: 'Positif', neg: 'Négatif', ras: 'RAS', abs: 'Absences'}[k]}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`).join('')}</div>
     <div class="tiles stiles">${grid || '<p class="muted">Aucun élève dans ce filtre.</p>'}</div>` : `<section class="card stable-card">
@@ -4535,6 +4663,12 @@ const ACT = {
   'pg-sel': el => { V.pgSel = V.pgSel === el.dataset.key ? null : el.dataset.key; renderKeep(); if (V.pgSel) $('.pgdetail')?.scrollIntoView({block: 'nearest', behavior: 'smooth'}); },
   'pg-step': el => { if (el.dataset.key) { V.pgSel = el.dataset.key; renderKeep(); } },
   selftest: () => { selfTestModal(); },
+  'bul-open': el => { const c = cls(el.dataset.cid), periods = periodsFor(c); let p = V.sp != null ? V.sp : currentPeriodIndex(periods); if (p >= periods.length - 1) p = Math.max(0, currentPeriodIndex(periods)); go({name: 'bul', cid: c.id, p}); },
+  'bul-export': async () => { const c = cls(V.cid), per = periodsFor(c)[V.p], txt = bulExportText(c, per);
+    try { await navigator.clipboard.writeText(txt); toast('Récapitulatif copié : collez-le dans la conversation avec Claude'); } catch (e) { openModal(`<h2>Récapitulatif à copier</h2><textarea rows="14" style="width:100%" readonly>${esc(txt)}</textarea><div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`); } },
+  'bul-import': () => { const c = cls(V.cid), per = periodsFor(c)[V.p], t = $('#bul-in').value; const r = bulImport(c, per, t);
+    if (!r.n) { toast('Aucune ligne « [numéro] appréciation » trouvée'); return; } renderKeep(); toast(`${plural(r.n, 'appréciation importée', 'appréciations importées')}${r.bad.length ? ' · numéros inconnus : ' + r.bad.join(', ') : ''}`); },
+  'bul-copy': async el => { const x = DB.bul[el.dataset.k]; if (!x) return; try { await navigator.clipboard.writeText(x.text); toast('Appréciation copiée'); } catch (e) { toast(x.text); } },
   'nw-open': el => { NW = {cid: el.dataset.cid, kid: el.dataset.id, i: 0}; const c = cls(NW.cid), list = studentsOf(NW.cid); const j = list.findIndex(s => !DB.notes.some(n => n.sid === s.id && n.ref === NW.kid && n.text)); if (j > 0) NW.i = j; noteWalk(); },
   'nw-go': el => { nwSave(); const n = studentsOf(NW.cid).length, d = +el.dataset.d; if (d > 0 && NW.i >= n - 1) { NW = null; closeModal(); renderKeep(); toast('Notes du conseil enregistrées'); return; } NW.i = Math.max(0, Math.min(n - 1, NW.i + d)); noteWalk(); },
   'nw-close': () => { nwSave(); NW = null; closeModal(); renderKeep(); },
@@ -4623,6 +4757,8 @@ const CHG = {
     render(); toast(`${plural(ok, 'photo')} associée${ok > 1 ? 's' : ''}` + (miss.length ? ` · ${miss.length} non reconnue${miss.length > 1 ? 's' : ''}` : ''));
   },
   group: el => { const s = stu(el.dataset.sid); s.group = el.value; save(); render(); },
+  'cat-show': el => { const h = new Set(DB.settings.hiddenCats || []); if (el.checked) h.delete(el.dataset.k); else h.add(el.dataset.k); DB.settings.hiddenCats = [...h]; save(); },
+  bul: el => { const k = el.dataset.k; const v = el.value.trim(); if (v) DB.bul[k] = {text: v, t: Date.now()}; else delete DB.bul[k]; save(); },
   'class-pt': el => { cls(el.dataset.cid).pt = el.value; save(); },
   'class-g2': el => { const c = cls(el.dataset.cid); if (el.checked) c.g2 = true; else delete c.g2; save(); render(); },
   group2: el => { const s = stu(el.dataset.sid); if (el.value) s.g2 = el.value; else delete s.g2; SESS_CACHE = {}; save(); render(); },
@@ -4670,6 +4806,7 @@ document.addEventListener('click', e => {
   if (!el) return;
   const fn = ACT[el.dataset.act]; if (fn) fn(el, e);
 });
+document.addEventListener('input', e => { const el = e.target; if (!el.dataset || !el.dataset.count) return; const box = el.closest('li, .bulcard'), c = box && box.querySelector('.bulcnt'); if (c) { c.textContent = el.value.trim().length + ' / ' + el.dataset.count; c.classList.toggle('over', el.value.trim().length > +el.dataset.count); } });
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form]?.(f); });
 document.addEventListener('keydown', e => {
@@ -4727,8 +4864,8 @@ async function showPersist() {
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
 const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup', 'notes'];
-const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog'];
-const SYNC_SET = ['evenIsA', 'holidays', 'periods'];
+const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul'];
+const SYNC_SET = ['evenIsA', 'holidays', 'periods', 'hiddenCats'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
 const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});
 let SYNC = {state: 'off', busy: false, again: false, msg: '', rootOk: false};

@@ -1,5 +1,12 @@
 # Historique des versions
 
+## 3.05 — 8 novembre 2026
+- Nouvelle étiquette « Oubli de blouse ».
+- Une étiquette ne compte qu'une fois par séance pour un élève (déjà notée : grisée dans le panneau).
+- Réglages › Étiquettes : choisir les étiquettes affichées dans le bilan.
+- Résumé et fiche : comptes en séances avec pourcentage des séances suivies ; « Peu observé » si moins de 30 % des séances ont une observation.
+- Appréciations de bulletin : récapitulatif à copier pour Claude, import des réponses, relecture et copie vers École Directe ; appréciation visible dans la fiche.
+
 ## 3.04 — 3 novembre 2026
 - Résumé automatique de l'élève (fiche et Suivi) : points forts / à améliorer, devoirs, matériel, retards, absences, tendance sur 3 semaines.
 - Notes de suivi dans la fiche élève (conseil de classe, rencontre parents, autre), synchronisées.

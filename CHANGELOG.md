@@ -1,5 +1,8 @@
 # Historique des versions
 
+## 3.08 — 8 novembre 2026
+- Note d'implication : « Actif » et « Travail soigné » valent + 0,25 par séance (travail attendu) ; Participe, Moteur, Bonne question, Aide, Progrès restent à + 0,5.
+
 ## 3.07 — 8 novembre 2026
 - Fiche élève : tableau « Ce que vaut chaque remarque » (barème et valeurs dans la classe), aussi dans Réglages › Étiquettes.
 - Chronologie par séance : remarques, points gagnés ou perdus, note après la séance, RAS automatiques, séances hors calcul (absence, évaluation), plafonds et rattrapages indiqués.

@@ -1649,9 +1649,9 @@ function viewGrid() {
     const name = (compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`) + dlIcon(s);
     const autoRas = !r.abs && !(r.pos || r.neg || r.ras || r.dv) && !isEv && sesEnded(ses) && bilanStarted(ses.key);
     const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.dv ? `<span class="chip dv" title="${CAT[r.dv].l}">${compact ? 'Dev.' : 'Devoir'}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '') + (autoRas ? '<span class="chip neu autoras" title="RAS automatique">RAS</span>' : '');
-    const look = !autoRas && !r.abs && !(r.pos || r.neg || r.ras || r.dv) && !isEv && rasRunBefore(s, ses) >= Math.max(1, implP().rasLen - 1);
+    const look = !autoRas && !r.abs && !(r.pos || r.neg || r.ras || r.dv) && !isEv && rasRunBefore(s, ses) >= 2 * implP().rasLen - 1; // une séance avant la deuxième sanction
     return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-long="fiche" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}${look ? ' — à regarder' : ''}">
-      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}${look ? '<span class="tag-look" title="Plusieurs RAS de suite : à regarder">👁 à regarder</span>' : ''}</span>
+      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}${look ? '<span class="tag-look" title="RAS de suite, déjà pénalisé une fois : à regarder avant la prochaine pénalité">👁 à regarder</span>' : ''}</span>
       <span class="nm">${name}</span><span class="cnt">${chips}</span></button>`;
   }).join('');
   const present = list.length - abs;
@@ -1828,7 +1828,7 @@ function nwSave() {
   save();
 }
 /* ---------- note d'implication (modèle « capital ») ---------- */
-const IMPL_DEF = {on: true, base: 15, gain: 0.5, bonusMax: 5, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasLen: 3, rasPen: 0.5, capComp: 6, capDev: 5, capOrg: 3, capPas: 3, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
+const IMPL_DEF = {on: true, base: 15, gain: 0.5, bonusMax: 5, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasLen: 2, rasPen: 0.5, capComp: 6, capDev: 5, capOrg: 3, capPas: 3, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
 const implP = () => ({...IMPL_DEF, ...(DB.settings.impl || {})});
 const DISRUPT = new Set(['bavarde', 'samuse', 'agite', 'comportement', 'securite']), ORGC = new Set(['materiel', 'blouse', 'retard']);
 const sesEnded = x => { const t = todayStr(); if (x.date < t) return true; if (x.date > t) return false;
@@ -2493,10 +2493,11 @@ async function runSelfTests() {
       const run = spec => { DB.obs = DB.obs.filter(o => o.sid !== st.id); Object.entries(spec).forEach(([cat, idx]) => idx.forEach(i => DB.obs.push({id: 'ti' + cat + i, sid: st.id, cid: c.id, ses: L30[i - 1].key, date: L30[i - 1].date, cat, t: i, note: ''}))); return implCalc(st, per).note; };
       const r = n => Array.from({length: Math.ceil(30 / n)}, (_, i) => 1 + i * n).filter(x => x <= 30);
       eq(run({actif: r(2), bavarde: [10]}), 20, 'bon élève : 20');
-      eq(run({participe: [3, 8, 13, 18, 23, 28], bavarde: [5, 10, 15, 20, 25], devoir: [7, 19], blouse: [12]}), 10.5, 'élève moyen : 10,5');
+      eq(run({participe: [3, 8, 13, 18, 23, 28], bavarde: [5, 10, 15, 20, 25], devoir: [7, 19], blouse: [12]}), 8, 'élève moyen : 8');
       eq(run({actif: [5, 20], bavarde: [1, 3, 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 26, 28], devoir: [2, 9, 17, 25], materiel: [7, 11, 15], blouse: [21, 27], retard: [29]}), 3, 'élève en difficulté : plancher 3');
-      eq(run({}), 11, 'élève invisible (que des RAS) : 11');
-      eq(run({participe: r(5)}), 15, 'discret qui participe une fois sur cinq : 15');
+      eq(run({}), 10, 'élève invisible (que des RAS) : 10');
+      eq(run({participe: r(5)}), 12.5, 'discret qui participe une fois sur cinq : 12,5');
+      eq(run({participe: r(4)}), 15.5, 'discret qui participe une fois sur quatre : 15,5');
       const ks = new Set(L30.map(x => x.key)); DB.obs = DB.obs.filter(o => !ks.has(o.ses)); L30.forEach(x => { delete DB.appr[x.key]; });
       eq(run({ras: [1]}), null, 'peu observé (bilans non faits) : pas de note proposée');
     });

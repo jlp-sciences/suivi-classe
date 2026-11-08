@@ -1013,6 +1013,28 @@ button.wpill{cursor:pointer}
 .ibadge.low{color:var(--neg)} .ibadge.high{color:var(--pos)}
 .stile .ibadge ~ .stags{top:32px}
 .isynth{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+
+/* ---- 3.07 : barème et chronologie par séance ---- */
+.idet summary{cursor:pointer;font-weight:600;font-size:14px;padding:4px 0}
+.idet[open] summary{margin-bottom:8px}
+.itab{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:6px}
+.itab th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:4px 8px;border-bottom:1px solid var(--line)}
+.itab td{padding:6px 8px;border-bottom:1px solid var(--line)}
+.itab td.pos{color:var(--pos);white-space:nowrap} .itab td.neg{color:var(--neg);white-space:nowrap}
+.slog li{flex-wrap:nowrap}
+.slog .n{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1 1 0;min-width:0}
+.slog .pts.muted{font-size:12px;font-weight:500;white-space:nowrap}
+@media (max-width:640px){.slog li{gap:8px}.slog .d,.loghead span:nth-child(1){width:52px;font-size:13px}.slog .pts,.loghead span:nth-child(3){width:58px}.slog .nt,.loghead span:nth-child(4){width:34px}.loghead{gap:8px}}
+.slog .pts{flex:none;width:76px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.slog .pts.pos{color:var(--pos)} .slog .pts.neg{color:var(--neg)}
+.slog .nt{flex:none;width:44px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.slog .iinfo{flex-basis:100%}
+.oit{display:inline-flex;align-items:center;gap:2px}
+.slog .onote{color:var(--ink-2);min-width:0}
+.oit .ox{border:none;background:transparent;color:var(--muted);font-size:16px;min-width:28px;min-height:28px;border-radius:6px;cursor:pointer}
+.oit .ox:hover{background:var(--surface-2)}
+.loghead{display:flex;gap:12px;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:0 0 4px}
+.loghead span:nth-child(1){width:88px} .loghead span:nth-child(2){flex:1} .loghead span:nth-child(3){width:76px;text-align:right} .loghead span:nth-child(4){width:44px;text-align:right}
 </style>
 </head>
 <body>
@@ -1047,7 +1069,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.06', d: '2026-11-08'};
+const APP_VERSION = {n: '3.07', d: '2026-11-08'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1865,11 +1887,18 @@ function implCalc(s, per) {
   const byKey = new Map(); DB.obs.forEach(o => { if (o.sid !== s.id || !CAT[o.cat]) return; const a = byKey.get(o.ses); if (a) a.push(o); else byKey.set(o.ses, [o]); });
   const k = all.length ? P.ref / all.length : 1, v = x => x * k;
   const caps = {comp: P.capComp, dev: P.capDev, org: P.capOrg, pas: P.capPas}, debt = {comp: 0, dev: 0, org: 0, pas: 0}, lost = {comp: 0, dev: 0, org: 0, pas: 0};
-  let bonus = 0, repaid = 0, gained = 0, run = 0, nObs = 0, nFollow = 0; const hist = [];
-  const lose = (f, x) => { const room = Math.max(0, caps[f] - debt[f]); const d = x <= room ? x : room + (x - room) * P.soft; debt[f] += d; lost[f] += d; };
+  let bonus = 0, repaid = 0, gained = 0, run = 0, nObs = 0, nFollow = 0; const hist = [], log = [];
+  const NAMES = {comp: 'comportement', dev: 'devoirs', org: 'oublis et retards', pas: 'passivité'};
+  let info = [];
+  const lose = (f, x) => { const room = Math.max(0, caps[f] - debt[f]); const d = x <= room ? x : room + (x - room) * P.soft; if (x > room + 1e-9) info.push(`plafond ${NAMES[f]} atteint : compté ${room > 1e-9 ? 'en partie ' : ''}à moitié`); debt[f] += d; lost[f] += d; };
+  const rawNow = () => P.base + bonus - Object.values(debt).reduce((a, b) => a + b, 0);
+  const clampN = n => Math.max(P.floor, Math.min(20, n));
   past.forEach(x => {
-    const kind = sesKind(x, s, byKey); if (kind === 'abs') return; nFollow++;
-    if (kind === 'none') return; nObs++;
+    const kind = sesKind(x, s, byKey), before = rawNow(); info = [];
+    const entry = {x, kind, cats: [...new Set((byKey.get(x.key) || []).map(o => o.cat))]};
+    log.push(entry);
+    if (kind === 'abs') { entry.skip = 'absent'; return; } nFollow++;
+    if (kind === 'none') { entry.skip = 'none'; return; } nObs++;
     const cats = new Set((byKey.get(x.key) || []).map(o => o.cat));
     /* pertes */
     const comp = [...cats].some(c => DISRUPT.has(c)) ? P.cDis : cats.has('passif') ? P.cPas : 0;
@@ -1878,20 +1907,23 @@ function implCalc(s, per) {
     if (cats.has('devoir_inc')) lose('dev', v(P.cDevPart));
     if (cats.has('devoir_bac')) lose('dev', v(P.cDevPart));
     cats.forEach(c => { if (ORGC.has(c)) lose('org', v(P.cOrg)); });
-    if (kind === 'eval') { hist.push({d: x.date, n: P.base + bonus - Object.values(debt).reduce((a, b) => a + b, 0)}); return; }
+    if (kind === 'eval') { hist.push({d: x.date, n: rawNow()}); entry.delta = rawNow() - before; entry.note = clampN(rawNow()); entry.info = info; entry.eval = true; return; }
     /* passivité : série de RAS */
-    if (kind === 'ras') { run++; if (run >= P.rasLen) { lose('pas', v(P.rasPen)); run = 0; } }
+    if (kind === 'ras') { run++; entry.run = run; if (run >= P.rasLen) { lose('pas', v(P.rasPen)); info.push(`${P.rasLen} RAS de suite`); run = 0; } }
     else run = 0;
     /* gains : remboursent d'abord la dette la plus lourde, puis bonus */
-    if ([...cats].some(c => CAT[c].t === 'pos')) { let g = v(P.gain); gained += g;
-      while (g > 1e-9 && Object.values(debt).some(d => d > 1e-9)) { const f = Object.keys(debt).reduce((a, b) => debt[b] > debt[a] ? b : a); const r = Math.min(g, debt[f]); debt[f] -= r; g -= r; repaid += r; }
+    if ([...cats].some(c => CAT[c].t === 'pos')) { let g = v(P.gain), rp = 0; gained += g;
+      while (g > 1e-9 && Object.values(debt).some(d => d > 1e-9)) { const f = Object.keys(debt).reduce((a, b) => debt[b] > debt[a] ? b : a); const r = Math.min(g, debt[f]); debt[f] -= r; g -= r; repaid += r; rp += r; }
+      if (rp > 1e-9) info.push(rp >= v(P.gain) - 1e-9 ? 'rattrape des points perdus' : `dont ${fmtN(rp)} pour rattraper des points perdus`);
+      if (bonus + g > P.bonusMax + 1e-9) info.push('bonus maximal atteint');
       bonus = Math.min(P.bonusMax, bonus + g); }
-    hist.push({d: x.date, n: Math.max(P.floor, Math.min(20, P.base + bonus - Object.values(debt).reduce((a, b) => a + b, 0)))});
+    hist.push({d: x.date, n: clampN(rawNow())});
+    entry.delta = rawNow() - before; entry.note = clampN(rawNow()); entry.info = info;
   });
   const raw = P.base + bonus - Object.values(debt).reduce((a, b) => a + b, 0);
   const note = Math.round(Math.max(P.floor, Math.min(20, raw)) * 2) / 2;
   const enough = nFollow >= 3 && nObs / Math.max(1, nFollow) * 100 >= P.obsMin;
-  return {note: enough ? note : null, raw, k, nPlanned: all.length, nFollow, nObs, bonus, gained, repaid, debt, lost, hist, run, P};
+  return {note: enough ? note : null, raw, k, nPlanned: all.length, nFollow, nObs, bonus, gained, repaid, debt, lost, hist, run, P, log};
 }
 const fmtN = x => (Math.round(x * 100) / 100).toLocaleString('fr-FR', {maximumFractionDigits: 2});
 const fmtH = x => (Math.round(x * 2) / 2).toLocaleString('fr-FR');
@@ -1902,6 +1934,12 @@ function implSpark(h, P) {
   const x = i => 30 + i / (h.length - 1) * (W - 36), y = n => H - 6 - (n - lo) / (hi - lo) * (H - 12);
   const pts = h.map((p, i) => `${x(i).toFixed(1)},${y(p.n).toFixed(1)}`).join(' ');
   return `<svg class="ispark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution de la note au fil des séances"><line x1="30" x2="${W - 6}" y1="${y(P.base)}" y2="${y(P.base)}" class="ibase"/><text x="0" y="${y(P.base) + 4}" class="ilab">${fmtN(P.base)}</text><polyline points="${pts}"/><circle cx="${x(h.length - 1)}" cy="${y(h[h.length - 1].n)}" r="3.5"/><text x="${Math.min(W - 30, x(h.length - 1) + 6)}" y="${y(h[h.length - 1].n) - 6}" class="ilab">${fmtH(h[h.length - 1].n)}</text></svg>`;
+}
+function implTable(P, k, nPlanned) {
+  const rows = [['Participe, actif, moteur, bonne question, aide, travail soigné, progrès', 'par séance', P.gain, 1], ['Bavard, s\'amuse, agité, comportement, sécurité TP', 'par séance', P.cDis, -1], ['Passif', 'par séance', P.cPas, -1], ['Devoir non fait', '', P.cDev, -1], ['Devoir incomplet ou bâclé', '', P.cDevPart, -1], ['Oubli de matériel ou de blouse, retard', '', P.cOrg, -1], [`${P.rasLen} RAS de suite`, '', P.rasPen, -1]];
+  const f = (x, sg) => (sg > 0 ? '+ ' : '− ') + fmtN(x);
+  return `<table class="itab"><thead><tr><th>Remarque</th><th>Barème</th>${k != null ? `<th>Dans cette classe<span class="small muted"> (${plural(nPlanned, 'séance prévue', 'séances prévues')})</span></th>` : ''}</tr></thead><tbody>${rows.map(([l, sub, x, sg]) => `<tr><td>${esc(l)}${sub ? ` <span class="small muted">${sub}</span>` : ''}</td><td class="${sg > 0 ? 'pos' : 'neg'}">${f(x, sg)}</td>${k != null ? `<td class="${sg > 0 ? 'pos' : 'neg'}"><b>${f(x * k, sg)}</b></td>` : ''}</tr>`).join('')}</tbody></table>
+  <p class="small muted" style="margin:0">Départ ${fmtN(P.base)} · bonus jusqu'à + ${fmtN(P.bonusMax)} · plafonds : comportement − ${fmtN(P.capComp)}, devoirs − ${fmtN(P.capDev)}, oublis et retards − ${fmtN(P.capOrg)}, passivité − ${fmtN(P.capPas)} (au-delà, compté à moitié) · plancher ${fmtN(P.floor)} · arrondi au demi-point. Les séances d'évaluation ne comptent que pour les oublis, retards, devoirs et incidents ; les absences ne comptent pas.${k != null && Math.abs(k - 1) > 0.01 ? ` Valeurs ajustées au rythme de la classe (× ${fmtN(k)} : ${P.ref} séances de référence).` : ''}</p>`;
 }
 function implCard(s, per) {
   const P = implP(); if (!P.on) return '';
@@ -1914,7 +1952,7 @@ function implCard(s, per) {
     ${implSpark(r.hist, P)}
     <p class="iparts"><span class="ipart">Départ ${fmtN(P.base)}</span>${line('Participation', r.bonus, 'pos')}${line('Comportement', r.debt.comp, 'neg')}${line('Devoirs', r.debt.dev, 'neg')}${line('Organisation', r.debt.org, 'neg')}${line('Passivité', r.debt.pas, 'neg')}</p>
     ${r.repaid > 0.001 ? `<p class="small muted" style="margin:0">Participation gagnée : + ${fmtN(r.gained)}, dont ${fmtN(r.repaid)} pour rattraper des points perdus.</p>` : ''}
-    <p class="small muted" style="margin:0">${esc(c.name)} : ${plural(r.nPlanned, 'séance prévue', 'séances prévues')} sur la période (${plural(r.nFollow, 'suivie', 'suivies')}) — une participation vaut + ${fmtN(P.gain * r.k)}, un bavardage − ${fmtN(P.cDis * r.k)}, un devoir non fait − ${fmtN(P.cDev * r.k)}, ${P.rasLen} RAS de suite − ${fmtN(P.rasPen * r.k)}.</p>
+    <details class="idet"><summary>Ce que vaut chaque remarque</summary>${implTable(P, r.k, r.nPlanned)}</details>
   </section>`;
 }
 /* alerte « à regarder » : RAS consécutifs juste avant cette séance */
@@ -1998,7 +2036,23 @@ function viewFiche() {
     <div class="synleg"><span><i style="background:var(--pos)"></i>Positives ${nP} · ${pc(nP)} %</span><span><i style="background:var(--ras)"></i>RAS ${nR} · ${pc(nR)} %</span><span><i style="background:var(--neg)"></i>Négatives ${nN} · ${pc(nN)} %</span></div>` : '';
   const rasRow = nR ? `<div class="barrow rasrow"><span>RAS (rien à signaler)</span><span class="tr"><span class="fl ras" style="display:block;width:${(nR / max * 100).toFixed(1)}%"></span></span><b>${nR}<span class="pc">${nS ? ' · ' + pcR(nR, nS) + ' %' : ''}</span></b></div>` : '';
   const seg = periods.map((p, i) => `<button type="button" data-act="period" data-i="${i}" aria-pressed="${i === V.p}">${esc(p.n)}</button>`).join('');
-  const log = obs.length ? `<ul class="log">${obs.map(o => `<li><span class="d">${fmtShort(o.date)}</span>${catChip(o.cat)}<span class="n">${esc(o.note)}${o.note ? '' : `<span class="muted small">${esc(o.lbl || '')}</span>`}</span><button type="button" class="x" data-act="o-del" data-oid="${o.id}">Supprimer</button></li>`).join('')}</ul>`
+  /* chronologie par séance, avec les points de la note d'implication */
+  const ir = implP().on && per.n !== 'Année' ? implCalc(s, per) : null;
+  const obsBy = new Map(); obs.forEach(o => { const k = o.ses || o.date; if (!obsBy.has(k)) obsBy.set(k, []); obsBy.get(k).push(o); });
+  const groups = (ir ? ir.log.map(e => ({key: e.x.key, date: e.x.date, x: e.x, e})) : []);
+  const known = new Set(groups.map(g => g.key));
+  obsBy.forEach((l, k) => { if (!known.has(k)) groups.push({key: k, date: l[0].date, lbl: l[0].lbl}); });
+  groups.sort((a, b) => b.date.localeCompare(a.date) || String(b.x ? b.x.start : '').localeCompare(String(a.x ? a.x.start : '')));
+  const oItem = o => `<span class="oit">${catChip(o.cat)}<button type="button" class="ox" data-act="o-del" data-oid="${o.id}" aria-label="Supprimer cette observation" title="Supprimer">×</button></span>${o.note ? `<span class="small onote">${esc(o.note)}</span>` : ''}`;
+  const gHTML = g => { const l = obsBy.get(g.key) || [], e = g.e;
+    if (!l.length && e && e.skip === 'none') return '';
+    let what = l.filter(o => !e || o.cat !== 'ras').map(oItem).join('');
+    if (e && e.kind === 'ras') what = `${l.length ? oItem(l[0]) : '<span class="chip neu autoras">RAS</span>'}${e.run ? `<span class="small muted">${e.run === 1 ? '' : e.run + 'e de suite'}</span>` : ''}`;
+    if (e && e.eval) what = '<span class="chip neg">Évaluation</span>' + what;
+    const pts = !e ? '' : e.skip === 'absent' ? '<span class="pts muted">hors calcul</span>' : e.delta == null ? '' : Math.abs(e.delta) < 0.005 ? `<span class="pts muted">${e.eval && !l.some(o => o.cat !== 'absent') ? 'hors calcul' : '0'}</span>` : `<span class="pts ${e.delta > 0 ? 'pos' : 'neg'}">${e.delta > 0 ? '+ ' : '− '}${fmtN(Math.abs(e.delta))}</span>`;
+    return `<li><span class="d">${fmtShort(g.date)}</span><span class="n">${what || '<span class="muted small">—</span>'}${e && e.info && e.info.length ? `<span class="small muted iinfo">${esc(e.info.join(' · '))}</span>` : ''}</span>${pts}${e && e.note != null && e.skip == null ? `<span class="nt">${fmtN(Math.round(e.note * 10) / 10)}</span>` : '<span class="nt"></span>'}</li>`; };
+  const items = groups.map(gHTML).filter(Boolean);
+  const log = items.length ? `${ir ? '<div class="loghead"><span>Séance</span><span>Remarques</span><span>Points</span><span>Note</span></div>' : ''}<ul class="log slog">${items.join('')}</ul>`
     : `<p class="muted">Aucune observation sur cette période.</p>`;
   return `
   <header class="bar">
@@ -2060,7 +2114,8 @@ function setCats() {
     <label class="check"><input type="checkbox" data-chg="impl" data-k="on" ${P.on ? 'checked' : ''}> <span>Proposer une note d'implication dans la fiche élève et la page Appréciations</span></label>
     <p class="small muted" style="margin:0">Chaque élève part du « départ » ; les points se perdent ou se regagnent séance après séance. Les valeurs ci-dessous valent pour ${P.ref} séances sur la période et sont ajustées automatiquement au rythme de chaque classe. Les séances d'évaluation ne comptent que pour les absences, retards, oublis et incidents.</p>
     <div class="igrid">${f('base', 'Départ', 0.5)}${f('gain', 'Séance positive (+)')}${f('bonusMax', 'Bonus maximal', 0.5)}${f('cDis', 'Bavard, dissipé, comportement (−)')}${f('cPas', 'Passif (−)')}${f('cDev', 'Devoir non fait (−)')}${f('cDevPart', 'Devoir incomplet ou bâclé (−)')}${f('cOrg', 'Oubli, retard (−)')}${f('rasLen', 'Série de RAS (séances)', 1)}${f('rasPen', 'Pénalité par série (−)')}${f('capComp', 'Plafond comportement', 0.5)}${f('capDev', 'Plafond devoirs', 0.5)}${f('capOrg', 'Plafond oublis, retards', 0.5)}${f('capPas', 'Plafond passivité', 0.5)}${f('soft', 'Au-delà du plafond (part comptée)', 0.25)}${f('floor', 'Plancher', 0.5)}${f('ref', 'Séances de référence', 1)}${f('obsMin', '% minimal de séances observées', 5)}</div>
-    <div><button class="btn" data-act="impl-reset">Revenir au barème par défaut</button></div></section>`; })()}`;
+    <div><button class="btn" data-act="impl-reset">Revenir au barème par défaut</button></div>
+    <h4 style="margin:6px 0 0;font-size:15px">Ce que vaut chaque remarque</h4>${implTable(P, null, 0)}</section>`; })()}`;
 }
 let CONS_EDIT = null;
 function councilsCard(c) {

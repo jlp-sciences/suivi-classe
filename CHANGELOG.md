@@ -1,5 +1,9 @@
 # Historique des versions
 
+## 3.07 — 8 novembre 2026
+- Fiche élève : tableau « Ce que vaut chaque remarque » (barème et valeurs dans la classe), aussi dans Réglages › Étiquettes.
+- Chronologie par séance : remarques, points gagnés ou perdus, note après la séance, RAS automatiques, séances hors calcul (absence, évaluation), plafonds et rattrapages indiqués.
+
 ## 3.06 — 8 novembre 2026
 - Note d'implication : série de 2 RAS = − 0,5 ; alerte « à regarder » une séance avant la deuxième pénalité.
 - Tableau de bord du Suivi : colonne Implication (triable, tendance), colonnes Devoirs et Oublis, comptes en séances, ligne de synthèse (moyenne, élèves sous 10, à regarder) ; note en pastille dans la vue grille.

@@ -978,6 +978,27 @@ button.wpill{cursor:pointer}
 .bullist .bh{display:flex;align-items:center;gap:10px;min-width:0}
 .bullist .bh .thumb{width:36px;height:36px;flex:none}
 .bullist .bh .sumshort{min-width:0}
+
+/* ---- 3.05 : note d'implication ---- */
+.implcard{display:flex;flex-direction:column;gap:8px}
+.inote{margin:2px 0 0;font-size:18px} .inote b{font-family:var(--serif);font-size:30px}
+.iret{display:flex;flex-direction:column;gap:2px;font-size:12px;font-weight:600;color:var(--muted)}
+.iret input{width:96px;font-size:18px;font-weight:700;text-align:center}
+.iparts{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.ipart{font-size:13px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--surface-2)}
+.ipart.pos{background:color-mix(in srgb,var(--pos) 14%,transparent);color:var(--pos)}
+.ipart.neg{background:color-mix(in srgb,var(--neg) 12%,transparent);color:var(--neg)}
+.ispark{width:100%;max-width:520px;height:72px}
+.ispark .ilab{font-size:11px;fill:var(--muted);font-weight:600}
+.ispark polyline{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round}
+.ispark circle{fill:var(--ink)} .ispark .ibase{stroke:var(--line-2);stroke-dasharray:3 3}
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.ifld input{width:100%}
+.inl{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.inl input{width:64px;text-align:center;min-height:36px}
+.tag-look{position:absolute;left:4px;bottom:4px;font-size:10.5px;font-weight:700;background:var(--ink);color:var(--surface);padding:1px 6px;border-radius:999px}
+.chip.autoras{opacity:.6;font-style:italic}
+.evbanner{margin:0 0 12px;padding:10px 14px;border-radius:10px;background:color-mix(in srgb,var(--neg) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--neg) 35%,transparent)}
 </style>
 </head>
 <body>
@@ -1093,7 +1114,7 @@ const SEATDEF = {
 const FIXED = {board: [560, 56], desk: [240, 96]};
 const ITEM_LABEL = {ilot: 'Îlot de 4', ilot6: 'Îlot de 6', simple: 'Paillasse de 2', double: 'Paillasses face à face', L: 'Paillasse en L (3)', board: 'Tableau', desk: 'Bureau'};
 const isFixed = it => !!FIXED[it.type];
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], bul:{}, appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], bul:{}, implN:{}, appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 const MIG_STAMP = new Map(); // enregistrements créés par une migration : datés « anciens » pour la synchro (une vraie modification l'emporte toujours)
@@ -1107,7 +1128,7 @@ function migrate(core) {
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
   if (!Array.isArray(d.catchup)) d.catchup = [];
   if (!Array.isArray(d.notes)) d.notes = [];
-  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   /* labos v3 : on repart des 6 labos par défaut et de plans vides (une seule fois par appareil).
      Les labos par défaut sont marqués « anciens » pour la synchro : une disposition déjà retouchée sur un autre appareil l'emporte. */
   if (!(core && core.settings && core.settings.labsV3)) {
@@ -1225,8 +1246,11 @@ function sesState(date, s, FM) {
   if (DB.cancelled[key]) return {k:'cancel'};
   if (date > t || (date === t && nowMin() < tMin(s.start))) return {k:'future'};
   const list = studentsOf(s.cid, s.group); if (!list.length) return {k:'empty'};
+  const ended = date < t || nowMin() >= tMin(s.end);
+  if (ended && hasEval(DB.content[key])) return {k:'done', ev: true}; // évaluation : bilan considéré comme fait
   const got = FM.get(key); const filled = got ? list.filter(x => got.has(x.id)).length : 0;
-  if (!filled) return {k:'none'};
+  if (!filled && !(DB.appr && DB.appr[key])) return {k:'none'};
+  if (ended) return {k:'done'}; // RAS automatique pour les élèves sans remarque
   if (filled < list.length) return {k:'part', n: list.length - filled};
   return {k:'done'};
 }
@@ -1618,13 +1642,16 @@ function viewGrid() {
   const list = studentsOf(ses.cid, ses.group), sum = sesSummary(ses.key);
   const compact = list.length > 24;
   const ckAll = checkItems(ses), ckSet = new Set([...ckAll.catch.map(x => x.sid), ...ckAll.mat.map(x => x.sid), ...ckAll.dev.map(x => x.sid)]);
+  const isEv = hasEval(DB.content[ses.key]);
   let abs = 0, seen = 0;
   const tiles = list.map(s => {
     const r = sum[s.id] || {}; if (r.abs) abs++; else if (r.pos || r.neg || r.ras) seen++;
     const name = (compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`) + dlIcon(s);
-    const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.dv ? `<span class="chip dv" title="${CAT[r.dv].l}">${compact ? 'Dev.' : 'Devoir'}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '');
-    return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-long="fiche" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}">
-      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}</span>
+    const autoRas = !r.abs && !(r.pos || r.neg || r.ras || r.dv) && !isEv && sesEnded(ses) && bilanStarted(ses.key);
+    const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.dv ? `<span class="chip dv" title="${CAT[r.dv].l}">${compact ? 'Dev.' : 'Devoir'}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '') + (autoRas ? '<span class="chip neu autoras" title="RAS automatique">RAS</span>' : '');
+    const look = !autoRas && !r.abs && !(r.pos || r.neg || r.ras || r.dv) && !isEv && rasRunBefore(s, ses) >= Math.max(1, implP().rasLen - 1);
+    return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-long="fiche" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}${look ? ' — à regarder' : ''}">
+      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}${look ? '<span class="tag-look" title="Plusieurs RAS de suite : à regarder">👁 à regarder</span>' : ''}</span>
       <span class="nm">${name}</span><span class="cnt">${chips}</span></button>`;
   }).join('');
   const present = list.length - abs;
@@ -1634,7 +1661,7 @@ function viewGrid() {
     <button class="btn" data-act="export" data-cid="${c.id}">${ICON.down}Export</button>
     <button class="btn" data-act="allactive">Tous actifs</button>
     <button class="btn primary" data-act="rasrest">${ICON.check}Reste de la classe : RAS</button>`)}
-  <main class="main">${apprCard(ses)}${body}</main>
+  <main class="main">${isEv ? '<div class="evbanner"><b>Séance d\'évaluation</b> : notez seulement les absents, retards, oublis et incidents. Elle ne compte ni pour la participation ni pour les RAS.</div>' : ''}${apprCard(ses)}${body}</main>
   <footer class="foot"><span>Toucher une photo : noter une observation (puis élève suivant)</span><span>Appui long : fiche de l'élève</span><span class="grow"></span><span>${present} présents · ${plural(abs, 'absent')} · ${Math.max(0, present - seen)} non observés</span></footer>`;
 }
 
@@ -1717,7 +1744,11 @@ function stuSesCount(s, per) {
 function stuCounts(s, per) {
   const obs = DB.obs.filter(o => o.sid === s.id && o.date >= per.s && o.date <= per.e && CAT[o.cat]), seen = new Set(), cnt = {};
   obs.forEach(o => { const k = (o.ses || o.date) + '|' + o.cat; if (seen.has(k)) return; seen.add(k); cnt[o.cat] = (cnt[o.cat] || 0) + 1; });
-  return {obs, cnt};
+  /* RAS automatiques : séances terminées dont le bilan a été fait, sans remarque pour l'élève */
+  const has = new Set(obs.map(o => o.ses)); let auto = 0;
+  stuSessions(s, per).forEach(x => { if (!has.has(x.key) && sesEnded(x) && !hasEval(DB.content[x.key]) && bilanStarted(x.key)) auto++; });
+  if (auto) cnt.ras = (cnt.ras || 0) + auto;
+  return {obs, cnt, auto};
 }
 const pcR = (a, b) => b ? Math.round(a / b * 100) : 0;
 function stuSummary(s, per, full) {
@@ -1725,7 +1756,7 @@ function stuSummary(s, per, full) {
   const n = k => cnt[k] || 0;
   const top = (map, min) => Object.keys(map).filter(k => (cnt[k] || 0) >= min).sort((a, b) => cnt[b] - cnt[a]);
   const nPos = Object.keys(cnt).filter(k => CAT[k].t === 'pos').reduce((a, k) => a + cnt[k], 0), nBeh = Object.keys(SUM_NEG).reduce((a, k) => a + n(k), 0), nRas = n('ras');
-  const seen = new Set(obs.filter(o => o.cat !== 'absent').map(o => o.ses || o.date)).size;
+  const seen = new Set(obs.filter(o => o.cat !== 'absent').map(o => o.ses || o.date)).size + (stuCounts(s, per).auto || 0);
   const pos = top(SUM_POS, 2).slice(0, 2), neg = top(SUM_NEG, 2).slice(0, 2);
   let head; const nS0 = stuSesCount(s, per);
   if (seen < 3 || (nS0 >= 6 && seen / nS0 < 0.3)) head = 'Peu observé';
@@ -1796,6 +1827,91 @@ function nwSave() {
   else if (v) DB.notes.push({id: uid(), sid: s.id, cid: c.id, kind: 'conseil', ref: k.id, date: k.date, text: v, t: Date.now()});
   save();
 }
+/* ---------- note d'implication (modèle « capital ») ---------- */
+const IMPL_DEF = {on: true, base: 16, gain: 0.5, bonusMax: 4, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasLen: 3, rasPen: 0.5, capComp: 6, capDev: 5, capOrg: 3, capPas: 3, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
+const implP = () => ({...IMPL_DEF, ...(DB.settings.impl || {})});
+const DISRUPT = new Set(['bavarde', 'samuse', 'agite', 'comportement', 'securite']), ORGC = new Set(['materiel', 'blouse', 'retard']);
+const sesEnded = x => { const t = todayStr(); if (x.date < t) return true; if (x.date > t) return false;
+  let e = x.end; if (!e) { const sl = DB.slots.find(y => y.id === String(x.key).split('|')[1]); e = sl ? sl.end : null; } return !!e && nowMin() >= tMin(e); };
+const bilanStarted = key => DB.obs.some(o => o.ses === key && !DV.has(o.cat)) || !!(DB.appr && DB.appr[key]);
+/* séances de l'élève sur la période (ses groupes, non annulées), dans l'ordre */
+const stuSessions = (s, per) => classSessions(s.cid).filter(x => x.date >= per.s && x.date <= per.e && !x.cancelled && (x.group === 'all' || inGroup(s, x.group)));
+/* RAS automatique : séance terminée dont le bilan a été commencé, élève présent sans remarque */
+function sesKind(x, s, byKey) {
+  const os = byKey.get(x.key) || [];
+  if (os.some(o => o.cat === 'absent')) return 'abs';
+  if (hasEval(DB.content[x.key])) return 'eval';
+  if (os.some(o => o.cat !== 'ras')) return 'obs';
+  if (os.length || (sesEnded(x) && bilanStarted(x.key))) return 'ras';
+  return 'none';
+}
+const implKey = (sid, per) => sid + '|' + per.n + '|' + per.s;
+function implCalc(s, per) {
+  const P = implP(), all = stuSessions(s, per), past = all.filter(sesEnded);
+  const byKey = new Map(); DB.obs.forEach(o => { if (o.sid !== s.id || !CAT[o.cat]) return; const a = byKey.get(o.ses); if (a) a.push(o); else byKey.set(o.ses, [o]); });
+  const k = all.length ? P.ref / all.length : 1, v = x => x * k;
+  const caps = {comp: P.capComp, dev: P.capDev, org: P.capOrg, pas: P.capPas}, debt = {comp: 0, dev: 0, org: 0, pas: 0}, lost = {comp: 0, dev: 0, org: 0, pas: 0};
+  let bonus = 0, repaid = 0, gained = 0, run = 0, nObs = 0, nFollow = 0; const hist = [];
+  const lose = (f, x) => { const room = Math.max(0, caps[f] - debt[f]); const d = x <= room ? x : room + (x - room) * P.soft; debt[f] += d; lost[f] += d; };
+  past.forEach(x => {
+    const kind = sesKind(x, s, byKey); if (kind === 'abs') return; nFollow++;
+    if (kind === 'none') return; nObs++;
+    const cats = new Set((byKey.get(x.key) || []).map(o => o.cat));
+    /* pertes */
+    const comp = [...cats].some(c => DISRUPT.has(c)) ? P.cDis : cats.has('passif') ? P.cPas : 0;
+    if (comp) lose('comp', v(comp));
+    if (cats.has('devoir')) lose('dev', v(P.cDev));
+    if (cats.has('devoir_inc')) lose('dev', v(P.cDevPart));
+    if (cats.has('devoir_bac')) lose('dev', v(P.cDevPart));
+    cats.forEach(c => { if (ORGC.has(c)) lose('org', v(P.cOrg)); });
+    if (kind === 'eval') { hist.push({d: x.date, n: P.base + bonus - Object.values(debt).reduce((a, b) => a + b, 0)}); return; }
+    /* passivité : série de RAS */
+    if (kind === 'ras') { run++; if (run >= P.rasLen) { lose('pas', v(P.rasPen)); run = 0; } }
+    else run = 0;
+    /* gains : remboursent d'abord la dette la plus lourde, puis bonus */
+    if ([...cats].some(c => CAT[c].t === 'pos')) { let g = v(P.gain); gained += g;
+      while (g > 1e-9 && Object.values(debt).some(d => d > 1e-9)) { const f = Object.keys(debt).reduce((a, b) => debt[b] > debt[a] ? b : a); const r = Math.min(g, debt[f]); debt[f] -= r; g -= r; repaid += r; }
+      bonus = Math.min(P.bonusMax, bonus + g); }
+    hist.push({d: x.date, n: Math.max(P.floor, Math.min(20, P.base + bonus - Object.values(debt).reduce((a, b) => a + b, 0)))});
+  });
+  const raw = P.base + bonus - Object.values(debt).reduce((a, b) => a + b, 0);
+  const note = Math.round(Math.max(P.floor, Math.min(20, raw)) * 2) / 2;
+  const enough = nFollow >= 3 && nObs / Math.max(1, nFollow) * 100 >= P.obsMin;
+  return {note: enough ? note : null, raw, k, nPlanned: all.length, nFollow, nObs, bonus, gained, repaid, debt, lost, hist, run, P};
+}
+const fmtN = x => (Math.round(x * 100) / 100).toLocaleString('fr-FR', {maximumFractionDigits: 2});
+const fmtH = x => (Math.round(x * 2) / 2).toLocaleString('fr-FR');
+const implRet = (sid, per) => DB.implN[implKey(sid, per)];
+function implSpark(h, P) {
+  if (h.length < 2) return '';
+  const W = 420, H = 64, lo = Math.max(0, Math.min(P.base, ...h.map(p => p.n)) - 1), hi = Math.min(20, Math.max(P.base, ...h.map(p => p.n)) + 1);
+  const x = i => 30 + i / (h.length - 1) * (W - 36), y = n => H - 6 - (n - lo) / (hi - lo) * (H - 12);
+  const pts = h.map((p, i) => `${x(i).toFixed(1)},${y(p.n).toFixed(1)}`).join(' ');
+  return `<svg class="ispark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution de la note au fil des séances"><line x1="30" x2="${W - 6}" y1="${y(P.base)}" y2="${y(P.base)}" class="ibase"/><text x="0" y="${y(P.base) + 4}" class="ilab">${fmtN(P.base)}</text><polyline points="${pts}"/><circle cx="${x(h.length - 1)}" cy="${y(h[h.length - 1].n)}" r="3.5"/><text x="${Math.min(W - 30, x(h.length - 1) + 6)}" y="${y(h[h.length - 1].n) - 6}" class="ilab">${fmtH(h[h.length - 1].n)}</text></svg>`;
+}
+function implCard(s, per) {
+  const P = implP(); if (!P.on) return '';
+  const r = implCalc(s, per), ret = implRet(s.id, per), kk = implKey(s.id, per), c = cls(s.cid);
+  const line = (l, v, cls2) => v ? `<span class="ipart ${cls2}">${l} ${cls2 === 'pos' ? '+' : '−'} ${fmtN(v)}</span>` : '';
+  return `<section class="card implcard"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div><div class="lbl" style="margin:0">Note d'implication · ${esc(per.n)}</div>
+        ${r.note != null ? `<p class="inote">Proposée : <b>${fmtH(r.note)}</b> / 20</p>` : `<p class="inote muted">Peu observé : à évaluer vous-même</p>`}</div>
+      <label class="iret">Note retenue <input type="number" min="0" max="20" step="0.5" inputmode="decimal" data-chg="implN" data-k="${esc(kk)}" value="${ret ? ret.v : ''}" placeholder="${r.note != null ? fmtH(r.note) : '—'}"></label></div>
+    ${implSpark(r.hist, P)}
+    <p class="iparts"><span class="ipart">Départ ${fmtN(P.base)}</span>${line('Participation', r.bonus, 'pos')}${line('Comportement', r.debt.comp, 'neg')}${line('Devoirs', r.debt.dev, 'neg')}${line('Organisation', r.debt.org, 'neg')}${line('Passivité', r.debt.pas, 'neg')}</p>
+    ${r.repaid > 0.001 ? `<p class="small muted" style="margin:0">Participation gagnée : + ${fmtN(r.gained)}, dont ${fmtN(r.repaid)} pour rattraper des points perdus.</p>` : ''}
+    <p class="small muted" style="margin:0">${esc(c.name)} : ${plural(r.nPlanned, 'séance prévue', 'séances prévues')} sur la période (${plural(r.nFollow, 'suivie', 'suivies')}) — une participation vaut + ${fmtN(P.gain * r.k)}, un bavardage − ${fmtN(P.cDis * r.k)}, un devoir non fait − ${fmtN(P.cDev * r.k)}, ${P.rasLen} RAS de suite − ${fmtN(P.rasPen * r.k)}.</p>
+  </section>`;
+}
+/* alerte « à regarder » : RAS consécutifs juste avant cette séance */
+function rasRunBefore(s, ses) {
+  const all = classSessions(s.cid).filter(x => !x.cancelled && x.date <= ses.date && x.key !== ses.key && (x.group === 'all' || inGroup(s, x.group)) && (x.date < ses.date || (x.start || '') < (ses.start || ses.label || '')));
+  const byKey = new Map(); DB.obs.forEach(o => { if (o.sid !== s.id || !CAT[o.cat]) return; const a = byKey.get(o.ses); if (a) a.push(o); else byKey.set(o.ses, [o]); });
+  let n = 0;
+  for (let i = all.length - 1; i >= 0 && n < 10; i--) { const kd = sesKind(all[i], s, byKey); if (kd === 'abs' || kd === 'eval' || kd === 'none') continue; if (kd === 'ras') n++; else break; }
+  return n;
+}
+
 /* ---------- appréciations de bulletin ---------- */
 const BUL_MAX = 250;
 const bulKey = (sid, per) => sid + '|' + per.n + '|' + per.s;
@@ -1846,9 +1962,10 @@ function viewBul() {
       <div class="bstep"><b>2</b><div><strong>Le coller dans la conversation avec Claude</strong><p class="small muted">Claude répond avec une ligne par élève : <code>[numéro] appréciation</code>.</p></div></div>
       <div class="bstep"><b>3</b><div><strong>Coller la réponse ici</strong><textarea id="bul-in" rows="4" placeholder="[1] …&#10;[2] …"></textarea><button class="btn ink" data-act="bul-import" style="margin-top:6px">Importer les appréciations</button></div></div>
     </section>
-    <section class="card"><h2 style="font-size:16px;margin:0 0 8px">Relire et copier vers École Directe</h2>
+    <section class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="font-size:16px;margin:0">Relire et copier vers École Directe</h2>${implP().on ? '<button class="btn" data-act="impl-copy">Copier les notes d\'implication</button>' : ''}</div>
       <ul class="bullist">${list.map((s, i) => { const k = bulKey(s.id, per), cur = DB.bul[k] ? DB.bul[k].text : '';
-        return `<li><div class="bh"><span class="thumb">${photoHTML(s)}</span><b>${i + 1}. ${esc(s.first + ' ' + s.last)}</b><span class="small muted sumshort" style="flex:1">${esc(stuSummary(s, per).head)}</span><span class="bulcnt ${cur.length > BUL_MAX ? 'over' : ''}">${cur.length} / ${BUL_MAX}</span><button class="btn" data-act="bul-copy" data-k="${esc(k)}" ${cur ? '' : 'disabled'}>Copier</button></div>
+        const ir = implP().on ? implCalc(s, per) : null, ret = implRet(s.id, per);
+        return `<li><div class="bh"><span class="thumb">${photoHTML(s)}</span><b>${i + 1}. ${esc(s.first + ' ' + s.last)}</b><span class="small muted sumshort" style="flex:1">${esc(stuSummary(s, per).head)}</span>${ir ? `<label class="inl" title="Note d'implication : proposée ${ir.note != null ? fmtH(ir.note) : '—'}">Impl. <input type="number" min="0" max="20" step="0.5" data-chg="implN" data-k="${esc(implKey(s.id, per))}" value="${ret ? ret.v : ''}" placeholder="${ir.note != null ? fmtH(ir.note) : '—'}"></label>` : ''}<span class="bulcnt ${cur.length > BUL_MAX ? 'over' : ''}">${cur.length} / ${BUL_MAX}</span><button class="btn" data-act="bul-copy" data-k="${esc(k)}" ${cur ? '' : 'disabled'}>Copier</button></div>
           <textarea rows="2" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Pas encore d'appréciation">${esc(cur)}</textarea></li>`; }).join('')}</ul></section>
   </div></main>`;
 }
@@ -1891,6 +2008,7 @@ function viewFiche() {
       <p class="small muted" style="margin:0">${esc(per.n)} : du ${fmtShort(per.s)} au ${fmtShort(per.e)}</p>
     </aside>
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      ${per.n !== 'Année' ? implCard(s, per) : ''}
       ${per.n !== 'Année' ? bulCard(s, per) : ''}
       ${notesCard(s)}
       <section class="card"><h2 style="font-size:16px;margin-bottom:12px">Répartition</h2>${synth}${bars.length || rasRow ? `<div class="bars">${bars.map(b => `<div class="barrow"><span>${esc(b.l)}</span><span class="tr"><span class="fl ${b.t}" style="display:block;width:${(cnt[b.k] / max * 100).toFixed(1)}%"></span></span><b>${cnt[b.k]}<span class="pc">${nS ? ' · ' + pcR(cnt[b.k], nS) + ' %' : ''}</span></b></div>`).join('')}${rasRow}</div><p class="small muted" style="margin:8px 0 0">Nombre de séances (une étiquette compte une fois par séance) et pourcentage des ${plural(nS, 'séance suivie', 'séances suivies')} sur la période.</p>` : '<p class="muted" style="margin:0">Rien à afficher pour l\'instant.</p>'}</section>
@@ -1922,7 +2040,13 @@ function setCats() {
   const col = (t, title) => `<div><div class="lbl" style="margin-bottom:6px">${title}</div><div class="catset">${CATS.filter(x => x.t === t && !PANEL_HIDE.has(x.k)).map(x => `<label class="check"><input type="checkbox" data-chg="cat-show" data-k="${x.k}" ${hid.has(x.k) ? '' : 'checked'}> <span class="chip ${t}">${esc(x.l)}</span></label>`).join('')}</div></div>`;
   return `<section class="card" style="display:flex;flex-direction:column;gap:14px"><h3 style="font-size:17px">Étiquettes affichées dans le bilan</h3>
     <p class="small muted" style="margin:0">Décochez les étiquettes que vous n'utilisez pas : elles disparaissent du panneau de bilan. Les observations déjà saisies sont conservées et restent dans les statistiques. « RAS » et « Absent/e » sont toujours affichés.</p>
-    <div class="catcols">${col('pos', 'Positives')}${col('neg', 'Négatives')}</div></section>`;
+    <div class="catcols">${col('pos', 'Positives')}${col('neg', 'Négatives')}</div></section>
+  ${(() => { const P = implP(); const f = (k, l, step) => `<label class="f ifld">${l}<input type="number" step="${step || 0.25}" data-chg="impl" data-k="${k}" value="${P[k]}"></label>`;
+    return `<section class="card" style="display:flex;flex-direction:column;gap:12px;margin-top:16px"><h3 style="font-size:17px">Note d'implication</h3>
+    <label class="check"><input type="checkbox" data-chg="impl" data-k="on" ${P.on ? 'checked' : ''}> <span>Proposer une note d'implication dans la fiche élève et la page Appréciations</span></label>
+    <p class="small muted" style="margin:0">Chaque élève part du « départ » ; les points se perdent ou se regagnent séance après séance. Les valeurs ci-dessous valent pour ${P.ref} séances sur la période et sont ajustées automatiquement au rythme de chaque classe. Les séances d'évaluation ne comptent que pour les absences, retards, oublis et incidents.</p>
+    <div class="igrid">${f('base', 'Départ', 0.5)}${f('gain', 'Séance positive (+)')}${f('bonusMax', 'Bonus maximal', 0.5)}${f('cDis', 'Bavard, dissipé, comportement (−)')}${f('cPas', 'Passif (−)')}${f('cDev', 'Devoir non fait (−)')}${f('cDevPart', 'Devoir incomplet ou bâclé (−)')}${f('cOrg', 'Oubli, retard (−)')}${f('rasLen', 'Série de RAS (séances)', 1)}${f('rasPen', 'Pénalité par série (−)')}${f('capComp', 'Plafond comportement', 0.5)}${f('capDev', 'Plafond devoirs', 0.5)}${f('capOrg', 'Plafond oublis, retards', 0.5)}${f('capPas', 'Plafond passivité', 0.5)}${f('soft', 'Au-delà du plafond (part comptée)', 0.25)}${f('floor', 'Plancher', 0.5)}${f('ref', 'Séances de référence', 1)}${f('obsMin', '% minimal de séances observées', 5)}</div>
+    <div><button class="btn" data-act="impl-reset">Revenir au barème par défaut</button></div></section>`; })()}`;
 }
 let CONS_EDIT = null;
 function councilsCard(c) {
@@ -2357,6 +2481,24 @@ async function runSelfTests() {
       eq(DB.bul[bulKey('y1', per)].text, 'Des efforts à poursuivre.', 'appréciation rangée au bon élève (nom retiré)');
       ok(recordsOf(DB, {}).has('bul:' + bulKey('y0', per)), 'appréciations synchronisées');
       DB.bul = {};
+    });
+
+    await group('Note d\'implication', () => {
+      const c = DB.classes.find(x => x.name === '3e 4'), st = studentsOf(c.id, 'G1')[0];
+      const L = stuSessions(st, {s: '2000-01-01', e: '2100-01-01'}).filter(x => sesEnded(x));
+      if (L.length < 30) { ok(true, 'pas assez de séances passées pour ce test (début d\'année)'); return; }
+      const L30 = L.slice(0, 30), per = {n: 'test', s: L30[0].date, e: L30[29].date};
+      eq(stuSessions(st, per).length, 30, '30 séances sur la période de test');
+      L30.forEach(x => { delete DB.content[x.key]; DB.appr[x.key] = 'bien'; });
+      const run = spec => { DB.obs = DB.obs.filter(o => o.sid !== st.id); Object.entries(spec).forEach(([cat, idx]) => idx.forEach(i => DB.obs.push({id: 'ti' + cat + i, sid: st.id, cid: c.id, ses: L30[i - 1].key, date: L30[i - 1].date, cat, t: i, note: ''}))); return implCalc(st, per).note; };
+      const r = n => Array.from({length: Math.ceil(30 / n)}, (_, i) => 1 + i * n).filter(x => x <= 30);
+      eq(run({actif: r(2), bavarde: [10]}), 20, 'bon élève : 20');
+      eq(run({participe: [3, 8, 13, 18, 23, 28], bavarde: [5, 10, 15, 20, 25], devoir: [7, 19], blouse: [12]}), 11.5, 'élève moyen : 11,5');
+      eq(run({actif: [5, 20], bavarde: [1, 3, 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 26, 28], devoir: [2, 9, 17, 25], materiel: [7, 11, 15], blouse: [21, 27], retard: [29]}), 3, 'élève en difficulté : plancher 3');
+      eq(run({}), 12, 'élève invisible (que des RAS) : 12');
+      eq(run({participe: r(5)}), 16, 'discret qui participe une fois sur cinq : 16');
+      const ks = new Set(L30.map(x => x.key)); DB.obs = DB.obs.filter(o => !ks.has(o.ses)); L30.forEach(x => { delete DB.appr[x.key]; });
+      eq(run({ras: [1]}), null, 'peu observé (bilans non faits) : pas de note proposée');
     });
 
     await group('Données et compatibilité', () => {
@@ -4669,6 +4811,9 @@ const ACT = {
   'bul-import': () => { const c = cls(V.cid), per = periodsFor(c)[V.p], t = $('#bul-in').value; const r = bulImport(c, per, t);
     if (!r.n) { toast('Aucune ligne « [numéro] appréciation » trouvée'); return; } renderKeep(); toast(`${plural(r.n, 'appréciation importée', 'appréciations importées')}${r.bad.length ? ' · numéros inconnus : ' + r.bad.join(', ') : ''}`); },
   'bul-copy': async el => { const x = DB.bul[el.dataset.k]; if (!x) return; try { await navigator.clipboard.writeText(x.text); toast('Appréciation copiée'); } catch (e) { toast(x.text); } },
+  'impl-reset': () => { delete DB.settings.impl; save(); renderKeep(); toast('Barème par défaut rétabli'); },
+  'impl-copy': async () => { const c = cls(V.cid), per = periodsFor(c)[V.p]; const lines = studentsOf(c.id).map(s => { const r = implCalc(s, per), ret = implRet(s.id, per); const n = ret ? ret.v : r.note; return `${s.last} ${s.first}\t${n == null ? '' : String(n).replace('.', ',')}`; }).join('\n');
+    try { await navigator.clipboard.writeText(lines); toast('Notes copiées (une ligne par élève : nom, note)'); } catch (e) { toast('Copie impossible'); } },
   'nw-open': el => { NW = {cid: el.dataset.cid, kid: el.dataset.id, i: 0}; const c = cls(NW.cid), list = studentsOf(NW.cid); const j = list.findIndex(s => !DB.notes.some(n => n.sid === s.id && n.ref === NW.kid && n.text)); if (j > 0) NW.i = j; noteWalk(); },
   'nw-go': el => { nwSave(); const n = studentsOf(NW.cid).length, d = +el.dataset.d; if (d > 0 && NW.i >= n - 1) { NW = null; closeModal(); renderKeep(); toast('Notes du conseil enregistrées'); return; } NW.i = Math.max(0, Math.min(n - 1, NW.i + d)); noteWalk(); },
   'nw-close': () => { nwSave(); NW = null; closeModal(); renderKeep(); },
@@ -4757,6 +4902,8 @@ const CHG = {
     render(); toast(`${plural(ok, 'photo')} associée${ok > 1 ? 's' : ''}` + (miss.length ? ` · ${miss.length} non reconnue${miss.length > 1 ? 's' : ''}` : ''));
   },
   group: el => { const s = stu(el.dataset.sid); s.group = el.value; save(); render(); },
+  implN: el => { const v = el.value.trim().replace(',', '.'); if (v === '') delete DB.implN[el.dataset.k]; else { const n = Math.max(0, Math.min(20, Math.round(parseFloat(v) * 2) / 2)); if (isNaN(n)) return; DB.implN[el.dataset.k] = {v: n, t: Date.now()}; el.value = n; } save(); },
+  impl: el => { const P = {...(DB.settings.impl || {})}; if (el.type === 'checkbox') P[el.dataset.k] = el.checked; else { const n = parseFloat(String(el.value).replace(',', '.')); if (isNaN(n)) return; P[el.dataset.k] = n; } DB.settings.impl = P; save(); },
   'cat-show': el => { const h = new Set(DB.settings.hiddenCats || []); if (el.checked) h.delete(el.dataset.k); else h.add(el.dataset.k); DB.settings.hiddenCats = [...h]; save(); },
   bul: el => { const k = el.dataset.k; const v = el.value.trim(); if (v) DB.bul[k] = {text: v, t: Date.now()}; else delete DB.bul[k]; save(); },
   'class-pt': el => { cls(el.dataset.cid).pt = el.value; save(); },
@@ -4864,8 +5011,8 @@ async function showPersist() {
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
 const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup', 'notes'];
-const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul'];
-const SYNC_SET = ['evenIsA', 'holidays', 'periods', 'hiddenCats'];
+const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN'];
+const SYNC_SET = ['evenIsA', 'holidays', 'periods', 'hiddenCats', 'impl'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
 const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});
 let SYNC = {state: 'off', busy: false, again: false, msg: '', rootOk: false};

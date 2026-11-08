@@ -6,6 +6,10 @@
 - Réglages › Étiquettes : choisir les étiquettes affichées dans le bilan.
 - Résumé et fiche : comptes en séances avec pourcentage des séances suivies ; « Peu observé » si moins de 30 % des séances ont une observation.
 - Appréciations de bulletin : récapitulatif à copier pour Claude, import des réponses, relecture et copie vers École Directe ; appréciation visible dans la fiche.
+- Note d'implication (modèle « capital ») : départ 16, + 0,5 par séance positive (bonus jusqu'à + 4), − 1 bavardage/dissipation/comportement, − 0,5 passif, − 1 devoir non fait, − 0,5 oubli/retard, − 0,5 par série de 3 RAS ; plafonds nets par famille (souples au-delà) ; valeurs adaptées au rythme de la classe (30 séances = référence) ; plancher 3 ; arrondi au demi-point ; note proposée + note retenue ; courbe d'évolution ; barème réglable (Réglages › Étiquettes).
+- RAS automatique : séance terminée dont le bilan a été commencé = RAS pour les présents sans remarque.
+- Alerte « à regarder » après 2 RAS de suite.
+- Séances d'évaluation : bilan considéré comme fait, non comptées pour la participation ni les RAS.
 
 ## 3.04 — 3 novembre 2026
 - Résumé automatique de l'élève (fiche et Suivi) : points forts / à améliorer, devoirs, matériel, retards, absences, tendance sur 3 semaines.

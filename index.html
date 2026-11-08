@@ -1828,7 +1828,7 @@ function nwSave() {
   save();
 }
 /* ---------- note d'implication (modèle « capital ») ---------- */
-const IMPL_DEF = {on: true, base: 16, gain: 0.5, bonusMax: 4, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasLen: 3, rasPen: 0.5, capComp: 6, capDev: 5, capOrg: 3, capPas: 3, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
+const IMPL_DEF = {on: true, base: 15, gain: 0.5, bonusMax: 5, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasLen: 3, rasPen: 0.5, capComp: 6, capDev: 5, capOrg: 3, capPas: 3, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
 const implP = () => ({...IMPL_DEF, ...(DB.settings.impl || {})});
 const DISRUPT = new Set(['bavarde', 'samuse', 'agite', 'comportement', 'securite']), ORGC = new Set(['materiel', 'blouse', 'retard']);
 const sesEnded = x => { const t = todayStr(); if (x.date < t) return true; if (x.date > t) return false;
@@ -2493,10 +2493,10 @@ async function runSelfTests() {
       const run = spec => { DB.obs = DB.obs.filter(o => o.sid !== st.id); Object.entries(spec).forEach(([cat, idx]) => idx.forEach(i => DB.obs.push({id: 'ti' + cat + i, sid: st.id, cid: c.id, ses: L30[i - 1].key, date: L30[i - 1].date, cat, t: i, note: ''}))); return implCalc(st, per).note; };
       const r = n => Array.from({length: Math.ceil(30 / n)}, (_, i) => 1 + i * n).filter(x => x <= 30);
       eq(run({actif: r(2), bavarde: [10]}), 20, 'bon élève : 20');
-      eq(run({participe: [3, 8, 13, 18, 23, 28], bavarde: [5, 10, 15, 20, 25], devoir: [7, 19], blouse: [12]}), 11.5, 'élève moyen : 11,5');
+      eq(run({participe: [3, 8, 13, 18, 23, 28], bavarde: [5, 10, 15, 20, 25], devoir: [7, 19], blouse: [12]}), 10.5, 'élève moyen : 10,5');
       eq(run({actif: [5, 20], bavarde: [1, 3, 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 26, 28], devoir: [2, 9, 17, 25], materiel: [7, 11, 15], blouse: [21, 27], retard: [29]}), 3, 'élève en difficulté : plancher 3');
-      eq(run({}), 12, 'élève invisible (que des RAS) : 12');
-      eq(run({participe: r(5)}), 16, 'discret qui participe une fois sur cinq : 16');
+      eq(run({}), 11, 'élève invisible (que des RAS) : 11');
+      eq(run({participe: r(5)}), 15, 'discret qui participe une fois sur cinq : 15');
       const ks = new Set(L30.map(x => x.key)); DB.obs = DB.obs.filter(o => !ks.has(o.ses)); L30.forEach(x => { delete DB.appr[x.key]; });
       eq(run({ras: [1]}), null, 'peu observé (bilans non faits) : pas de note proposée');
     });

@@ -98,6 +98,10 @@ async def main():
                 await pg.evaluate("$('.main').scrollTop = 400"); await pg.wait_for_timeout(1400)
                 await pg.evaluate("afterApply(1)"); await pg.wait_for_timeout(400)
                 check(await pg.evaluate("$('.main').scrollTop") == 400, f'{w}x{h} {t} : position gardée')
+            await pg.evaluate("document.querySelector('[data-act=htab][data-t=suivi]').click(); V.sv = 'list'; render()"); await pg.wait_for_timeout(200)
+            await pg.evaluate("$('.main').scrollTop = 300"); await pg.wait_for_timeout(100)
+            await pg.evaluate("document.querySelector('[data-act=sui-sort][data-k=impl]').click()"); await pg.wait_for_timeout(400)
+            check(await pg.evaluate("$('.main').scrollTop") == 300, f'{w}x{h} suivi : position gardée après un tri')
             await pg.close()
 
         print("5. Import de l'export École Directe (.xlsx)")

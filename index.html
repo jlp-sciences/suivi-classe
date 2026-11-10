@@ -4800,7 +4800,7 @@ const ACT = {
     save(); renderKeep(); toast(plural(n, 'élève') + ' noté' + (n > 1 ? 's' : '') + ' Actif/ve');
   },
   'hw-ok': () => { const k = V.ses.key; if (DB.hwOk[k]) delete DB.hwOk[k]; else DB.hwOk[k] = true; save(); renderKeep(); },
-  'sui-sort': el => { const k = el.dataset.k, cur = V.ssk || 'name'; if (cur === k) V.ssd = -(V.ssd || (k === 'name' ? 1 : -1)); else { V.ssk = k; V.ssd = k === 'name' ? 1 : -1; } render(); },
+  'sui-sort': el => { const k = el.dataset.k, cur = V.ssk || 'name'; if (cur === k) V.ssd = -(V.ssd || (k === 'name' ? 1 : -1)); else { V.ssk = k; V.ssd = k === 'name' ? 1 : -1; } renderKeep(); },
   rasrest: () => {
     const ses = V.ses, sum = sesSummary(ses.key);
     const todo = studentsOf(ses.cid, ses.group).filter(s => { const r = sum[s.id]; return !r || !(r.pos || r.neg || r.ras || r.abs); });
@@ -4910,7 +4910,7 @@ const ACT = {
   'sui-v': el => { V.sv = el.dataset.v; render(); },
   'sui-p': el => { V.sp = +el.dataset.v; render(); },
   'sui-s': el => { V.ss = el.dataset.v; render(); },
-  'sui-f': el => { V.sf = V.sf === el.dataset.v ? null : el.dataset.v; render(); },
+  'sui-f': el => { V.sf = V.sf === el.dataset.v ? null : el.dataset.v; renderKeep(); },
   'sel-room': el => { V.rid = el.dataset.rid; render(); },
   'sel-sg': el => { V.sg = el.dataset.k; render(); },
   'room-edit': () => go({name:'roomedit', rid: V.rid, selItem: null}),

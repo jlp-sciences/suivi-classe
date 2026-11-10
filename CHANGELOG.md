@@ -3,6 +3,7 @@
 ## 3.10 — 10 novembre 2026
 - Notes : import direct de l'export Excel « Les devoirs » d'École Directe (glisser le fichier ou le choisir), lu sur l'appareil. Classe reconnue d'après l'en-tête ; codes TP → TP, DL → Écrit · maison, autres → Écrit ; notes en bleu → non comptées ; évaluations encore vides ignorées ; lignes de synthèse ignorées.
 - Aperçu : contrôle des moyennes calculées par rapport à celles d'École Directe, écarts signalés.
+- Suivi : trier ou filtrer les élèves ne fait plus remonter la page.
 - Sous-catégorie « Écrit · maison » (comptée dans l'écrit), ○ sur la courbe ; notes non comptées affichées en gris.
 
 ## 3.09 — 10 novembre 2026

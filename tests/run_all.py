@@ -4,8 +4,9 @@
    1. lance les vérifications intégrées (runSelfTests, dans index.html) ;
    2. vérifie l'affichage de la vue semaine (rien ne déborde ni ne se chevauche) sur 4 tailles d'écran ;
    3. parcourt les écrans principaux et s'assure qu'aucune erreur JavaScript n'apparaît ;
-   4. vérifie que la position de défilement est gardée lors d'une mise à jour automatique."""
-import asyncio, http.server, socketserver, threading, functools, os, sys
+   4. vérifie que la position de défilement est gardée lors d'une mise à jour automatique ;
+   5. importe un export Excel « Les devoirs » d'École Directe fabriqué (élèves fictifs) et compare les moyennes."""
+import asyncio, http.server, socketserver, threading, functools, os, sys, tempfile
 from playwright.async_api import async_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -97,6 +98,53 @@ async def main():
                 await pg.evaluate("$('.main').scrollTop = 400"); await pg.wait_for_timeout(1400)
                 await pg.evaluate("afterApply(1)"); await pg.wait_for_timeout(400)
                 check(await pg.evaluate("$('.main').scrollTop") == 400, f'{w}x{h} {t} : position gardée')
+            await pg.close()
+
+        print("5. Import de l'export École Directe (.xlsx)")
+        try:
+            import openpyxl
+            from openpyxl.styles import PatternFill
+        except ImportError:
+            openpyxl = None; print('  (openpyxl absent : étape ignorée)')
+        if openpyxl:
+            pg = await page(b, 1280, 860, errs)
+            info = await pg.evaluate("(() => { const c = DB.classes.find(x => studentsOf(x.id).length > 5); return {cid: c.id, name: c.name.replace(/^(\\d)e /, '$1ème '), st: studentsOf(c.id).map(s => s.last.toUpperCase() + ' ' + s.first.toUpperCase())}; })()")
+            evs = [("Exercice maison\n15/09/2026 (DL)", 0.5, 10), ("TP conductivité\n17/09/2026 (TP)", 1, 20), ("Interro 1\n01/10/2026 (IE)", 1.5, 20), ("DS1 : chap. 1 & 2\n06/11/2026 (DS)", 3, 20)]
+            wb = openpyxl.Workbook(); ws = wb.active; ws.title = 'Les devoirs'
+            ws.cell(1, 2, 'M. PROF\nClasse : ' + info['name'] + '\nTrimestre 1\nPHYSIQUE-CHIMIE'); ws.cell(1, 4, 'Moyennes'); ws.cell(1, 6, 'Rang')
+            ws.cell(2, 2, 'Coefficients'); ws.cell(3, 2, 'Noté sur')
+            for j, (t, co, mx) in enumerate(evs):
+                ws.cell(1, 8 + j, t); ws.cell(2, 8 + j, co); ws.cell(3, 8 + j, mx)
+            blue = PatternFill('solid', fgColor='C9F0FF'); lav = PatternFill('solid', fgColor='E0E2FE'); expect = {}
+            for i, name in enumerate(info['st']):
+                r = 5 + i; vals = [(i % 10) + 0.5, 10 + i % 9, 'Abs' if i == 2 else 8 + i % 11, None]
+                if i == 1: vals[0] = 0
+                ws.cell(r, 2, name)
+                a = w = 0
+                for j, v in enumerate(vals):
+                    if v is None: continue
+                    c = ws.cell(r, 8 + j, v)
+                    if v == 'Abs': c.fill = lav; continue
+                    if i == 1 and j == 0: c.fill = blue; continue
+                    a += v / evs[j][2] * 20 * evs[j][1]; w += evs[j][1]
+                ws.cell(r, 4, round(a / w, 2)); ws.cell(r, 6, i + 1); expect[name] = a / w
+            r = 6 + len(info['st'])
+            for lab in ['Moyenne Classe', 'Moyenne minimale', 'Moyenne maximale', '% inférieur à 8']: ws.cell(r, 2, lab); ws.cell(r, 8, 12); r += 1
+            ws.cell(r + 1, 2, 'Edité le 10/11/2026 à 22h51')
+            tmp = os.path.join(tempfile.mkdtemp(), 'Les_devoirs_test.xlsx'); wb.save(tmp)
+            other = await pg.evaluate("(cid) => DB.classes.find(x => x.id !== cid).id", info['cid'])
+            await pg.evaluate("(id) => go({name: 'notes', cid: id, p: 0})", other); await pg.wait_for_timeout(150)
+            await pg.set_input_files('input[data-chg=gfile]', tmp); await pg.wait_for_timeout(500)
+            g = await pg.evaluate("(() => ({cid: V.cid, n: GIMP && GIMP.evs.length, kinds: GIMP && GIMP.evs.map(e => e.type + (e.home ? '+maison' : '')), unk: GIMP && GIMP.rows.filter(r => !r.sid).length, ok: !!$('.gcheck.good'), nc: GIMP && GIMP.rows[1].nc[0]}))()")
+            check(g['cid'] == info['cid'], 'classe reconnue d\'après l\'en-tête du fichier (« ' + info['name'] + ' »)')
+            check(g['n'] == 3 and g['kinds'] == ['ecrit+maison', 'tp', 'ecrit'], 'évaluations lues (DL = écrit maison, TP, IE) ; DS sans note ignoré')
+            check(g['unk'] == 0, 'tous les élèves reconnus')
+            check(g['ok'] and g['nc'], 'aperçu : moyennes identiques à École Directe, note en bleu non comptée')
+            await pg.click('[data-act=gimp-ok]'); await pg.wait_for_timeout(200)
+            app = await pg.evaluate("(cid) => { const ev = DB.evals.filter(e => e.cid === cid); return Object.fromEntries(studentsOf(cid).map(s => [s.last.toUpperCase() + ' ' + s.first.toUpperCase(), avgOf(ev, s.id)])); }", info['cid'])
+            check(all(abs(app[k] - v) < 1e-6 for k, v in expect.items()), 'moyennes calculées après import = moyennes École Directe')
+            await pg.set_input_files('input[data-chg=gfile]', tmp); await pg.wait_for_timeout(400); await pg.click('[data-act=gimp-ok]'); await pg.wait_for_timeout(200)
+            check(await pg.evaluate("(cid) => DB.evals.filter(e => e.cid === cid).length", info['cid']) == 3, 'réimport du même fichier : pas de doublon')
             await pg.close()
         await b.close()
     check(not errs, 'aucune erreur JavaScript' + ('' if not errs else ' : ' + ' | '.join(errs[:5])))

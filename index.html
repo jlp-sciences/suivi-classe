@@ -1050,7 +1050,7 @@ button.wpill{cursor:pointer}
 .gspark{width:100%;max-width:620px;height:100px}
 .gspark .gl{stroke:var(--line)} .gspark .gcl{stroke:var(--muted);stroke-dasharray:4 4}
 .gspark .gavg{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round}
-.gspark .gec{fill:var(--surface);stroke:var(--ink-2);stroke-width:2} .gspark .gtp{fill:var(--pos);opacity:.85}
+.gspark .gec{fill:var(--ink-2);stroke:var(--surface);stroke-width:1.5} .gspark .gtp{fill:var(--pos);opacity:.85}
 .gspark .gval{font-size:12px;fill:var(--ink);font-weight:700}
 .gty{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-2)}
 .gty.tp{background:color-mix(in srgb,var(--pos) 15%,transparent);color:var(--pos)}
@@ -1077,6 +1077,13 @@ button.wpill{cursor:pointer}
 .fnav{display:flex;align-items:center;gap:4px}
 .fnav .btn{min-width:40px}
 .ibadge.mb{top:30px}
+.gdrop{display:flex;align-items:center;gap:14px;padding:18px 20px;border:2px dashed var(--line-2);border-radius:14px;cursor:pointer;background:var(--surface-2)}
+.gdrop:hover,.gdrop.over{border-color:var(--pos);background:color-mix(in srgb,var(--pos) 8%,var(--surface))}
+.gdi{font-size:28px;line-height:1;color:var(--pos)}
+.gcheck{margin:0 0 8px;padding:8px 12px;border-radius:10px;font-size:14px} .gcheck.good{background:var(--pos-soft);color:var(--pos-ink)} .gcheck.bad{background:var(--neg-soft);color:var(--neg-ink)}
+.gimp td.nc,.gv.nc b,.ggrid label.nc input{color:var(--muted);font-style:italic;opacity:.75}
+.gty.dm{background:color-mix(in srgb,var(--ink-2) 10%,transparent);color:var(--ink-2);border:1px dashed var(--ink-2)}
+.gspark .gdm{fill:var(--surface);stroke:var(--ink-2);stroke-width:2}
 .spk{position:relative;max-width:620px}
 .spk svg{display:block;touch-action:pan-y;cursor:crosshair;-webkit-user-select:none;user-select:none}
 .spk .shit{fill:transparent}
@@ -1124,7 +1131,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.09', d: '2026-11-10'};
+const APP_VERSION = {n: '3.10', d: '2026-11-10'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -2042,23 +2049,30 @@ function rasRunBefore(s, ses) {
 const gKey = (eid, sid) => eid + '|' + sid;
 const evalsOf = (cid, per) => DB.evals.filter(e => e.cid === cid && (!per || (e.date >= per.s && e.date <= per.e))).sort((a, b) => a.date.localeCompare(b.date) || (a.t || 0) - (b.t || 0));
 const gradeOf = (e, sid) => { const g = DB.grades[gKey(e.id, sid)]; return g ? g.v : null; };
+/* note qui compte dans les moyennes (les notes « non comptées », en bleu dans École Directe, sont exclues) */
+const gradeNum = (e, sid) => { const g = DB.grades[gKey(e.id, sid)]; return g && !g.nc && typeof g.v === 'number' ? g.v : null; };
+const gradeNC = (e, sid) => { const g = DB.grades[gKey(e.id, sid)]; return !!(g && g.nc); };
+const gtyL = e => e.type === 'tp' ? 'TP' : e.home ? 'Écrit · maison' : 'Écrit';
+const gtyChip = e => `<span class="gty ${e.type === 'tp' ? 'tp' : e.home ? 'dm' : ''}">${gtyL(e)}</span>`;
+const gtySel = (attrs, e) => `<select ${attrs}><option value="ecrit" ${e.type !== 'tp' && !e.home ? 'selected' : ''}>Écrit</option><option value="maison" ${e.type !== 'tp' && e.home ? 'selected' : ''}>Écrit · maison</option><option value="tp" ${e.type === 'tp' ? 'selected' : ''}>TP</option></select>`;
+const setGty = (e, v) => { e.type = v === 'tp' ? 'tp' : 'ecrit'; e.home = v === 'maison'; };
 const on20 = (e, v) => typeof v === 'number' ? v / (e.max || 20) * 20 : null;
 const fmtG = x => x == null ? '—' : (Math.round(x * 10) / 10).toLocaleString('fr-FR');
 /* moyennes pondérées par les coefficients, sur 20 */
-function avgOf(list, sid) { let a = 0, w = 0; list.forEach(e => { const v = on20(e, gradeOf(e, sid)); if (v == null) return; a += v * (e.coef || 1); w += (e.coef || 1); }); return w ? a / w : null; }
+function avgOf(list, sid) { let a = 0, w = 0; list.forEach(e => { const v = on20(e, gradeNum(e, sid)); if (v == null) return; a += v * (e.coef || 1); w += (e.coef || 1); }); return w ? a / w : null; }
 function resultsOf(s, per) {
   const ev = evalsOf(s.cid, per), ecr = ev.filter(e => e.type !== 'tp'), tp = ev.filter(e => e.type === 'tp');
-  const hist = []; ev.forEach((e, i) => { const v = gradeOf(e, s.id); if (typeof v !== 'number') return; hist.push({e, v: on20(e, v), avg: avgOf(ev.slice(0, i + 1), s.id)}); });
+  const hist = []; ev.forEach((e, i) => { const v = gradeNum(e, s.id); if (v == null) return; hist.push({e, v: on20(e, v), avg: avgOf(ev.slice(0, i + 1), s.id)}); });
   return {ev, ecrit: avgOf(ecr, s.id), tp: avgOf(tp, s.id), moy: avgOf(ev, s.id), hist};
 }
 function classAvg(cid, per, kind) {
   const ev = evalsOf(cid, per).filter(e => !kind || (kind === 'tp' ? e.type === 'tp' : e.type !== 'tp')), list = studentsOf(cid).map(s => avgOf(ev, s.id)).filter(x => x != null);
   return list.length ? list.reduce((a, b) => a + b, 0) / list.length : null;
 }
-const evalAvg = e => { const l = studentsOf(e.cid).map(s => on20(e, gradeOf(e, s.id))).filter(x => x != null); return l.length ? l.reduce((a, b) => a + b, 0) / l.length : null; };
+const evalAvg = e => { const l = studentsOf(e.cid).map(s => on20(e, gradeNum(e, s.id))).filter(x => x != null); return l.length ? l.reduce((a, b) => a + b, 0) / l.length : null; };
 function gradeTip(p) {
   const e = p.e, raw = p.v * (e.max || 20) / 20, a = evalAvg(e);
-  return `<div class="th"><b>${fmtTip(e.date)}</b> <span class="gty ${e.type === 'tp' ? 'tp' : ''}">${e.type === 'tp' ? 'TP' : 'Écrit'}</span></div><div class="tt">${esc(e.title)}</div>
+  return `<div class="th"><b>${fmtTip(e.date)}</b> ${gtyChip(e)}</div><div class="tt">${esc(e.title)}</div>
     <div class="tg"><b class="${p.v < 10 ? 'neg' : ''}">${fmtG(raw)}</b> / ${fmtG(e.max)}${(e.max || 20) !== 20 ? ` <span class="muted">(soit ${fmtG(p.v)} / 20)</span>` : ''} · coef ${fmtG(e.coef)}</div>
     <div class="small muted">Classe : ${a != null ? fmtG(a * (e.max || 20) / 20) + ' / ' + fmtG(e.max) : '—'}</div><div class="tf">Moyenne après : <b>${fmtG(p.avg)}</b></div>`;
 }
@@ -2066,7 +2080,7 @@ function gradeSpark(h, cls20) {
   if (!h.length) return '';
   const W = 520, H = 92, n = h.length, x = i => 34 + (n === 1 ? (W - 50) / 2 : i / (n - 1) * (W - 50)), y = v => H - 10 - v / 20 * (H - 20);
   const line = h.map((p, i) => `${x(i).toFixed(1)},${y(p.avg).toFixed(1)}`).join(' ');
-  const pts = h.map((p, i) => p.e.type === 'tp' ? `<rect x="${(x(i) - 4).toFixed(1)}" y="${(y(p.v) - 4).toFixed(1)}" width="8" height="8" class="gtp"/>` : `<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4.5" class="gec"/>`).join('');
+  const pts = h.map((p, i) => p.e.type === 'tp' ? `<rect x="${(x(i) - 4).toFixed(1)}" y="${(y(p.v) - 4).toFixed(1)}" width="8" height="8" class="gtp"/>` : `<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4.5" class="${p.e.home ? 'gdm' : 'gec'}"/>`).join('');
   const inner = `${[0, 10, 20].map(v => `<line x1="30" x2="${W - 8}" y1="${y(v)}" y2="${y(v)}" class="gl"/><text x="0" y="${y(v) + 4}" class="ilab">${v}</text>`).join('')}
     ${cls20 != null ? `<line x1="30" x2="${W - 8}" y1="${y(cls20)}" y2="${y(cls20)}" class="gcl"/>` : ''}
     ${n > 1 ? `<polyline points="${line}" class="gavg"/>` : ''}${pts}
@@ -2077,11 +2091,11 @@ function resultsCard(s, per) {
   const r = resultsOf(s, per); if (!r.ev.length) return '';
   const big = (l, v, cv, mo) => `<div class="gbig${mo && v != null ? ' mo' + (v < 10 ? ' low' : v >= 15 ? ' high' : '') : ''}"><span class="lbl" style="margin:0">${l}</span><b class="${v != null && v < 10 ? 'low' : ''}">${fmtG(v)}</b><span class="small muted">classe ${fmtG(cv)}</span></div>`;
   const rows = r.ev.slice().reverse().map(e => { const v = gradeOf(e, s.id), a = evalAvg(e);
-    return `<tr><td>${fmtShort(e.date)}</td><td>${esc(e.title)}</td><td><span class="gty ${e.type === 'tp' ? 'tp' : ''}">${e.type === 'tp' ? 'TP' : 'Écrit'}</span></td><td class="gv"><b>${typeof v === 'number' ? fmtG(v) : v ? esc(v) : '—'}</b><span class="muted">/${fmtG(e.max)}</span></td><td class="small muted">coef ${fmtG(e.coef)}</td><td class="small muted">classe ${a != null ? fmtG(a * (e.max || 20) / 20) : '—'}</td></tr>`; }).join('');
+    return `<tr><td>${fmtShort(e.date)}</td><td>${esc(e.title)}</td><td>${gtyChip(e)}</td><td class="gv ${gradeNC(e, s.id) ? 'nc' : ''}"${gradeNC(e, s.id) ? ' title="Note non comptée dans la moyenne"' : ''}><b>${typeof v === 'number' ? fmtG(v) : v ? esc(v) : '—'}</b><span class="muted">/${fmtG(e.max)}</span>${gradeNC(e, s.id) ? ' <span class="small muted">non comptée</span>' : ''}</td><td class="small muted">coef ${fmtG(e.coef)}</td><td class="small muted">classe ${a != null ? fmtG(a * (e.max || 20) / 20) : '—'}</td></tr>`; }).join('');
   return `<section class="card rescard"><div class="lbl" style="margin:0">Résultats · ${esc(per.n)}</div>
     <div class="gbigs">${big('Écrit', r.ecrit, classAvg(s.cid, per, 'ecrit'))}${big('TP', r.tp, classAvg(s.cid, per, 'tp'))}${big('Moyenne', r.moy, classAvg(s.cid, per), true)}</div>
     ${gradeSpark(r.hist, classAvg(s.cid, per))}
-    <p class="small muted" style="margin:0">Ligne : moyenne de l'élève après chaque évaluation · ● écrit · ■ TP · pointillés : moyenne de la classe. Moyennes sur 20, pondérées par les coefficients.</p>
+    <p class="small muted" style="margin:0">Ligne : moyenne de l'élève après chaque évaluation · ● écrit · ○ devoir maison · ■ TP · pointillés : moyenne de la classe. Moyennes sur 20, pondérées par les coefficients.</p>
     <details class="idet"><summary>Toutes les notes (${r.ev.length})</summary><table class="itab gtab"><tbody>${rows}</tbody></table></details></section>`;
 }
 /* import : texte renvoyé par Claude à partir d'une capture du carnet de notes */
@@ -2092,13 +2106,89 @@ function parseGrades(cid, text) {
   text.split(/\r?\n/).forEach(line => {
     const m = line.match(/^\s*\[E(\d+)\]\s*(.+)$/);
     if (m) { const f = m[2].split(/\s*[·|]\s*/); const dm = (f[0] || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      const ty = /tp|pratique/i.test(f[2] || '') ? 'tp' : 'ecrit', mx = parseFloat(String((f[3] || '').replace(/[^\d,.]/g, '')).replace(',', '.')) || 20, cf = parseFloat(String((f[4] || '').replace(/[^\d,.]/g, '')).replace(',', '.')) || 1;
-      evs[+m[1] - 1] = {date: dm ? `${dm[3]}-${dm[2].padStart(2, '0')}-${dm[1].padStart(2, '0')}` : todayStr(), title: (f[1] || 'Évaluation ' + m[1]).trim(), type: ty, max: mx, coef: cf}; return; }
+      const ty = /tp|pratique/i.test(f[2] || '') ? 'tp' : 'ecrit', home = ty === 'ecrit' && /maison|\bdl\b|\bdm\b/i.test(f[2] || ''), mx = parseFloat(String((f[3] || '').replace(/[^\d,.]/g, '')).replace(',', '.')) || 20, cf = parseFloat(String((f[4] || '').replace(/[^\d,.]/g, '')).replace(',', '.')) || 1;
+      evs[+m[1] - 1] = {date: dm ? `${dm[3]}-${dm[2].padStart(2, '0')}-${dm[1].padStart(2, '0')}` : todayStr(), title: (f[1] || 'Évaluation ' + m[1]).trim(), type: ty, home, max: mx, coef: cf}; return; }
     if (!line.includes('|') || /^\s*(élève|eleve|nom)\b/i.test(line)) return;
     const cells = line.split('|').map(x => x.trim()); if (!cells[0]) return;
     rows.push({name: cells[0], sid: (findStu(cells[0]) || {}).id || '', vals: cells.slice(1).map(v => { if (!v || v === '-' || v === '—') return null; if (/^abs/i.test(v)) return 'Abs'; if (/^disp/i.test(v)) return 'Disp'; if (/^n\.?\s?n/i.test(v)) return 'NN'; const n = parseFloat(v.replace(',', '.')); return isNaN(n) ? '?' + v : n; })});
   });
   return {evs: evs.filter(Boolean), rows};
+}
+/* ---------- import direct de l'export Excel d'École Directe (lu dans le navigateur, rien n'est envoyé) ---------- */
+async function unzipEntries(buf, want) {
+  const u = new Uint8Array(buf), dv = new DataView(buf), out = {};
+  let eo = -1; for (let i = u.length - 22; i >= Math.max(0, u.length - 66000); i--) if (dv.getUint32(i, true) === 0x06054b50) { eo = i; break; }
+  if (eo < 0) throw new Error('zip');
+  let p = dv.getUint32(eo + 16, true); const n = dv.getUint16(eo + 10, true);
+  for (let k = 0; k < n; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const meth = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+    const name = new TextDecoder().decode(u.subarray(p + 46, p + 46 + nl)); p += 46 + nl + xl + cl;
+    if (!want(name)) continue;
+    const st = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true), data = u.subarray(st, st + csz);
+    let raw = data; if (meth === 8) raw = new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()); else if (meth !== 0) throw new Error('zip');
+    out[name] = new TextDecoder().decode(raw);
+  }
+  return out;
+}
+/* feuille → grille [ligne][colonne] de {v, fill} */
+async function readXlsx(buf) {
+  const f = await unzipEntries(buf, n => /^xl\/(sharedStrings|styles)\.xml$|^xl\/worksheets\/sheet\d+\.xml$/.test(n));
+  const X = t => new DOMParser().parseFromString(t || '<x/>', 'application/xml'), tx = el => [...el.getElementsByTagName('t')].map(t => t.textContent).join('');
+  const sst = [...X(f['xl/sharedStrings.xml']).getElementsByTagName('si')].map(tx);
+  const sty = X(f['xl/styles.xml']), fills = [...sty.getElementsByTagName('fill')].map(fl => { const pf = fl.getElementsByTagName('patternFill')[0], fg = fl.getElementsByTagName('fgColor')[0]; return pf && pf.getAttribute('patternType') === 'solid' && fg ? (fg.getAttribute('rgb') || 'theme').slice(-6).toUpperCase() : null; });
+  const cx = sty.getElementsByTagName('cellXfs')[0], xfs = cx ? [...cx.getElementsByTagName('xf')].map(x => fills[+x.getAttribute('fillId') || 0] || null) : [];
+  const sheet = Object.keys(f).filter(n => n.startsWith('xl/worksheets/')).sort()[0]; if (!sheet) throw new Error('sheet');
+  const grid = [];
+  [...X(f[sheet]).getElementsByTagName('row')].forEach(row => { const r = (+row.getAttribute('r') || grid.length + 1) - 1; grid[r] = grid[r] || [];
+    [...row.getElementsByTagName('c')].forEach(c => { const ref = c.getAttribute('r') || '', col = [...ref.replace(/\d+/g, '')].reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1, t = c.getAttribute('t'), vEl = c.getElementsByTagName('v')[0];
+      let v = null; if (t === 's') v = vEl ? sst[+vEl.textContent] : null; else if (t === 'inlineStr') v = tx(c); else if (vEl) v = t === 'str' || t === 'e' ? vEl.textContent : t === 'b' ? vEl.textContent === '1' : parseFloat(vEl.textContent);
+      if (col >= 0) grid[r][col] = {v, fill: xfs[+c.getAttribute('s') || 0] || null}; }); });
+  return grid;
+}
+const normCls = x => normN(x).replace(/(\d)\s*(eme|nde|ere|nd|de|re|er|e)(?=\s|\d|$)/g, '$1 ').replace(/\s+/g, ' ').trim();
+/* relevé « Les devoirs » d'École Directe → {cls, evs, rows} au format de l'aperçu */
+function parseED(grid) {
+  const cell = (r, c) => (grid[r] || [])[c] || {v: null}, txt = (r, c) => { const v = cell(r, c).v; return v == null ? '' : String(v).trim(); };
+  let hr = -1, cMoy = -1; for (let r = 0; r < Math.min(grid.length, 15) && hr < 0; r++) (grid[r] || []).forEach((x, c) => { if (x && /^moyennes?$/i.test(String(x.v || '').trim())) { hr = r; cMoy = c; } });
+  if (hr < 0) throw new Error('format');
+  const rowOf = re => { for (let r = hr + 1; r < hr + 6; r++) if ((grid[r] || []).some(x => x && re.test(String(x.v || '')))) return r; return -1; };
+  const rCo = rowOf(/^\s*coefficients?/i), rMx = rowOf(/^\s*not[ée] sur/i);
+  const head = (grid[hr] || []).map(x => x && x.v != null ? String(x.v) : '').join('\n'), cm = head.match(/Classe\s*:\s*([^\n]+)/i);
+  const evs = [], cols = [];
+  (grid[hr] || []).forEach((x, c) => { if (!x || typeof x.v !== 'string') return; const lines = x.v.split(/\r?\n/).map(l => l.trim()).filter(Boolean), last = lines[lines.length - 1] || '', dm = last.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s*\(([^)]*)\))?/); if (!dm) return;
+    const code = (dm[4] || '').trim().toUpperCase(), title = (lines.slice(0, -1).join(' ') || last.replace(dm[0], '')).trim() || 'Évaluation';
+    const num = r => { if (r < 0) return null; const v = cell(r, c).v; const n = typeof v === 'number' ? v : parseFloat(String(v || '').replace(',', '.')); return isNaN(n) ? null : n; };
+    evs.push({date: `${dm[3]}-${dm[2].padStart(2, '0')}-${dm[1].padStart(2, '0')}`, title, code, type: code === 'TP' ? 'tp' : 'ecrit', home: code === 'DL' || code === 'DM', max: num(rMx) || 20, coef: num(rCo) ?? 1}); cols.push(c); });
+  const studs = [], start = Math.max(hr, rCo, rMx) + 1;
+  for (let r = start; r < grid.length; r++) {
+    const row = grid[r] || []; let nc = -1; row.forEach((x, c) => { if (nc < 0 && c < (cols[0] ?? 99) && c !== cMoy && x && typeof x.v === 'string' && x.v.trim()) nc = c; });
+    if (nc < 0) continue; const name = txt(r, nc);
+    if (/^(moyenne|%|edit|édit)/i.test(name)) break;
+    const vals = [], ncs = [];
+    cols.forEach((c, i) => { const x = cell(r, c), v = x.v; if (v == null || v === '') { vals[i] = null; return; }
+      if (typeof v === 'number') { vals[i] = v; if (x.fill) ncs[i] = true; return; }
+      const t = String(v).trim(); vals[i] = /^abs/i.test(t) ? 'Abs' : /^disp/i.test(t) ? 'Disp' : /^n\.?\s?n/i.test(t) ? 'NN' : (() => { const n = parseFloat(t.replace(',', '.')); return isNaN(n) ? '?' + t : n; })(); });
+    const ed = cell(r, cMoy).v; studs.push({name, vals, nc: ncs, ed: typeof ed === 'number' ? ed : null});
+  }
+  /* évaluations sans aucune note (copies pas encore corrigées) : ignorées */
+  const keep = evs.map((e, i) => studs.some(s => s.vals[i] != null));
+  return {cls: cm ? cm[1].trim() : '', evs: evs.filter((e, i) => keep[i]), rows: studs.map(s => ({name: s.name, ed: s.ed, vals: s.vals.filter((v, i) => keep[i]), nc: s.nc.filter((v, i) => keep[i])}))};
+}
+/* moyenne d'un élève sur les évaluations du fichier, comme l'application la calculera */
+function gimpAvg(imp, r) { let a = 0, w = 0; imp.evs.forEach((e, i) => { const v = r.vals[i]; if (typeof v !== 'number' || (r.nc && r.nc[i]) || v < 0 || v > e.max) return; a += v / (e.max || 20) * 20 * (e.coef || 1); w += (e.coef || 1); }); return w ? a / w : null; }
+async function gimpFile(file) {
+  if (!file) return;
+  if (!/\.xlsx$/i.test(file.name)) { toast('Choisissez le fichier Excel (.xlsx) exporté depuis École Directe'); return; }
+  let r; try { r = parseED(await readXlsx(await file.arrayBuffer())); } catch (e) { toast('Fichier non reconnu : utilisez l\'export « Les devoirs » d\'École Directe'); return; }
+  if (!r.evs.length || !r.rows.length) { toast('Aucune note trouvée dans ce fichier'); return; }
+  const target = r.cls ? DB.classes.find(c => normCls(c.name) === normCls(r.cls)) : null, cid = target ? target.id : V.cid;
+  const studs = studentsOf(cid), n = x => normN(x);
+  const findStu = name => { const k = n(name); return studs.find(s => n(s.last + ' ' + s.first) === k || n(s.first + ' ' + s.last) === k) || studs.find(s => k.includes(n(s.last)) && k.includes(n(s.first))) || null; };
+  r.rows.forEach(x => { x.sid = (findStu(x.name) || {}).id || ''; });
+  GIMP = {cid, evs: r.evs, rows: r.rows, ed: true, file: file.name, fcls: r.cls, clsOk: !!target};
+  if (cid !== V.cid) { const c = cls(cid), periods = periodsFor(c); V.cid = cid; if (V.p == null || V.p >= periods.length) V.p = currentPeriodIndex(periods); saveNav(); }
+  renderKeep();
 }
 let GIMP = null; // aperçu d'import en cours {cid, evs, rows}
 function viewNotes() {
@@ -2108,27 +2198,36 @@ function viewNotes() {
   const seg = periods.map((p, i) => `<button type="button" data-act="period" data-i="${i}" aria-pressed="${i === V.p}">${esc(p.n)}</button>`).join('');
   const imp = GIMP && GIMP.cid === c.id ? GIMP : null;
   const preview = imp ? `<section class="card"><h2 style="font-size:16px;margin:0 0 6px">Aperçu avant import</h2>
+      ${imp.file ? `<p class="small" style="margin:0 0 6px">Fichier <b>${esc(imp.file)}</b>${imp.fcls ? ` · classe du fichier : <b>${esc(imp.fcls)}</b>` : ''}${imp.clsOk ? '' : ` · <span style="color:var(--neg)">classe introuvable dans l'application : import dans ${esc(c.name)}</span>`}</p>` : ''}
+      ${imp.ed ? (() => { const ok = imp.rows.filter(r => r.sid && typeof r.ed === 'number'), diff = ok.filter(r => { const m = gimpAvg(imp, r); return m == null || Math.abs(m - r.ed) > 0.05; }), nNc = imp.rows.reduce((a, r) => a + (r.nc || []).filter(Boolean).length, 0);
+        return `<p class="gcheck ${diff.length ? 'bad' : 'good'}">${diff.length ? `Moyenne différente de celle d'École Directe pour ${plural(diff.length, 'élève')} sur ${ok.length} : ${diff.slice(0, 5).map(r => esc(r.name)).join(', ')}${diff.length > 5 ? '…' : ''}. Une évaluation manque peut-être dans le fichier (exportez la période entière), ou un coefficient ou un barème diffère.` : `Moyennes identiques à École Directe pour ${ok.length} élève${ok.length > 1 ? 's' : ''} sur ${ok.length}.`}${nNc ? ` ${plural(nNc, 'note non comptée', 'notes non comptées')} (en bleu dans École Directe), en gris ci-dessous.` : ''}</p>`; })() : ''}
       <p class="small muted" style="margin:0 0 10px">Vérifiez le type, le barème et le coefficient de chaque évaluation, et les élèves surlignés. Rien n'est enregistré avant « Valider ».</p>
       <div class="gimpev">${imp.evs.map((e, i) => `<div class="gie"><b>E${i + 1}</b><input type="date" data-chg="gimp" data-i="${i}" data-f="date" value="${e.date}"><input type="text" data-chg="gimp" data-i="${i}" data-f="title" value="${esc(e.title)}">
-        <select data-chg="gimp" data-i="${i}" data-f="type"><option value="ecrit" ${e.type !== 'tp' ? 'selected' : ''}>Écrit</option><option value="tp" ${e.type === 'tp' ? 'selected' : ''}>TP</option></select>
+        ${e.code ? `<span class="chip neu" title="Code École Directe">${esc(e.code)}</span>` : ''}${gtySel(`data-chg="gimp" data-i="${i}" data-f="type"`, e)}
         <label>sur <input type="number" step="0.5" data-chg="gimp" data-i="${i}" data-f="max" value="${e.max}"></label><label>coef <input type="number" step="0.25" data-chg="gimp" data-i="${i}" data-f="coef" value="${e.coef}"></label>
         ${DB.evals.some(x => x.cid === c.id && x.date === e.date && normN(x.title) === normN(e.title)) ? '<span class="chip neu">déjà importée : mise à jour</span>' : '<span class="chip pos">nouvelle</span>'}</div>`).join('')}</div>
-      <div class="gtwrap"><table class="itab gimp"><thead><tr><th>Élève lu</th><th>Élève</th>${imp.evs.map((e, i) => `<th>E${i + 1}</th>`).join('')}</tr></thead><tbody>${imp.rows.map((r, ri) => `<tr class="${r.sid ? '' : 'bad'}"><td>${esc(r.name)}</td><td><select data-chg="gimp-stu" data-r="${ri}"><option value="">— ignorer —</option>${list.map(s => `<option value="${s.id}" ${s.id === r.sid ? 'selected' : ''}>${esc(s.last + ' ' + s.first)}</option>`).join('')}</select></td>${imp.evs.map((e, i) => { const v = r.vals[i]; const bad = (typeof v === 'number' && (v < 0 || v > e.max)) || (typeof v === 'string' && v[0] === '?');
-        return `<td class="${bad ? 'bad' : ''}">${v == null ? '—' : typeof v === 'number' ? fmtG(v) : esc(v.replace(/^\?/, ''))}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>
-      <p class="small muted">${plural(imp.rows.filter(r => r.sid).length, 'élève reconnu', 'élèves reconnus')} sur ${imp.rows.length}${list.length > imp.rows.length ? ` · ${plural(list.length - imp.rows.filter(r => r.sid).length, 'élève de la classe absent', 'élèves de la classe absents')} de la capture` : ''}.</p>
+      <div class="gtwrap"><table class="itab gimp"><thead><tr><th>Élève lu</th><th>Élève</th>${imp.evs.map((e, i) => `<th>E${i + 1}</th>`).join('')}${imp.ed ? '<th>Moyenne</th>' : ''}</tr></thead><tbody>${imp.rows.map((r, ri) => `<tr class="${r.sid ? '' : 'bad'}"><td>${esc(r.name)}</td><td><select data-chg="gimp-stu" data-r="${ri}"><option value="">— ignorer —</option>${list.map(s => `<option value="${s.id}" ${s.id === r.sid ? 'selected' : ''}>${esc(s.last + ' ' + s.first)}</option>`).join('')}</select></td>${imp.evs.map((e, i) => { const v = r.vals[i]; const bad = (typeof v === 'number' && (v < 0 || v > e.max)) || (typeof v === 'string' && v[0] === '?');
+        const nc = r.nc && r.nc[i]; return `<td class="${bad ? 'bad' : ''}${nc ? ' nc' : ''}"${nc ? ' title="Non comptée (en bleu dans École Directe)"' : ''}>${v == null ? '—' : typeof v === 'number' ? fmtG(v) : esc(v.replace(/^\?/, ''))}</td>`; }).join('')}${imp.ed ? (() => { const m = gimpAvg(imp, r), d = m != null && typeof r.ed === 'number' ? Math.abs(m - r.ed) : null; return `<td class="${d != null && d > 0.05 ? 'bad' : ''}">${fmtG(m)}${typeof r.ed === 'number' ? ` <span class="small muted">/ ÉD ${fmtG(r.ed)}</span>` : ''}</td>`; })() : ''}</tr>`).join('')}</tbody></table></div>
+      <p class="small muted">${plural(imp.rows.filter(r => r.sid).length, 'élève reconnu', 'élèves reconnus')} sur ${imp.rows.length}${list.length > imp.rows.length ? ` · ${plural(list.length - imp.rows.filter(r => r.sid).length, 'élève de la classe absent', 'élèves de la classe absents')} ${imp.ed ? 'du fichier' : 'de la capture'}` : ''}.</p>
       <div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" data-act="gimp-cancel">Annuler</button><button class="btn ink" data-act="gimp-ok">Valider l'import</button></div></section>` : '';
-  const cards = ev.slice().reverse().map(e => { const a = evalAvg(e), n = list.filter(s => typeof gradeOf(e, s.id) === 'number').length, open = V.gopen === e.id;
-    return `<li class="gcard ${open ? 'open' : ''}"><button type="button" class="gch" data-act="gopen" data-id="${e.id}"><span class="d">${fmtShort(e.date)}</span><b>${esc(e.title)}</b><span class="gty ${e.type === 'tp' ? 'tp' : ''}">${e.type === 'tp' ? 'TP' : 'Écrit'}</span><span class="small muted">sur ${fmtG(e.max)} · coef ${fmtG(e.coef)}</span><span class="grow"></span><span class="small">moyenne <b>${a != null ? fmtG(a * e.max / 20) : '—'}</b> · ${n} notes</span></button>
-      ${open ? `<div class="gedit"><div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px"><select data-chg="geval" data-id="${e.id}" data-f="type"><option value="ecrit" ${e.type !== 'tp' ? 'selected' : ''}>Écrit</option><option value="tp" ${e.type === 'tp' ? 'selected' : ''}>TP</option></select><label class="small">sur <input type="number" step="0.5" data-chg="geval" data-id="${e.id}" data-f="max" value="${e.max}" style="width:70px"></label><label class="small">coef <input type="number" step="0.25" data-chg="geval" data-id="${e.id}" data-f="coef" value="${e.coef}" style="width:70px"></label><span class="grow"></span><button class="btn danger" data-act="geval-del" data-id="${e.id}">Supprimer l'évaluation</button></div>
-        <div class="ggrid">${list.map(st => { const v = gradeOf(e, st.id); return `<label><span>${esc(st.last + ' ' + st.first)}</span><input type="text" inputmode="decimal" data-chg="grade" data-k="${gKey(e.id, st.id)}" data-max="${e.max}" value="${v == null ? '' : typeof v === 'number' ? String(v).replace('.', ',') : esc(v)}" placeholder="—"></label>`; }).join('')}</div></div>` : ''}</li>`; }).join('');
+  const cards = ev.slice().reverse().map(e => { const a = evalAvg(e), n = list.filter(s => gradeNum(e, s.id) != null).length, open = V.gopen === e.id;
+    return `<li class="gcard ${open ? 'open' : ''}"><button type="button" class="gch" data-act="gopen" data-id="${e.id}"><span class="d">${fmtShort(e.date)}</span><b>${esc(e.title)}</b>${gtyChip(e)}<span class="small muted">sur ${fmtG(e.max)} · coef ${fmtG(e.coef)}</span><span class="grow"></span><span class="small">moyenne <b>${a != null ? fmtG(a * e.max / 20) : '—'}</b> · ${n} notes</span></button>
+      ${open ? `<div class="gedit"><div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px">${gtySel(`data-chg="geval" data-id="${e.id}" data-f="type"`, e)}<label class="small">sur <input type="number" step="0.5" data-chg="geval" data-id="${e.id}" data-f="max" value="${e.max}" style="width:70px"></label><label class="small">coef <input type="number" step="0.25" data-chg="geval" data-id="${e.id}" data-f="coef" value="${e.coef}" style="width:70px"></label><span class="grow"></span><button class="btn danger" data-act="geval-del" data-id="${e.id}">Supprimer l'évaluation</button></div>
+        <div class="ggrid">${list.map(st => { const v = gradeOf(e, st.id), nc = gradeNC(e, st.id); return `<label class="${nc ? 'nc' : ''}"${nc ? ' title="Note non comptée dans la moyenne"' : ''}><span>${esc(st.last + ' ' + st.first)}</span><input type="text" inputmode="decimal" data-chg="grade" data-k="${gKey(e.id, st.id)}" data-max="${e.max}" value="${v == null ? '' : typeof v === 'number' ? String(v).replace('.', ',') : esc(v)}" placeholder="—"></label>`; }).join('')}</div></div>` : ''}</li>`; }).join('');
   return `
   <header class="bar"><button class="btn ghost" data-act="back">${ICON.back}Retour</button>
     <div class="ttl"><h1>Notes</h1><div class="sub">${esc(c.name)} · ${plural(ev.length, 'évaluation')} · moyenne de la classe ${fmtG(classAvg(c.id, per))}</div></div><span class="grow"></span><div class="seg" role="group" aria-label="Période">${seg}</div></header>
   <main class="main"><div class="wrap" style="max-width:1000px;display:flex;flex-direction:column;gap:14px">
-    <section class="card bulsteps">
+    <section class="card gdropcard">
+      <label class="gdrop" id="gdrop"><input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" data-chg="gfile" hidden>
+        <span class="gdi" aria-hidden="true">⇪</span><span><strong>Glissez ici l'export École Directe (.xlsx)</strong><br><span class="small muted">ou touchez pour choisir le fichier · relevé « Les devoirs » de la classe, de préférence la période entière</span></span></label>
+      <p class="small muted" style="margin:8px 0 0">Le fichier est lu sur cet appareil, rien n'est envoyé. Codes : TP → TP, DL → Écrit · maison, autres (IE, DS…) → Écrit. Notes en bleu → non comptées. Évaluations encore vides ignorées. Vous pouvez réimporter le même relevé : pas de doublon.</p>
+      <details class="idet" style="margin-top:8px"><summary>Autre méthode : texte préparé par Claude à partir d'une capture</summary>
+      <div class="bulsteps" style="margin-top:8px">
       <div class="bstep"><b>1</b><div><strong>Faire une capture du carnet de notes d'École Directe</strong><p class="small muted">Toute la classe, avec les intitulés, dates, barèmes et coefficients des évaluations si possible.</p></div></div>
-      <div class="bstep"><b>2</b><div><strong>L'envoyer à Claude dans la conversation</strong><p class="small muted">Claude répond au format de l'application : une ligne <code>[E1] date · intitulé · Écrit ou TP · /barème · coef</code> par évaluation, puis une ligne <code>NOM Prénom | note | note…</code> par élève.</p></div></div>
+      <div class="bstep"><b>2</b><div><strong>L'envoyer à Claude dans la conversation</strong><p class="small muted">Claude répond au format de l'application : une ligne <code>[E1] date · intitulé · Écrit, Maison ou TP · /barème · coef</code> par évaluation, puis une ligne <code>NOM Prénom | note | note…</code> par élève.</p></div></div>
       <div class="bstep"><b>3</b><div><strong>Coller la réponse ici</strong><textarea id="gimp-in" rows="4" placeholder="[E1] 12/10/2026 · Contrôle ch. 1 · Écrit · /20 · coef 1&#10;ANDRÉ Ambre | 12,5"></textarea><button class="btn ink" data-act="gimp-parse" style="margin-top:6px">Afficher l'aperçu</button></div></div>
+      </div></details>
     </section>
     ${preview}
     <section class="card"><h2 style="font-size:16px;margin:0 0 8px">Évaluations · ${esc(per.n)}</h2>${ev.length ? `<ul class="gcards">${cards}</ul>` : '<p class="muted" style="margin:0">Aucune évaluation importée sur cette période.</p>'}</section>
@@ -2769,6 +2868,16 @@ async function runSelfTests() {
         ok(f.querySelector('.gbig.mo'), 'fiche : moyenne en pastille pleine'); }
       ok(dlIcon({dl: 'd'}).includes('>D<') && dlIcon({dl: 's'}).includes('>S<'), 'délégués : D plein, S en pointillés pour le suppléant');
       ACT['fiche-nav']({dataset: {d: '1'}}); eq(V.sid, 'y1', 'fiche : élève suivant');
+      /* export Excel d'École Directe (grille déjà lue) */
+      const C = v => v === undefined ? undefined : {v, fill: null}, B = v => ({v, fill: 'C9F0FF'});
+      const grid = [[C(null), C('M. PROF\nClasse : 2nde 5\nTrimestre 1'), C(null), C('Moyennes'), C(null), C('Rang'), C(null), C('Exo maison\n15/09/2026 (DL)'), C('TP titrage\n17/09/2026 (TP)'), C('DS1\n06/11/2026 (DS)')],
+        [C(null), C('Coefficients'), , , , , , C(0.5), C(1), C(3)], [C(null), C('Noté sur'), , , , , , C(10), C(20), C(20)], [],
+        [C(null), C('TEST ÉLÈVE0'), C(null), C(13.33), C(null), C(1), C(null), C(5), C(15), C(null)], [C(null), C('TEST ÉLÈVE1'), C(null), C(12), C(null), C(2), C(null), B(0), C(12), C(null)],
+        [C(null), C('Moyenne Classe'), C(null), C(13.5), , , , C(5), C(13.5)]];
+      const pe = parseED(grid);
+      eq([pe.cls, pe.evs.map(e => e.type + (e.home ? '+maison' : '') + ':' + e.max + ':' + e.coef), pe.rows.length, pe.rows[1].nc[0], pe.rows[0].ed], ['2nde 5', ['ecrit+maison:10:0.5', 'tp:20:1'], 2, true, 13.33], 'export École Directe : classe, codes, barèmes, note en bleu, DS sans note ignoré');
+      eq([normCls('3ème 4'), normCls('3e 4'), normCls('2nde 5'), normCls('2de 5')], ['3 4', '3 4', '2 5', '2 5'], 'noms de classe École Directe reconnus');
+      eq([fmtG(gimpAvg({evs: pe.evs}, pe.rows[0])), fmtG(gimpAvg({evs: pe.evs}, pe.rows[1]))], ['13,3', '12'], 'moyenne calculée comme École Directe (note en bleu exclue)');
       DB.evals = DB.evals.filter(e => e.cid !== 'tA'); Object.keys(DB.grades).forEach(k => { if (/\|y\d$/.test(k)) delete DB.grades[k]; });
     });
 
@@ -5102,8 +5211,8 @@ const ACT = {
   'gimp-cancel': () => { GIMP = null; renderKeep(); },
   'gimp-ok': () => { const imp = GIMP; if (!imp) return; let nE = 0, nG = 0;
     imp.evs.forEach((e, i) => { let ex = DB.evals.find(x => x.cid === imp.cid && x.date === e.date && normN(x.title) === normN(e.title));
-      if (ex) Object.assign(ex, {type: e.type, max: e.max, coef: e.coef, t: Date.now()}); else { ex = {id: uid(), cid: imp.cid, ...e, t: Date.now()}; DB.evals.push(ex); nE++; }
-      imp.rows.forEach(r => { if (!r.sid) return; const v = r.vals[i]; if (v == null || (typeof v === 'string' && v[0] === '?')) return; if (typeof v === 'number' && (v < 0 || v > e.max)) return; DB.grades[gKey(ex.id, r.sid)] = {v, t: Date.now()}; nG++; }); });
+      if (ex) Object.assign(ex, {type: e.type, home: !!e.home, code: e.code || ex.code || '', max: e.max, coef: e.coef, t: Date.now()}); else { ex = {id: uid(), cid: imp.cid, date: e.date, title: e.title, type: e.type, home: !!e.home, code: e.code || '', max: e.max, coef: e.coef, t: Date.now()}; DB.evals.push(ex); nE++; }
+      imp.rows.forEach(r => { if (!r.sid) return; const v = r.vals[i]; if (v == null || (typeof v === 'string' && v[0] === '?')) return; if (typeof v === 'number' && (v < 0 || v > e.max)) return; DB.grades[gKey(ex.id, r.sid)] = r.nc && r.nc[i] ? {v, t: Date.now(), nc: true} : {v, t: Date.now()}; nG++; }); });
     GIMP = null; save(); renderKeep(); toast(`${plural(nG, 'note importée', 'notes importées')} · ${plural(nE, 'nouvelle évaluation', 'nouvelles évaluations')}`); },
   gopen: el => { V.gopen = V.gopen === el.dataset.id ? null : el.dataset.id; renderKeep(); },
   'geval-del': el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const saved = {e, g: Object.entries(DB.grades).filter(([k]) => k.startsWith(e.id + '|'))};
@@ -5201,12 +5310,13 @@ const CHG = {
     render(); toast(`${plural(ok, 'photo')} associée${ok > 1 ? 's' : ''}` + (miss.length ? ` · ${miss.length} non reconnue${miss.length > 1 ? 's' : ''}` : ''));
   },
   group: el => { const s = stu(el.dataset.sid); s.group = el.value; save(); render(); },
-  gimp: el => { const e = GIMP && GIMP.evs[+el.dataset.i]; if (!e) return; const f = el.dataset.f; e[f] = f === 'max' || f === 'coef' ? (parseFloat(el.value.replace(',', '.')) || (f === 'max' ? 20 : 1)) : el.value; renderKeep(); },
+  gimp: el => { const e = GIMP && GIMP.evs[+el.dataset.i]; if (!e) return; const f = el.dataset.f; if (f === 'type') { setGty(e, el.value); renderKeep(); return; } e[f] = f === 'max' || f === 'coef' ? (parseFloat(el.value.replace(',', '.')) || (f === 'max' ? 20 : 1)) : el.value; renderKeep(); },
+  gfile: el => { const f = el.files && el.files[0]; el.value = ''; gimpFile(f); },
   'gimp-stu': el => { const r = GIMP && GIMP.rows[+el.dataset.r]; if (r) { r.sid = el.value; renderKeep(); } },
-  geval: el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const f = el.dataset.f; e[f] = f === 'type' ? el.value : (parseFloat(el.value.replace(',', '.')) || (f === 'max' ? 20 : 1)); e.t = Date.now(); save(); renderKeep(); },
+  geval: el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const f = el.dataset.f; if (f === 'type') setGty(e, el.value); else e[f] = (parseFloat(el.value.replace(',', '.')) || (f === 'max' ? 20 : 1)); e.t = Date.now(); save(); renderKeep(); },
   grade: el => { const k = el.dataset.k, raw = el.value.trim(); if (!raw) { delete DB.grades[k]; save(); return; }
     let v; if (/^abs/i.test(raw)) v = 'Abs'; else if (/^disp/i.test(raw)) v = 'Disp'; else if (/^n\.?\s?n/i.test(raw)) v = 'NN'; else { v = parseFloat(raw.replace(',', '.')); if (isNaN(v) || v < 0 || v > +el.dataset.max) { toast('Note invalide'); el.value = ''; return; } }
-    DB.grades[k] = {v, t: Date.now()}; save(); },
+    const old = DB.grades[k]; DB.grades[k] = old && old.nc && old.v === v ? {v, t: Date.now(), nc: true} : {v, t: Date.now()}; save(); },
   implN: el => { const v = el.value.trim().replace(',', '.'); if (v === '') delete DB.implN[el.dataset.k]; else { const n = Math.max(0, Math.min(20, Math.round(parseFloat(v) * 2) / 2)); if (isNaN(n)) return; DB.implN[el.dataset.k] = {v: n, t: Date.now()}; el.value = n; } save(); },
   impl: el => { const P = {...(DB.settings.impl || {})}; if (el.type === 'checkbox') P[el.dataset.k] = el.checked; else { const n = parseFloat(String(el.value).replace(',', '.')); if (isNaN(n)) return; P[el.dataset.k] = n; } DB.settings.impl = P; save(); },
   'cat-show': el => { const h = new Set(DB.settings.hiddenCats || []); if (el.checked) h.delete(el.dataset.k); else h.add(el.dataset.k); DB.settings.hiddenCats = [...h]; save(); },
@@ -5263,6 +5373,10 @@ let SW0 = null;
 document.addEventListener('touchstart', e => { if (V.name !== 'fiche' || e.touches.length !== 1 || e.target.closest('input, textarea, select, .seg, svg')) { SW0 = null; return; } SW0 = {x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now()}; }, {passive: true});
 document.addEventListener('touchend', e => { if (!SW0 || V.name !== 'fiche') return; const t = e.changedTouches[0], dx = t.clientX - SW0.x, dy = t.clientY - SW0.y; const ok = Math.abs(dx) > 90 && Math.abs(dy) < 50 && Date.now() - SW0.t < 600; SW0 = null;
   if (ok && !$('#modal').innerHTML && !$('#layer').innerHTML) ACT['fiche-nav']({dataset: {d: dx < 0 ? '1' : '-1'}}); }, {passive: true});
+/* glisser-déposer de l'export École Directe sur la page Notes */
+['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { if (V.name !== 'notes' || !e.dataTransfer || ![...e.dataTransfer.types].includes('Files')) return; e.preventDefault(); const z = $('#gdrop'); if (z) z.classList.add('over'); }));
+document.addEventListener('dragleave', e => { if (V.name === 'notes' && !e.relatedTarget) { const z = $('#gdrop'); if (z) z.classList.remove('over'); } });
+document.addEventListener('drop', e => { if (V.name !== 'notes' || !e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); const z = $('#gdrop'); if (z) z.classList.remove('over'); gimpFile(e.dataTransfer.files[0]); });
 /* curseur des courbes */
 let SPK = null;
 function spkShow(w, cx) {

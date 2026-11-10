@@ -831,8 +831,8 @@ button.wpill{cursor:pointer}
 .btag.ev{background:var(--neg)} .btag.gr{background:#4B2A7B}
 .slot.has-eval{border:4px solid var(--neg)} .slot.has-graded{border:4px solid #4B2A7B}
 /* délégués */
-.dlg{display:inline-block;margin-left:4px;font-size:.9em;color:#B8860B;vertical-align:0;line-height:1}
-.dlg.sup{color:#8A7A50}
+.dlg{display:inline-grid;place-items:center;box-sizing:border-box;width:16px;height:16px;margin-left:5px;border-radius:4px;border:1.5px solid var(--ink);background:var(--ink);color:var(--surface);font-size:10.5px;font-weight:800;font-style:normal;line-height:1;vertical-align:2px;font-family:var(--sans,inherit)}
+.dlg.sup{background:transparent;color:var(--ink)}
 .mini-tg.dl[aria-pressed="true"]{background:#FBF1D9;color:#7A5600;border-color:#E9D39C}
 .proj .dlg{display:none}
 /* suivi en grille */
@@ -1006,11 +1006,14 @@ button.wpill{cursor:pointer}
 @media (max-width:700px){.srow{grid-template-columns:36px minmax(0,1fr) 54px 54px 30px 34px !important}.srow > :nth-child(3),.srow > :nth-child(8),.srow > :nth-child(9),.srow > :nth-child(10),.srow > :nth-child(11),.srow .last,.srow .bdg{display:none}}
 .srow.head .sh{white-space:nowrap}
 @media (max-width:700px){.srow.head{font-size:10px;letter-spacing:0}.srow{gap:0 6px;padding:6px 10px}}
-.ival{display:inline-block;min-width:38px;padding:1px 6px;border-radius:6px;font-weight:700;text-align:center;color:var(--muted);background:var(--surface-2)}
-.ival.set{color:var(--ink)} .ival.low{color:var(--neg);background:color-mix(in srgb,var(--neg) 12%,transparent)} .ival.high{color:var(--pos);background:color-mix(in srgb,var(--pos) 12%,transparent)}
+.ival{display:inline-block;box-sizing:border-box;min-width:40px;padding:0 6px;border-radius:7px;font-weight:700;text-align:center;color:var(--muted);background:transparent;border:1.5px solid currentColor;line-height:20px}
+.ival.set{color:var(--ink)} .ival.low{color:var(--neg)} .ival.high{color:var(--pos)}
+.ival.mo{border-color:transparent;background:var(--ink-2);color:var(--surface);font-weight:800}
+.ival.mo.low{background:var(--neg);color:var(--on-neg)} .ival.mo.high{background:var(--pos);color:var(--on-pos)}
 .itr{font-style:normal;font-weight:800;margin-left:3px} .itr.up{color:var(--pos)} .itr.down{color:var(--neg)}
 .ibadge{position:absolute;left:6px;top:6px;font-size:12px;font-weight:800;padding:1px 7px;border-radius:999px;background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.25)}
-.ibadge.low{color:var(--neg)} .ibadge.high{color:var(--pos)}
+.ibadge{border:1.5px solid currentColor;padding:0 6px} .ibadge.low{color:var(--neg)} .ibadge.high{color:var(--pos)}
+.ibadge.mb{border-color:transparent;background:var(--ink-2);color:var(--surface)} .ibadge.mb.low{background:var(--neg);color:var(--on-neg)} .ibadge.mb.high{background:var(--pos);color:var(--on-pos)}
 .stile .ibadge ~ .stags{top:32px}
 .isynth{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
 
@@ -1041,6 +1044,9 @@ button.wpill{cursor:pointer}
 .gbigs{display:flex;gap:10px;flex-wrap:wrap}
 .gbig{flex:1 1 110px;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;background:var(--surface-2)}
 .gbig b{font-family:var(--serif);font-size:28px;line-height:1.1} .gbig b.low{color:var(--neg)}
+.gbig.mo{background:var(--ink-2);color:var(--surface)} .gbig.mo.low{background:var(--neg);color:var(--on-neg)} .gbig.mo.high{background:var(--pos);color:var(--on-pos)}
+.gbig.mo .lbl,.gbig.mo .muted{color:inherit;opacity:.85} .gbig.mo b.low{color:inherit}
+.inote b.io{display:inline-block;padding:0 9px;border:2px solid currentColor;border-radius:10px;line-height:1.15} .inote b.io.low{color:var(--neg)} .inote b.io.high{color:var(--pos)}
 .gspark{width:100%;max-width:620px;height:100px}
 .gspark .gl{stroke:var(--line)} .gspark .gcl{stroke:var(--muted);stroke-dasharray:4 4}
 .gspark .gavg{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round}
@@ -1071,6 +1077,18 @@ button.wpill{cursor:pointer}
 .fnav{display:flex;align-items:center;gap:4px}
 .fnav .btn{min-width:40px}
 .ibadge.mb{top:30px}
+.spk{position:relative;max-width:620px}
+.spk svg{display:block;touch-action:pan-y;cursor:crosshair;-webkit-user-select:none;user-select:none}
+.spk .shit{fill:transparent}
+.spk .scur{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:3 2;opacity:.7}
+.spk .sdot{fill:none;stroke:var(--ink);stroke-width:2}
+.spk .sphint{margin:2px 0 0;font-size:11px}
+.sptip{position:absolute;z-index:30;top:calc(100% - 14px);left:0;width:max-content;max-width:min(300px,86vw);padding:8px 10px;border-radius:10px;background:var(--surface);color:var(--ink);border:1px solid var(--line-2);box-shadow:0 6px 18px rgba(0,0,0,.18);font-size:13px;line-height:1.35;display:flex;flex-direction:column;gap:4px}
+.sptip[hidden]{display:none}
+.sptip .tc{display:flex;flex-wrap:wrap;gap:4px} .sptip .chip{font-size:11.5px}
+.sptip .tnote{font-style:italic;color:var(--ink-2)} .sptip .tt{font-weight:600}
+.sptip .pos{color:var(--pos)} .sptip .neg{color:var(--neg)}
+.sptip .tf{border-top:1px solid var(--line);padding-top:4px}
 .stile .ibadge.mb ~ .stags{top:56px}
 </style>
 </head>
@@ -1280,8 +1298,8 @@ const stuGroups = s => [s.group, s.g2].filter(Boolean).join(' · ');
 const hasGroups = cid => DB.students.some(s => s.cid === cid && (s.group === 'G1' || s.group === 'G2'));
 const groupLabel = g => g === 'all' ? 'Classe entière' : 'Demi-groupe ' + g;
 /* PAP (apprentissage) / PAI (santé) : symboles discrets, bulle avec le commentaire */
-/* délégué(e) ★ / suppléant(e) ☆ : discret, jamais en projection */
-const dlIcon = s => !s || !s.dl ? '' : s.dl === 'd' ? '<span class="dlg" title="Délégué(e)" aria-label="délégué(e)">★</span>' : '<span class="dlg sup" title="Suppléant(e)" aria-label="suppléant(e)">☆</span>';
+/* délégué(e) : D plein / suppléant(e) : D en contour ; discret, jamais en projection */
+const dlIcon = s => !s || !s.dl ? '' : s.dl === 'd' ? '<span class="dlg" title="Délégué(e)" aria-label="délégué(e)">D</span>' : '<span class="dlg sup" title="Suppléant(e)" aria-label="suppléant(e)">D</span>';
 const amenIcons = s => dlIcon(s) + amenIcons0(s);
 const amenIcons0 = s => !s || (!s.pap && !s.pai) ? '' : `<span class="amens">${s.pap ? `<span class="amen pap" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAP : voir les aménagements" title="PAP">${ICON.book}</span>` : ''}${s.pai ? `<span class="amen pai" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAI : voir les informations" title="PAI">${ICON.cross}</span>` : ''}</span>`;
 function amenPop(el) {
@@ -1935,7 +1953,7 @@ function implCalc(s, per) {
   const clampN = n => Math.max(P.floor, Math.min(20, n));
   past.forEach(x => {
     const kind = sesKind(x, s, byKey), before = rawNow(); info = [];
-    const entry = {x, kind, cats: [...new Set((byKey.get(x.key) || []).map(o => o.cat))]};
+    const entry = {x, kind, cats: [...new Set((byKey.get(x.key) || []).map(o => o.cat))], obs: byKey.get(x.key) || []};
     log.push(entry);
     if (kind === 'abs') { entry.skip = 'absent'; return; } nFollow++;
     if (kind === 'none') { entry.skip = 'none'; return; } nObs++;
@@ -1947,7 +1965,7 @@ function implCalc(s, per) {
     if (cats.has('devoir_inc')) lose('dev', v(P.cDevPart));
     if (cats.has('devoir_bac')) lose('dev', v(P.cDevPart));
     cats.forEach(c => { if (ORGC.has(c)) lose('org', v(P.cOrg)); });
-    if (kind === 'eval') { hist.push({d: x.date, n: rawNow()}); entry.delta = rawNow() - before; entry.note = clampN(rawNow()); entry.info = info; entry.eval = true; return; }
+    if (kind === 'eval') { hist.push({d: x.date, n: clampN(rawNow()), e: entry}); entry.delta = rawNow() - before; entry.note = clampN(rawNow()); entry.info = info; entry.eval = true; return; }
     /* passivité : série de RAS */
     if (kind === 'ras') { run++; entry.run = run; if (run >= P.rasLen) { lose('pas', v(P.rasPen)); info.push(`${P.rasLen} RAS de suite`); run = 0; } }
     else run = 0;
@@ -1958,7 +1976,7 @@ function implCalc(s, per) {
       if (rp > 1e-9) info.push(rp >= v(P.gain) - 1e-9 ? 'rattrape des points perdus' : `dont ${fmtN(rp)} pour rattraper des points perdus`);
       if (bonus + g > P.bonusMax + 1e-9) info.push('bonus maximal atteint');
       bonus = Math.min(P.bonusMax, bonus + g); }
-    hist.push({d: x.date, n: clampN(rawNow())});
+    hist.push({d: x.date, n: clampN(rawNow()), e: entry});
     entry.delta = rawNow() - before; entry.note = clampN(rawNow()); entry.info = info;
   });
   const raw = P.base + bonus - Object.values(debt).reduce((a, b) => a + b, 0);
@@ -1969,12 +1987,27 @@ function implCalc(s, per) {
 const fmtN = x => (Math.round(x * 100) / 100).toLocaleString('fr-FR', {maximumFractionDigits: 2});
 const fmtH = x => (Math.round(x * 2) / 2).toLocaleString('fr-FR');
 const implRet = (sid, per) => DB.implN[implKey(sid, per)];
+/* courbes avec curseur : glisser le doigt (ou survoler) pour voir le détail d'un point */
+function sparkWrap(cls2, W, H, inner, xs, ys, tips, label) {
+  return `<div class="spk" data-w="${W}" data-xs="${xs.map(v => v.toFixed(1)).join(',')}" data-ys="${ys.map(v => v.toFixed(1)).join(',')}"><svg class="${cls2}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}">${inner}<line class="scur" x1="0" x2="0" y1="2" y2="${H - 2}" style="display:none"/><circle class="sdot" r="6" cx="0" cy="0" style="display:none"/><rect class="shit" x="0" y="0" width="${W}" height="${H}"/></svg><p class="sphint small muted">Glissez le doigt sur la courbe pour voir le détail.</p>${tips.map(t => `<div class="sptip" hidden>${t}</div>`).join('')}</div>`;
+}
+const fmtTip = d => parseD(d).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short'});
+function implTip(p) {
+  const e = p.e; if (!e) return `<b>${fmtTip(p.d)}</b><br>Note : ${fmtN(Math.round(p.n * 10) / 10)}`;
+  let what = e.obs.filter(o => o.cat !== 'ras').map(o => catChip(o.cat)).join('');
+  if (e.kind === 'ras') what = `<span class="chip neu${e.obs.length ? '' : ' autoras'}">RAS${e.obs.length ? '' : ' auto'}</span>${e.run > 1 ? ` <span class="small">${e.run}e de suite</span>` : ''}`;
+  if (e.eval) what = '<span class="chip neg">Évaluation</span>' + what;
+  const notes = e.obs.filter(o => o.note).map(o => `<span class="tnote">« ${esc(o.note)} »</span>`).join('');
+  const d = e.delta == null || Math.abs(e.delta) < 0.005 ? '<span class="muted">0 point</span>' : `<b class="${e.delta > 0 ? 'pos' : 'neg'}">${e.delta > 0 ? '+ ' : '− '}${fmtN(Math.abs(e.delta))}</b>`;
+  return `<div class="th"><b>${fmtTip(e.x.date)}</b>${e.x.start ? ` <span class="muted">${fmtT(e.x.start)}</span>` : ''}</div><div class="tc">${what || '<span class="muted">—</span>'}</div>${notes}${e.info && e.info.length ? `<div class="small muted">${esc(e.info.join(' · '))}</div>` : ''}<div class="tf">${d} → note <b>${fmtN(Math.round(p.n * 10) / 10)}</b></div>`;
+}
 function implSpark(h, P) {
   if (h.length < 2) return '';
   const W = 420, H = 64, lo = Math.max(0, Math.min(P.base, ...h.map(p => p.n)) - 1), hi = Math.min(20, Math.max(P.base, ...h.map(p => p.n)) + 1);
   const x = i => 30 + i / (h.length - 1) * (W - 36), y = n => H - 6 - (n - lo) / (hi - lo) * (H - 12);
   const pts = h.map((p, i) => `${x(i).toFixed(1)},${y(p.n).toFixed(1)}`).join(' ');
-  return `<svg class="ispark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution de la note au fil des séances"><line x1="30" x2="${W - 6}" y1="${y(P.base)}" y2="${y(P.base)}" class="ibase"/><text x="0" y="${y(P.base) + 4}" class="ilab">${fmtN(P.base)}</text><polyline points="${pts}"/><circle cx="${x(h.length - 1)}" cy="${y(h[h.length - 1].n)}" r="3.5"/><text x="${Math.min(W - 30, x(h.length - 1) + 6)}" y="${y(h[h.length - 1].n) - 6}" class="ilab">${fmtH(h[h.length - 1].n)}</text></svg>`;
+  const inner = `<line x1="30" x2="${W - 6}" y1="${y(P.base)}" y2="${y(P.base)}" class="ibase"/><text x="0" y="${y(P.base) + 4}" class="ilab">${fmtN(P.base)}</text><polyline points="${pts}"/><circle cx="${x(h.length - 1)}" cy="${y(h[h.length - 1].n)}" r="3.5"/><text x="${Math.min(W - 30, x(h.length - 1) + 6)}" y="${y(h[h.length - 1].n) - 6}" class="ilab">${fmtH(h[h.length - 1].n)}</text>`;
+  return sparkWrap('ispark', W, H, inner, h.map((p, i) => x(i)), h.map(p => y(p.n)), h.map(implTip), 'Évolution de la note au fil des séances');
 }
 function implTable(P, k, nPlanned) {
   const rows = [['Participe, moteur, bonne question, aide un camarade, progrès / effort', 'par séance', P.gain, 1], ['Actif, travail soigné', 'par séance', P.gainLow, 1], ['Bavard, s\'amuse, agité, comportement, sécurité TP', 'par séance', P.cDis, -1], ['Passif', 'par séance', P.cPas, -1], ['Devoir non fait', '', P.cDev, -1], ['Devoir incomplet ou bâclé', '', P.cDevPart, -1], ['Oubli de matériel ou de blouse, retard', '', P.cOrg, -1], [`${P.rasLen} RAS de suite`, '', P.rasPen, -1]];
@@ -1988,7 +2021,7 @@ function implCard(s, per) {
   const line = (l, v, cls2) => v ? `<span class="ipart ${cls2}">${l} ${cls2 === 'pos' ? '+' : '−'} ${fmtN(v)}</span>` : '';
   return `<section class="card implcard"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
       <div><div class="lbl" style="margin:0">Note d'implication · ${esc(per.n)}</div>
-        ${r.note != null ? `<p class="inote">Proposée : <b>${fmtH(r.note)}</b> / 20</p>` : `<p class="inote muted">Peu observé : à évaluer vous-même</p>`}</div>
+        ${r.note != null ? `<p class="inote">Proposée : <b class="io ${r.note < 10 ? 'low' : r.note >= 15 ? 'high' : ''}">${fmtH(r.note)}</b> / 20</p>` : `<p class="inote muted">Peu observé : à évaluer vous-même</p>`}</div>
       <label class="iret">Note retenue <input type="number" min="0" max="20" step="0.5" inputmode="decimal" data-chg="implN" data-k="${esc(kk)}" value="${ret ? ret.v : ''}" placeholder="${r.note != null ? fmtH(r.note) : '—'}"></label></div>
     ${implSpark(r.hist, P)}
     <p class="iparts"><span class="ipart">Départ ${fmtN(P.base)}</span>${line('Participation', r.bonus, 'pos')}${line('Comportement', r.debt.comp, 'neg')}${line('Devoirs', r.debt.dev, 'neg')}${line('Organisation', r.debt.org, 'neg')}${line('Passivité', r.debt.pas, 'neg')}</p>
@@ -2023,24 +2056,30 @@ function classAvg(cid, per, kind) {
   return list.length ? list.reduce((a, b) => a + b, 0) / list.length : null;
 }
 const evalAvg = e => { const l = studentsOf(e.cid).map(s => on20(e, gradeOf(e, s.id))).filter(x => x != null); return l.length ? l.reduce((a, b) => a + b, 0) / l.length : null; };
+function gradeTip(p) {
+  const e = p.e, raw = p.v * (e.max || 20) / 20, a = evalAvg(e);
+  return `<div class="th"><b>${fmtTip(e.date)}</b> <span class="gty ${e.type === 'tp' ? 'tp' : ''}">${e.type === 'tp' ? 'TP' : 'Écrit'}</span></div><div class="tt">${esc(e.title)}</div>
+    <div class="tg"><b class="${p.v < 10 ? 'neg' : ''}">${fmtG(raw)}</b> / ${fmtG(e.max)}${(e.max || 20) !== 20 ? ` <span class="muted">(soit ${fmtG(p.v)} / 20)</span>` : ''} · coef ${fmtG(e.coef)}</div>
+    <div class="small muted">Classe : ${a != null ? fmtG(a * (e.max || 20) / 20) + ' / ' + fmtG(e.max) : '—'}</div><div class="tf">Moyenne après : <b>${fmtG(p.avg)}</b></div>`;
+}
 function gradeSpark(h, cls20) {
   if (!h.length) return '';
   const W = 520, H = 92, n = h.length, x = i => 34 + (n === 1 ? (W - 50) / 2 : i / (n - 1) * (W - 50)), y = v => H - 10 - v / 20 * (H - 20);
   const line = h.map((p, i) => `${x(i).toFixed(1)},${y(p.avg).toFixed(1)}`).join(' ');
-  const pts = h.map((p, i) => p.e.type === 'tp' ? `<rect x="${(x(i) - 4).toFixed(1)}" y="${(y(p.v) - 4).toFixed(1)}" width="8" height="8" class="gtp"><title>${esc(p.e.title)} : ${fmtG(p.v)}/20</title></rect>` : `<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4.5" class="gec"><title>${esc(p.e.title)} : ${fmtG(p.v)}/20</title></circle>`).join('');
-  return `<svg class="gspark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution de la moyenne">
-    ${[0, 10, 20].map(v => `<line x1="30" x2="${W - 8}" y1="${y(v)}" y2="${y(v)}" class="gl"/><text x="0" y="${y(v) + 4}" class="ilab">${v}</text>`).join('')}
+  const pts = h.map((p, i) => p.e.type === 'tp' ? `<rect x="${(x(i) - 4).toFixed(1)}" y="${(y(p.v) - 4).toFixed(1)}" width="8" height="8" class="gtp"/>` : `<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4.5" class="gec"/>`).join('');
+  const inner = `${[0, 10, 20].map(v => `<line x1="30" x2="${W - 8}" y1="${y(v)}" y2="${y(v)}" class="gl"/><text x="0" y="${y(v) + 4}" class="ilab">${v}</text>`).join('')}
     ${cls20 != null ? `<line x1="30" x2="${W - 8}" y1="${y(cls20)}" y2="${y(cls20)}" class="gcl"/>` : ''}
     ${n > 1 ? `<polyline points="${line}" class="gavg"/>` : ''}${pts}
-    <text x="${Math.min(W - 40, x(n - 1) + 8)}" y="${y(h[n - 1].avg) - 8}" class="ilab gval">${fmtG(h[n - 1].avg)}</text></svg>`;
+    <text x="${Math.min(W - 40, x(n - 1) + 8)}" y="${y(h[n - 1].avg) - 8}" class="ilab gval">${fmtG(h[n - 1].avg)}</text>`;
+  return sparkWrap('gspark', W, H, inner, h.map((p, i) => x(i)), h.map(p => y(p.v)), h.map(gradeTip), 'Évolution de la moyenne');
 }
 function resultsCard(s, per) {
   const r = resultsOf(s, per); if (!r.ev.length) return '';
-  const big = (l, v, cv) => `<div class="gbig"><span class="lbl" style="margin:0">${l}</span><b class="${v != null && v < 10 ? 'low' : ''}">${fmtG(v)}</b><span class="small muted">classe ${fmtG(cv)}</span></div>`;
+  const big = (l, v, cv, mo) => `<div class="gbig${mo && v != null ? ' mo' + (v < 10 ? ' low' : v >= 15 ? ' high' : '') : ''}"><span class="lbl" style="margin:0">${l}</span><b class="${v != null && v < 10 ? 'low' : ''}">${fmtG(v)}</b><span class="small muted">classe ${fmtG(cv)}</span></div>`;
   const rows = r.ev.slice().reverse().map(e => { const v = gradeOf(e, s.id), a = evalAvg(e);
     return `<tr><td>${fmtShort(e.date)}</td><td>${esc(e.title)}</td><td><span class="gty ${e.type === 'tp' ? 'tp' : ''}">${e.type === 'tp' ? 'TP' : 'Écrit'}</span></td><td class="gv"><b>${typeof v === 'number' ? fmtG(v) : v ? esc(v) : '—'}</b><span class="muted">/${fmtG(e.max)}</span></td><td class="small muted">coef ${fmtG(e.coef)}</td><td class="small muted">classe ${a != null ? fmtG(a * (e.max || 20) / 20) : '—'}</td></tr>`; }).join('');
   return `<section class="card rescard"><div class="lbl" style="margin:0">Résultats · ${esc(per.n)}</div>
-    <div class="gbigs">${big('Écrit', r.ecrit, classAvg(s.cid, per, 'ecrit'))}${big('TP', r.tp, classAvg(s.cid, per, 'tp'))}${big('Moyenne', r.moy, classAvg(s.cid, per))}</div>
+    <div class="gbigs">${big('Écrit', r.ecrit, classAvg(s.cid, per, 'ecrit'))}${big('TP', r.tp, classAvg(s.cid, per, 'tp'))}${big('Moyenne', r.moy, classAvg(s.cid, per), true)}</div>
     ${gradeSpark(r.hist, classAvg(s.cid, per))}
     <p class="small muted" style="margin:0">Ligne : moyenne de l'élève après chaque évaluation · ● écrit · ■ TP · pointillés : moyenne de la classe. Moyennes sur 20, pondérées par les coefficients.</p>
     <details class="idet"><summary>Toutes les notes (${r.ev.length})</summary><table class="itab gtab"><tbody>${rows}</tbody></table></details></section>`;
@@ -2287,7 +2326,7 @@ function setClasses() {
   const ga = list.filter(s => s.g2 === 'Ga').length, gb = list.filter(s => s.g2 === 'Gb').length;
   const rows = list.map(s => `<li><span class="thumb">${photoHTML(s)}</span>
       <span class="nm">${esc(s.last.toUpperCase())} ${esc(s.first)}</span>
-      <span class="amtg"><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="d" data-sid="${s.id}" aria-pressed="${s.dl === 'd'}" title="Délégué(e)">★ Dél.</button><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="s" data-sid="${s.id}" aria-pressed="${s.dl === 's'}" title="Suppléant(e)">☆ Sup.</button><button type="button" class="mini-tg pap" data-act="stu-flag" data-f="pap" data-sid="${s.id}" aria-pressed="${!!s.pap}" title="PAP">PAP</button><button type="button" class="mini-tg pai" data-act="stu-flag" data-f="pai" data-sid="${s.id}" aria-pressed="${!!s.pai}" title="PAI">PAI</button></span>
+      <span class="amtg"><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="d" data-sid="${s.id}" aria-pressed="${s.dl === 'd'}" title="Délégué(e)"><span class="dlg" aria-hidden="true">D</span> Dél.</button><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="s" data-sid="${s.id}" aria-pressed="${s.dl === 's'}" title="Suppléant(e)"><span class="dlg sup" aria-hidden="true">D</span> Sup.</button><button type="button" class="mini-tg pap" data-act="stu-flag" data-f="pap" data-sid="${s.id}" aria-pressed="${!!s.pap}" title="PAP">PAP</button><button type="button" class="mini-tg pai" data-act="stu-flag" data-f="pai" data-sid="${s.id}" aria-pressed="${!!s.pai}" title="PAI">PAI</button></span>
       <select data-chg="group" data-sid="${s.id}" aria-label="Demi-groupe de ${esc(s.first)}"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select>${twoG ? `<select data-chg="group2" data-sid="${s.id}" aria-label="Groupe a / b de ${esc(s.first)}"><option value="" ${!s.g2 ? 'selected' : ''}>—</option><option ${s.g2 === 'Ga' ? 'selected' : ''}>Ga</option><option ${s.g2 === 'Gb' ? 'selected' : ''}>Gb</option></select>` : ''}
       <span class="btn filebtn" style="min-height:40px">Photo<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de ${esc(s.first)}"></span>
       <button class="btn icon-btn" style="min-height:40px;min-width:40px" data-act="stu-edit" data-sid="${s.id}" aria-label="Modifier ${esc(s.first)}" title="Modifier">${ICON.edit}</button>
@@ -2704,6 +2743,8 @@ async function runSelfTests() {
       eq(run({}), 10, 'élève invisible (que des RAS) : 10');
       eq(run({participe: r(5)}), 12.5, 'discret qui participe une fois sur cinq : 12,5');
       eq(run({participe: r(4)}), 15.5, 'discret qui participe une fois sur quatre : 15,5');
+      { run({participe: [2], bavarde: [3]}); const ir = implCalc(st, per), sp = html(implSpark(ir.hist, ir.P)), tips = sp.querySelectorAll('.sptip');
+        ok(tips.length === ir.hist.length && /Participe/.test(tips[1].textContent) && /note/.test(tips[1].textContent), 'courbe d\'implication : bulle avec la date, les remarques et la note'); }
       const ks = new Set(L30.map(x => x.key)); DB.obs = DB.obs.filter(o => !ks.has(o.ses)); L30.forEach(x => { delete DB.appr[x.key]; });
       eq(run({ras: [1]}), null, 'peu observé (bilans non faits) : pas de note proposée');
     });
@@ -2724,6 +2765,9 @@ async function runSelfTests() {
       eq([DB.evals.filter(e => e.cid === 'tA').length, gradeOf(ev[0], 'y0')], [2, 14], 'réimport : mise à jour sans doublon');
       V = {name: 'fiche', sid: 'y0', p: 0, order: ['y0', 'y1', 'y2']};
       ok(html(viewFiche()).querySelector('.rescard .gspark'), 'fiche : carte Résultats et courbe');
+      { const f = html(viewFiche()), w = f.querySelector('.rescard .spk'); ok(w && w.querySelectorAll('.sptip').length === w.dataset.xs.split(',').length && /Moyenne après/.test(w.querySelector('.sptip').innerHTML), 'courbe des notes : une bulle de détail par point');
+        ok(f.querySelector('.gbig.mo'), 'fiche : moyenne en pastille pleine'); }
+      ok(dlIcon({dl: 'd'}).includes('>D<') && dlIcon({dl: 's'}).includes('dlg sup'), 'délégués : D plein et D en contour');
       ACT['fiche-nav']({dataset: {d: '1'}}); eq(V.sid, 'y1', 'fiche : élève suivant');
       DB.evals = DB.evals.filter(e => e.cid !== 'tA'); Object.keys(DB.grades).forEach(k => { if (/\|y\d$/.test(k)) delete DB.grades[k]; });
     });
@@ -3640,7 +3684,7 @@ function viewSuivi() {
   const imps = rows.filter(r => r.impl >= 0), iAvg = imps.length ? imps.reduce((a, r) => a + r.impl, 0) / imps.length : null;
   const nLow = imps.filter(r => r.impl < 10).length, nLook = rows.filter(r => r.look).length;
   const hasG = rows.some(r => r.moy >= 0), moys = rows.filter(r => r.moy >= 0), mAvg = moys.length ? moys.reduce((a, r) => a + r.moy, 0) / moys.length : null, mLow = moys.filter(r => r.moy < 10).length;
-  const moyCell = r => r.moy < 0 ? '<span class="muted">—</span>' : `<span class="ival ${r.moy < 10 ? 'low' : r.moy >= 15 ? 'high' : ''} set" title="Écrit ${fmtG(r.mEcr)} · TP ${fmtG(r.mTp)}">${fmtG(r.moy)}</span>${r.mtr ? `<i class="itr ${r.mtr > 0 ? 'up' : 'down'}">${r.mtr > 0 ? '↗' : '↘'}</i>` : ''}`;
+  const moyCell = r => r.moy < 0 ? '<span class="muted">—</span>' : `<span class="ival mo ${r.moy < 10 ? 'low' : r.moy >= 15 ? 'high' : ''} set" title="Écrit ${fmtG(r.mEcr)} · TP ${fmtG(r.mTp)}">${fmtG(r.moy)}</span>${r.mtr ? `<i class="itr ${r.mtr > 0 ? 'up' : 'down'}">${r.mtr > 0 ? '↗' : '↘'}</i>` : ''}`;
   const implCell = r => r.impl < 0 ? '<span class="muted">—</span>' : `<span class="ival ${r.impl < 10 ? 'low' : r.impl >= 15 ? 'high' : ''} ${r.implSet ? 'set' : ''}" title="${r.implSet ? 'Note retenue' : 'Note proposée'}">${fmtH(r.impl)}</span>${r.itr ? `<i class="itr ${r.itr > 0 ? 'up' : 'down'}">${r.itr > 0 ? '↗' : '↘'}</i>` : ''}`;
   const nS = rows.filter(r => r.surv).length, nP = rows.filter(r => r.peu).length, nD = rows.filter(r => r.disc).length;
   if (V.sf === 'surv') rows = rows.filter(r => r.surv); else if (V.sf === 'peu') rows = rows.filter(r => r.peu); else if (V.sf === 'disc') rows = rows.filter(r => r.disc);
@@ -5219,6 +5263,31 @@ let SW0 = null;
 document.addEventListener('touchstart', e => { if (V.name !== 'fiche' || e.touches.length !== 1 || e.target.closest('input, textarea, select, .seg, svg')) { SW0 = null; return; } SW0 = {x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now()}; }, {passive: true});
 document.addEventListener('touchend', e => { if (!SW0 || V.name !== 'fiche') return; const t = e.changedTouches[0], dx = t.clientX - SW0.x, dy = t.clientY - SW0.y; const ok = Math.abs(dx) > 90 && Math.abs(dy) < 50 && Date.now() - SW0.t < 600; SW0 = null;
   if (ok && !$('#modal').innerHTML && !$('#layer').innerHTML) ACT['fiche-nav']({dataset: {d: dx < 0 ? '1' : '-1'}}); }, {passive: true});
+/* curseur des courbes */
+let SPK = null;
+function spkShow(w, cx) {
+  const svg = w.querySelector('svg'), xs = w.dataset.xs.split(',').map(Number), ys = w.dataset.ys.split(',').map(Number);
+  let vx; try { const pt = svg.createSVGPoint(); pt.x = cx; pt.y = 0; vx = pt.matrixTransform(svg.getScreenCTM().inverse()).x; } catch (e) { const r = svg.getBoundingClientRect(); vx = (cx - r.left) / r.width * (+w.dataset.w); }
+  let i = 0; xs.forEach((x, j) => { if (Math.abs(x - vx) < Math.abs(xs[i] - vx)) i = j; });
+  const cur = svg.querySelector('.scur'), dot = svg.querySelector('.sdot');
+  cur.setAttribute('x1', xs[i]); cur.setAttribute('x2', xs[i]); cur.style.display = ''; dot.setAttribute('cx', xs[i]); dot.setAttribute('cy', ys[i]); dot.style.display = '';
+  w.dataset.on = i;
+  const tips = w.querySelectorAll('.sptip'); tips.forEach((t, j) => { t.hidden = j !== i; });
+  const t = tips[i], wr = w.getBoundingClientRect(), m = svg.getScreenCTM(), px = (m ? m.a * xs[i] + m.e : wr.left) - wr.left;
+  const tw = t.offsetWidth, room = Math.max(document.documentElement.clientWidth - wr.left - 8, tw);
+  t.style.left = Math.max(Math.min(px - tw / 2, room - tw), -wr.left + 8) + 'px';
+}
+function spkHide(w) { w.querySelectorAll('.sptip').forEach(t => { t.hidden = true; }); w.querySelectorAll('.scur, .sdot').forEach(el => { el.style.display = 'none'; }); delete w.dataset.on; }
+document.addEventListener('pointerdown', e => {
+  const w = e.target.closest('.spk'); document.querySelectorAll('.spk[data-on]').forEach(o => { if (o !== w) spkHide(o); });
+  if (!w || !e.target.closest('svg')) return; SPK = {w, id: e.pointerId}; spkShow(w, e.clientX);
+});
+document.addEventListener('pointermove', e => {
+  if (SPK && SPK.id === e.pointerId) { spkShow(SPK.w, e.clientX); return; }
+  if (e.pointerType !== 'mouse') return; const w = e.target.closest('.spk'); if (w && e.target.closest('svg')) spkShow(w, e.clientX);
+});
+['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, e => { if (SPK && SPK.id === e.pointerId) SPK = null; }));
+document.addEventListener('pointerout', e => { if (e.pointerType !== 'mouse' || SPK) return; const w = e.target.closest('.spk'); if (w && !w.contains(e.relatedTarget)) spkHide(w); });
 document.addEventListener('keydown', e => { if (V.name !== 'fiche' || e.target.closest('input, textarea, select') || $('#modal').innerHTML || $('#layer').innerHTML) return; if (e.key === 'ArrowRight') ACT['fiche-nav']({dataset: {d: '1'}}); else if (e.key === 'ArrowLeft') ACT['fiche-nav']({dataset: {d: '-1'}}); });
 document.addEventListener('input', e => { const el = e.target; if (!el.dataset || !el.dataset.count) return; const box = el.closest('li, .bulcard'), c = box && box.querySelector('.bulcnt'); if (c) { c.textContent = el.value.trim().length + ' / ' + el.dataset.count; c.classList.toggle('over', el.value.trim().length > +el.dataset.count); } });
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });

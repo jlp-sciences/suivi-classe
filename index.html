@@ -832,7 +832,7 @@ button.wpill{cursor:pointer}
 .slot.has-eval{border:4px solid var(--neg)} .slot.has-graded{border:4px solid #4B2A7B}
 /* délégués */
 .dlg{display:inline-grid;place-items:center;box-sizing:border-box;width:16px;height:16px;margin-left:5px;border-radius:4px;border:1.5px solid var(--ink);background:var(--ink);color:var(--surface);font-size:10.5px;font-weight:800;font-style:normal;line-height:1;vertical-align:2px;font-family:var(--sans,inherit)}
-.dlg.sup{background:transparent;color:var(--ink)}
+.dlg.sup{background:transparent;border:1.5px dashed var(--muted);color:var(--muted)}
 .mini-tg.dl[aria-pressed="true"]{background:#FBF1D9;color:#7A5600;border-color:#E9D39C}
 .proj .dlg{display:none}
 /* suivi en grille */
@@ -1298,8 +1298,8 @@ const stuGroups = s => [s.group, s.g2].filter(Boolean).join(' · ');
 const hasGroups = cid => DB.students.some(s => s.cid === cid && (s.group === 'G1' || s.group === 'G2'));
 const groupLabel = g => g === 'all' ? 'Classe entière' : 'Demi-groupe ' + g;
 /* PAP (apprentissage) / PAI (santé) : symboles discrets, bulle avec le commentaire */
-/* délégué(e) : D plein / suppléant(e) : D en contour ; discret, jamais en projection */
-const dlIcon = s => !s || !s.dl ? '' : s.dl === 'd' ? '<span class="dlg" title="Délégué(e)" aria-label="délégué(e)">D</span>' : '<span class="dlg sup" title="Suppléant(e)" aria-label="suppléant(e)">D</span>';
+/* délégué(e) : D plein / suppléant(e) : S en pointillés gris ; discret, jamais en projection */
+const dlIcon = s => !s || !s.dl ? '' : s.dl === 'd' ? '<span class="dlg" title="Délégué(e)" aria-label="délégué(e)">D</span>' : '<span class="dlg sup" title="Suppléant(e)" aria-label="suppléant(e)">S</span>';
 const amenIcons = s => dlIcon(s) + amenIcons0(s);
 const amenIcons0 = s => !s || (!s.pap && !s.pai) ? '' : `<span class="amens">${s.pap ? `<span class="amen pap" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAP : voir les aménagements" title="PAP">${ICON.book}</span>` : ''}${s.pai ? `<span class="amen pai" role="button" tabindex="0" data-act="amen-pop" data-sid="${s.id}" aria-label="PAI : voir les informations" title="PAI">${ICON.cross}</span>` : ''}</span>`;
 function amenPop(el) {
@@ -2326,7 +2326,7 @@ function setClasses() {
   const ga = list.filter(s => s.g2 === 'Ga').length, gb = list.filter(s => s.g2 === 'Gb').length;
   const rows = list.map(s => `<li><span class="thumb">${photoHTML(s)}</span>
       <span class="nm">${esc(s.last.toUpperCase())} ${esc(s.first)}</span>
-      <span class="amtg"><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="d" data-sid="${s.id}" aria-pressed="${s.dl === 'd'}" title="Délégué(e)"><span class="dlg" aria-hidden="true">D</span> Dél.</button><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="s" data-sid="${s.id}" aria-pressed="${s.dl === 's'}" title="Suppléant(e)"><span class="dlg sup" aria-hidden="true">D</span> Sup.</button><button type="button" class="mini-tg pap" data-act="stu-flag" data-f="pap" data-sid="${s.id}" aria-pressed="${!!s.pap}" title="PAP">PAP</button><button type="button" class="mini-tg pai" data-act="stu-flag" data-f="pai" data-sid="${s.id}" aria-pressed="${!!s.pai}" title="PAI">PAI</button></span>
+      <span class="amtg"><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="d" data-sid="${s.id}" aria-pressed="${s.dl === 'd'}" title="Délégué(e)"><span class="dlg" aria-hidden="true">D</span> Dél.</button><button type="button" class="mini-tg dl" data-act="stu-dl" data-v="s" data-sid="${s.id}" aria-pressed="${s.dl === 's'}" title="Suppléant(e)"><span class="dlg sup" aria-hidden="true">S</span> Sup.</button><button type="button" class="mini-tg pap" data-act="stu-flag" data-f="pap" data-sid="${s.id}" aria-pressed="${!!s.pap}" title="PAP">PAP</button><button type="button" class="mini-tg pai" data-act="stu-flag" data-f="pai" data-sid="${s.id}" aria-pressed="${!!s.pai}" title="PAI">PAI</button></span>
       <select data-chg="group" data-sid="${s.id}" aria-label="Demi-groupe de ${esc(s.first)}"><option value="" ${!s.group ? 'selected' : ''}>—</option><option ${s.group === 'G1' ? 'selected' : ''}>G1</option><option ${s.group === 'G2' ? 'selected' : ''}>G2</option></select>${twoG ? `<select data-chg="group2" data-sid="${s.id}" aria-label="Groupe a / b de ${esc(s.first)}"><option value="" ${!s.g2 ? 'selected' : ''}>—</option><option ${s.g2 === 'Ga' ? 'selected' : ''}>Ga</option><option ${s.g2 === 'Gb' ? 'selected' : ''}>Gb</option></select>` : ''}
       <span class="btn filebtn" style="min-height:40px">Photo<input type="file" accept="image/*" data-chg="photo" data-sid="${s.id}" aria-label="Photo de ${esc(s.first)}"></span>
       <button class="btn icon-btn" style="min-height:40px;min-width:40px" data-act="stu-edit" data-sid="${s.id}" aria-label="Modifier ${esc(s.first)}" title="Modifier">${ICON.edit}</button>
@@ -2767,7 +2767,7 @@ async function runSelfTests() {
       ok(html(viewFiche()).querySelector('.rescard .gspark'), 'fiche : carte Résultats et courbe');
       { const f = html(viewFiche()), w = f.querySelector('.rescard .spk'); ok(w && w.querySelectorAll('.sptip').length === w.dataset.xs.split(',').length && /Moyenne après/.test(w.querySelector('.sptip').innerHTML), 'courbe des notes : une bulle de détail par point');
         ok(f.querySelector('.gbig.mo'), 'fiche : moyenne en pastille pleine'); }
-      ok(dlIcon({dl: 'd'}).includes('>D<') && dlIcon({dl: 's'}).includes('dlg sup'), 'délégués : D plein et D en contour');
+      ok(dlIcon({dl: 'd'}).includes('>D<') && dlIcon({dl: 's'}).includes('>S<'), 'délégués : D plein, S en pointillés pour le suppléant');
       ACT['fiche-nav']({dataset: {d: '1'}}); eq(V.sid, 'y1', 'fiche : élève suivant');
       DB.evals = DB.evals.filter(e => e.cid !== 'tA'); Object.keys(DB.grades).forEach(k => { if (/\|y\d$/.test(k)) delete DB.grades[k]; });
     });

@@ -6,7 +6,7 @@
 - Suivi : colonne Moy. (tendance sur 3 évaluations), pastille Moy. dans la grille, ligne de synthèse ; récapitulatif des appréciations avec les moyennes.
 - Fiche élève : passer à l'élève précédent / suivant (flèches, glissement du doigt, clavier), dans l'ordre du tableau de bord.
 - Moyenne en pastille pleine, implication en pastille en contour (tableau, grille, fiche).
-- Délégués : D plein (délégué) et D en contour (suppléant) à la place des étoiles.
+- Délégués : D plein (délégué) et S en pointillés gris (suppléant) à la place des étoiles.
 - Courbes d'implication et de moyenne : curseur à faire glisser, bulle de détail (séance : date, remarques, points, note ; évaluation : date, intitulé, type, note, coef, classe, moyenne après).
 
 ## 3.08 — 8 novembre 2026

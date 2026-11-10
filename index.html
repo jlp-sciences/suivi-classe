@@ -1001,9 +1001,9 @@ button.wpill{cursor:pointer}
 .evbanner{margin:0 0 12px;padding:10px 14px;border-radius:10px;background:color-mix(in srgb,var(--neg) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--neg) 35%,transparent)}
 
 /* ---- 3.05 : tableau de bord ---- */
-.srow{grid-template-columns:48px minmax(0,2fr) 44px 74px 58px 58px 58px 58px 52px 52px minmax(0,1.6fr) 150px !important}
-@media (max-width:1100px){.srow{grid-template-columns:44px minmax(0,1.6fr) 36px 66px 46px 46px 46px 46px 40px 40px 120px !important}.srow .last{display:none}}
-@media (max-width:700px){.srow{grid-template-columns:36px minmax(0,1fr) 56px 30px 34px 30px !important}.srow > :nth-child(3),.srow > :nth-child(8),.srow > :nth-child(9),.srow > :nth-child(10),.srow .last,.srow .bdg{display:none}}
+.srow{grid-template-columns:48px minmax(0,2fr) 44px 74px 74px 52px 52px 52px 52px 48px 48px minmax(0,1.4fr) 140px !important}
+@media (max-width:1100px){.srow{grid-template-columns:44px minmax(0,1.6fr) 36px 66px 66px 42px 42px 42px 42px 38px 38px 110px !important}.srow .last{display:none}}
+@media (max-width:700px){.srow{grid-template-columns:36px minmax(0,1fr) 54px 54px 30px 34px !important}.srow > :nth-child(3),.srow > :nth-child(8),.srow > :nth-child(9),.srow > :nth-child(10),.srow > :nth-child(11),.srow .last,.srow .bdg{display:none}}
 .srow.head .sh{white-space:nowrap}
 @media (max-width:700px){.srow.head{font-size:10px;letter-spacing:0}.srow{gap:0 6px;padding:6px 10px}}
 .ival{display:inline-block;min-width:38px;padding:1px 6px;border-radius:6px;font-weight:700;text-align:center;color:var(--muted);background:var(--surface-2)}
@@ -1035,6 +1035,43 @@ button.wpill{cursor:pointer}
 .oit .ox:hover{background:var(--surface-2)}
 .loghead{display:flex;gap:12px;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:0 0 4px}
 .loghead span:nth-child(1){width:88px} .loghead span:nth-child(2){flex:1} .loghead span:nth-child(3){width:76px;text-align:right} .loghead span:nth-child(4){width:44px;text-align:right}
+
+/* ---- 3.09 : notes ---- */
+.rescard{display:flex;flex-direction:column;gap:8px}
+.gbigs{display:flex;gap:10px;flex-wrap:wrap}
+.gbig{flex:1 1 110px;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.gbig b{font-family:var(--serif);font-size:28px;line-height:1.1} .gbig b.low{color:var(--neg)}
+.gspark{width:100%;max-width:620px;height:100px}
+.gspark .gl{stroke:var(--line)} .gspark .gcl{stroke:var(--muted);stroke-dasharray:4 4}
+.gspark .gavg{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round}
+.gspark .gec{fill:var(--surface);stroke:var(--ink-2);stroke-width:2} .gspark .gtp{fill:var(--pos);opacity:.85}
+.gspark .gval{font-size:12px;fill:var(--ink);font-weight:700}
+.gty{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-2)}
+.gty.tp{background:color-mix(in srgb,var(--pos) 15%,transparent);color:var(--pos)}
+.gtab td{font-size:14px} .gtab .gv{white-space:nowrap}
+.gcards{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.gcard{border:1px solid var(--line);border-radius:10px}
+.gcard.open{border-color:var(--ink)}
+.gch{width:100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:none;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.gch .d{color:var(--muted);width:64px;white-space:nowrap}
+.gedit select{width:auto !important}
+.gedit .row input{width:72px !important}
+.gedit{padding:0 12px 12px}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 14px}
+.ggrid label{display:flex;align-items:center;gap:8px;justify-content:space-between;font-size:14px}
+.ggrid input{width:76px;text-align:center}
+.gimpev{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.gie{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.gie input,.gie select{width:auto !important;min-width:0}
+.gie input[type=date]{width:160px !important} .gie input[type=text]{flex:1 1 200px} .gie input[type=number]{width:72px !important}
+.gie label{display:inline-flex;align-items:center;gap:4px;font-size:14px}
+.gimp select{width:auto !important;min-width:160px}
+.gtwrap{overflow-x:auto}
+.gimp td.bad,.gimp tr.bad td:first-child{background:color-mix(in srgb,var(--neg) 14%,transparent)}
+.fnav{display:flex;align-items:center;gap:4px}
+.fnav .btn{min-width:40px}
+.ibadge.mb{top:30px}
+.stile .ibadge.mb ~ .stags{top:56px}
 </style>
 </head>
 <body>
@@ -1069,7 +1106,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.08', d: '2026-11-08'};
+const APP_VERSION = {n: '3.09', d: '2026-11-10'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1150,7 +1187,7 @@ const SEATDEF = {
 const FIXED = {board: [560, 56], desk: [240, 96]};
 const ITEM_LABEL = {ilot: 'Îlot de 4', ilot6: 'Îlot de 6', simple: 'Paillasse de 2', double: 'Paillasses face à face', L: 'Paillasse en L (3)', board: 'Tableau', desk: 'Bureau'};
 const isFixed = it => !!FIXED[it.type];
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], bul:{}, implN:{}, appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], evals:[], bul:{}, implN:{}, grades:{}, appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 const MIG_STAMP = new Map(); // enregistrements créés par une migration : datés « anciens » pour la synchro (une vraie modification l'emporte toujours)
@@ -1164,7 +1201,8 @@ function migrate(core) {
   if (!Array.isArray(d.rooms)) d.rooms = defaultRooms();
   if (!Array.isArray(d.catchup)) d.catchup = [];
   if (!Array.isArray(d.notes)) d.notes = [];
-  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  if (!Array.isArray(d.evals)) d.evals = [];
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN', 'grades'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   /* labos v3 : on repart des 6 labos par défaut et de plans vides (une seule fois par appareil).
      Les labos par défaut sont marqués « anciens » pour la synchro : une disposition déjà retouchée sur un autre appareil l'emporte. */
   if (!(core && core.settings && core.settings.labsV3)) {
@@ -1344,6 +1382,7 @@ function render() {
   else if (V.name === 'roomedit') app.innerHTML = viewRoomEdit();
   else if (V.name === 'fiche') app.innerHTML = viewFiche();
   else if (V.name === 'bul') app.innerHTML = viewBul();
+  else if (V.name === 'notes') app.innerHTML = viewNotes();
   else if (V.name === 'settings') app.innerHTML = viewSettings();
   else if (V.name === 'trombi') app.innerHTML = viewTrombi();
   saveNav();
@@ -1358,7 +1397,7 @@ function navValid(v) {
   if (v.name === 'today' || v.name === 'settings') return true;
   if (v.name === 'grid') return !!(v.ses && cls(v.ses.cid));
   if (v.name === 'fiche') return !!stu(v.sid);
-  if (v.name === 'bul') return !!cls(v.cid);
+  if (v.name === 'bul' || v.name === 'notes') return !!cls(v.cid);
   if (v.name === 'plan' || v.name === 'proj') return !!(cls(v.cid) && roomById(v.rid));
   if (v.name === 'roomedit') return !!roomById(v.rid);
   return false;
@@ -1966,6 +2005,97 @@ function rasRunBefore(s, ses) {
   return n;
 }
 
+/* ---------- notes (évaluations importées depuis École Directe) ---------- */
+const gKey = (eid, sid) => eid + '|' + sid;
+const evalsOf = (cid, per) => DB.evals.filter(e => e.cid === cid && (!per || (e.date >= per.s && e.date <= per.e))).sort((a, b) => a.date.localeCompare(b.date) || (a.t || 0) - (b.t || 0));
+const gradeOf = (e, sid) => { const g = DB.grades[gKey(e.id, sid)]; return g ? g.v : null; };
+const on20 = (e, v) => typeof v === 'number' ? v / (e.max || 20) * 20 : null;
+const fmtG = x => x == null ? '—' : (Math.round(x * 10) / 10).toLocaleString('fr-FR');
+/* moyennes pondérées par les coefficients, sur 20 */
+function avgOf(list, sid) { let a = 0, w = 0; list.forEach(e => { const v = on20(e, gradeOf(e, sid)); if (v == null) return; a += v * (e.coef || 1); w += (e.coef || 1); }); return w ? a / w : null; }
+function resultsOf(s, per) {
+  const ev = evalsOf(s.cid, per), ecr = ev.filter(e => e.type !== 'tp'), tp = ev.filter(e => e.type === 'tp');
+  const hist = []; ev.forEach((e, i) => { const v = gradeOf(e, s.id); if (typeof v !== 'number') return; hist.push({e, v: on20(e, v), avg: avgOf(ev.slice(0, i + 1), s.id)}); });
+  return {ev, ecrit: avgOf(ecr, s.id), tp: avgOf(tp, s.id), moy: avgOf(ev, s.id), hist};
+}
+function classAvg(cid, per, kind) {
+  const ev = evalsOf(cid, per).filter(e => !kind || (kind === 'tp' ? e.type === 'tp' : e.type !== 'tp')), list = studentsOf(cid).map(s => avgOf(ev, s.id)).filter(x => x != null);
+  return list.length ? list.reduce((a, b) => a + b, 0) / list.length : null;
+}
+const evalAvg = e => { const l = studentsOf(e.cid).map(s => on20(e, gradeOf(e, s.id))).filter(x => x != null); return l.length ? l.reduce((a, b) => a + b, 0) / l.length : null; };
+function gradeSpark(h, cls20) {
+  if (!h.length) return '';
+  const W = 520, H = 92, n = h.length, x = i => 34 + (n === 1 ? (W - 50) / 2 : i / (n - 1) * (W - 50)), y = v => H - 10 - v / 20 * (H - 20);
+  const line = h.map((p, i) => `${x(i).toFixed(1)},${y(p.avg).toFixed(1)}`).join(' ');
+  const pts = h.map((p, i) => p.e.type === 'tp' ? `<rect x="${(x(i) - 4).toFixed(1)}" y="${(y(p.v) - 4).toFixed(1)}" width="8" height="8" class="gtp"><title>${esc(p.e.title)} : ${fmtG(p.v)}/20</title></rect>` : `<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4.5" class="gec"><title>${esc(p.e.title)} : ${fmtG(p.v)}/20</title></circle>`).join('');
+  return `<svg class="gspark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution de la moyenne">
+    ${[0, 10, 20].map(v => `<line x1="30" x2="${W - 8}" y1="${y(v)}" y2="${y(v)}" class="gl"/><text x="0" y="${y(v) + 4}" class="ilab">${v}</text>`).join('')}
+    ${cls20 != null ? `<line x1="30" x2="${W - 8}" y1="${y(cls20)}" y2="${y(cls20)}" class="gcl"/>` : ''}
+    ${n > 1 ? `<polyline points="${line}" class="gavg"/>` : ''}${pts}
+    <text x="${Math.min(W - 40, x(n - 1) + 8)}" y="${y(h[n - 1].avg) - 8}" class="ilab gval">${fmtG(h[n - 1].avg)}</text></svg>`;
+}
+function resultsCard(s, per) {
+  const r = resultsOf(s, per); if (!r.ev.length) return '';
+  const big = (l, v, cv) => `<div class="gbig"><span class="lbl" style="margin:0">${l}</span><b class="${v != null && v < 10 ? 'low' : ''}">${fmtG(v)}</b><span class="small muted">classe ${fmtG(cv)}</span></div>`;
+  const rows = r.ev.slice().reverse().map(e => { const v = gradeOf(e, s.id), a = evalAvg(e);
+    return `<tr><td>${fmtShort(e.date)}</td><td>${esc(e.title)}</td><td><span class="gty ${e.type === 'tp' ? 'tp' : ''}">${e.type === 'tp' ? 'TP' : 'Écrit'}</span></td><td class="gv"><b>${typeof v === 'number' ? fmtG(v) : v ? esc(v) : '—'}</b><span class="muted">/${fmtG(e.max)}</span></td><td class="small muted">coef ${fmtG(e.coef)}</td><td class="small muted">classe ${a != null ? fmtG(a * (e.max || 20) / 20) : '—'}</td></tr>`; }).join('');
+  return `<section class="card rescard"><div class="lbl" style="margin:0">Résultats · ${esc(per.n)}</div>
+    <div class="gbigs">${big('Écrit', r.ecrit, classAvg(s.cid, per, 'ecrit'))}${big('TP', r.tp, classAvg(s.cid, per, 'tp'))}${big('Moyenne', r.moy, classAvg(s.cid, per))}</div>
+    ${gradeSpark(r.hist, classAvg(s.cid, per))}
+    <p class="small muted" style="margin:0">Ligne : moyenne de l'élève après chaque évaluation · ● écrit · ■ TP · pointillés : moyenne de la classe. Moyennes sur 20, pondérées par les coefficients.</p>
+    <details class="idet"><summary>Toutes les notes (${r.ev.length})</summary><table class="itab gtab"><tbody>${rows}</tbody></table></details></section>`;
+}
+/* import : texte renvoyé par Claude à partir d'une capture du carnet de notes */
+const normN = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+function parseGrades(cid, text) {
+  const evs = [], rows = [], studs = studentsOf(cid);
+  const findStu = name => { const n = normN(name); return studs.find(s => normN(s.last + ' ' + s.first) === n || normN(s.first + ' ' + s.last) === n) || studs.find(s => n.includes(normN(s.last)) && n.includes(normN(s.first))) || null; };
+  text.split(/\r?\n/).forEach(line => {
+    const m = line.match(/^\s*\[E(\d+)\]\s*(.+)$/);
+    if (m) { const f = m[2].split(/\s*[·|]\s*/); const dm = (f[0] || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      const ty = /tp|pratique/i.test(f[2] || '') ? 'tp' : 'ecrit', mx = parseFloat(String((f[3] || '').replace(/[^\d,.]/g, '')).replace(',', '.')) || 20, cf = parseFloat(String((f[4] || '').replace(/[^\d,.]/g, '')).replace(',', '.')) || 1;
+      evs[+m[1] - 1] = {date: dm ? `${dm[3]}-${dm[2].padStart(2, '0')}-${dm[1].padStart(2, '0')}` : todayStr(), title: (f[1] || 'Évaluation ' + m[1]).trim(), type: ty, max: mx, coef: cf}; return; }
+    if (!line.includes('|') || /^\s*(élève|eleve|nom)\b/i.test(line)) return;
+    const cells = line.split('|').map(x => x.trim()); if (!cells[0]) return;
+    rows.push({name: cells[0], sid: (findStu(cells[0]) || {}).id || '', vals: cells.slice(1).map(v => { if (!v || v === '-' || v === '—') return null; if (/^abs/i.test(v)) return 'Abs'; if (/^disp/i.test(v)) return 'Disp'; if (/^n\.?\s?n/i.test(v)) return 'NN'; const n = parseFloat(v.replace(',', '.')); return isNaN(n) ? '?' + v : n; })});
+  });
+  return {evs: evs.filter(Boolean), rows};
+}
+let GIMP = null; // aperçu d'import en cours {cid, evs, rows}
+function viewNotes() {
+  const c = cls(V.cid); if (!c) { back(); return ''; }
+  const periods = periodsFor(c); if (V.p == null || V.p >= periods.length) V.p = currentPeriodIndex(periods);
+  const per = periods[V.p], ev = evalsOf(c.id, per), list = studentsOf(c.id);
+  const seg = periods.map((p, i) => `<button type="button" data-act="period" data-i="${i}" aria-pressed="${i === V.p}">${esc(p.n)}</button>`).join('');
+  const imp = GIMP && GIMP.cid === c.id ? GIMP : null;
+  const preview = imp ? `<section class="card"><h2 style="font-size:16px;margin:0 0 6px">Aperçu avant import</h2>
+      <p class="small muted" style="margin:0 0 10px">Vérifiez le type, le barème et le coefficient de chaque évaluation, et les élèves surlignés. Rien n'est enregistré avant « Valider ».</p>
+      <div class="gimpev">${imp.evs.map((e, i) => `<div class="gie"><b>E${i + 1}</b><input type="date" data-chg="gimp" data-i="${i}" data-f="date" value="${e.date}"><input type="text" data-chg="gimp" data-i="${i}" data-f="title" value="${esc(e.title)}">
+        <select data-chg="gimp" data-i="${i}" data-f="type"><option value="ecrit" ${e.type !== 'tp' ? 'selected' : ''}>Écrit</option><option value="tp" ${e.type === 'tp' ? 'selected' : ''}>TP</option></select>
+        <label>sur <input type="number" step="0.5" data-chg="gimp" data-i="${i}" data-f="max" value="${e.max}"></label><label>coef <input type="number" step="0.25" data-chg="gimp" data-i="${i}" data-f="coef" value="${e.coef}"></label>
+        ${DB.evals.some(x => x.cid === c.id && x.date === e.date && normN(x.title) === normN(e.title)) ? '<span class="chip neu">déjà importée : mise à jour</span>' : '<span class="chip pos">nouvelle</span>'}</div>`).join('')}</div>
+      <div class="gtwrap"><table class="itab gimp"><thead><tr><th>Élève lu</th><th>Élève</th>${imp.evs.map((e, i) => `<th>E${i + 1}</th>`).join('')}</tr></thead><tbody>${imp.rows.map((r, ri) => `<tr class="${r.sid ? '' : 'bad'}"><td>${esc(r.name)}</td><td><select data-chg="gimp-stu" data-r="${ri}"><option value="">— ignorer —</option>${list.map(s => `<option value="${s.id}" ${s.id === r.sid ? 'selected' : ''}>${esc(s.last + ' ' + s.first)}</option>`).join('')}</select></td>${imp.evs.map((e, i) => { const v = r.vals[i]; const bad = (typeof v === 'number' && (v < 0 || v > e.max)) || (typeof v === 'string' && v[0] === '?');
+        return `<td class="${bad ? 'bad' : ''}">${v == null ? '—' : typeof v === 'number' ? fmtG(v) : esc(v.replace(/^\?/, ''))}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>
+      <p class="small muted">${plural(imp.rows.filter(r => r.sid).length, 'élève reconnu', 'élèves reconnus')} sur ${imp.rows.length}${list.length > imp.rows.length ? ` · ${plural(list.length - imp.rows.filter(r => r.sid).length, 'élève de la classe absent', 'élèves de la classe absents')} de la capture` : ''}.</p>
+      <div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" data-act="gimp-cancel">Annuler</button><button class="btn ink" data-act="gimp-ok">Valider l'import</button></div></section>` : '';
+  const cards = ev.slice().reverse().map(e => { const a = evalAvg(e), n = list.filter(s => typeof gradeOf(e, s.id) === 'number').length, open = V.gopen === e.id;
+    return `<li class="gcard ${open ? 'open' : ''}"><button type="button" class="gch" data-act="gopen" data-id="${e.id}"><span class="d">${fmtShort(e.date)}</span><b>${esc(e.title)}</b><span class="gty ${e.type === 'tp' ? 'tp' : ''}">${e.type === 'tp' ? 'TP' : 'Écrit'}</span><span class="small muted">sur ${fmtG(e.max)} · coef ${fmtG(e.coef)}</span><span class="grow"></span><span class="small">moyenne <b>${a != null ? fmtG(a * e.max / 20) : '—'}</b> · ${n} notes</span></button>
+      ${open ? `<div class="gedit"><div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px"><select data-chg="geval" data-id="${e.id}" data-f="type"><option value="ecrit" ${e.type !== 'tp' ? 'selected' : ''}>Écrit</option><option value="tp" ${e.type === 'tp' ? 'selected' : ''}>TP</option></select><label class="small">sur <input type="number" step="0.5" data-chg="geval" data-id="${e.id}" data-f="max" value="${e.max}" style="width:70px"></label><label class="small">coef <input type="number" step="0.25" data-chg="geval" data-id="${e.id}" data-f="coef" value="${e.coef}" style="width:70px"></label><span class="grow"></span><button class="btn danger" data-act="geval-del" data-id="${e.id}">Supprimer l'évaluation</button></div>
+        <div class="ggrid">${list.map(st => { const v = gradeOf(e, st.id); return `<label><span>${esc(st.last + ' ' + st.first)}</span><input type="text" inputmode="decimal" data-chg="grade" data-k="${gKey(e.id, st.id)}" data-max="${e.max}" value="${v == null ? '' : typeof v === 'number' ? String(v).replace('.', ',') : esc(v)}" placeholder="—"></label>`; }).join('')}</div></div>` : ''}</li>`; }).join('');
+  return `
+  <header class="bar"><button class="btn ghost" data-act="back">${ICON.back}Retour</button>
+    <div class="ttl"><h1>Notes</h1><div class="sub">${esc(c.name)} · ${plural(ev.length, 'évaluation')} · moyenne de la classe ${fmtG(classAvg(c.id, per))}</div></div><span class="grow"></span><div class="seg" role="group" aria-label="Période">${seg}</div></header>
+  <main class="main"><div class="wrap" style="max-width:1000px;display:flex;flex-direction:column;gap:14px">
+    <section class="card bulsteps">
+      <div class="bstep"><b>1</b><div><strong>Faire une capture du carnet de notes d'École Directe</strong><p class="small muted">Toute la classe, avec les intitulés, dates, barèmes et coefficients des évaluations si possible.</p></div></div>
+      <div class="bstep"><b>2</b><div><strong>L'envoyer à Claude dans la conversation</strong><p class="small muted">Claude répond au format de l'application : une ligne <code>[E1] date · intitulé · Écrit ou TP · /barème · coef</code> par évaluation, puis une ligne <code>NOM Prénom | note | note…</code> par élève.</p></div></div>
+      <div class="bstep"><b>3</b><div><strong>Coller la réponse ici</strong><textarea id="gimp-in" rows="4" placeholder="[E1] 12/10/2026 · Contrôle ch. 1 · Écrit · /20 · coef 1&#10;ANDRÉ Ambre | 12,5"></textarea><button class="btn ink" data-act="gimp-parse" style="margin-top:6px">Afficher l'aperçu</button></div></div>
+    </section>
+    ${preview}
+    <section class="card"><h2 style="font-size:16px;margin:0 0 8px">Évaluations · ${esc(per.n)}</h2>${ev.length ? `<ul class="gcards">${cards}</ul>` : '<p class="muted" style="margin:0">Aucune évaluation importée sur cette période.</p>'}</section>
+  </div></main>`;
+}
+
 /* ---------- appréciations de bulletin ---------- */
 const BUL_MAX = 250;
 const bulKey = (sid, per) => sid + '|' + per.n + '|' + per.s;
@@ -1981,7 +2111,8 @@ function bulExportText(c, per) {
   const lines = list.map((s, i) => {
     const sm = stuSummary(s, per, true), notes = DB.notes.filter(n => n.sid === s.id && n.date >= addDays(per.s, -30) && n.date <= addDays(per.e, 30)).map(n => `${NOTE_L[n.kind] || 'Note'} (${dayShort(n.date)}) : ${n.text.replace(/\s+/g, ' ')}`);
     const cur = DB.bul[bulKey(s.id, per)];
-    return `[${i + 1}] ${stuLabel(s, list)} — ${sm.line} — ${sm.detail}${notes.length ? ' — Notes : ' + notes.join(' | ') : ''}${cur ? ' — Appréciation actuelle : ' + cur.text : ''}`;
+    const rs = resultsOf(s, per), gtxt = rs.ev.length ? ` — Moyennes : écrit ${fmtG(rs.ecrit)}, TP ${fmtG(rs.tp)}, générale ${fmtG(rs.moy)} (classe ${fmtG(classAvg(c.id, per))})${rs.hist.length >= 2 ? ', évolution ' + rs.hist.map(h => fmtG(h.avg)).join(' → ') : ''}` : '';
+    return `[${i + 1}] ${stuLabel(s, list)} — ${sm.line}${gtxt} — ${sm.detail}${notes.length ? ' — Notes : ' + notes.join(' | ') : ''}${cur ? ' — Appréciation actuelle : ' + cur.text : ''}`;
   });
   return `APPRÉCIATIONS À RÉDIGER — ${c.name} — ${levelOf(c) === '2de' ? 'Physique-chimie Seconde' : levelOf(c) === '1re' ? 'Enseignement scientifique' : 'Physique-chimie'} — ${per.n} (du ${fmtShort(per.s)} au ${fmtShort(per.e)})
 Consignes : ${BUL_MAX} caractères maximum, espaces compris, le plus court possible tout en étant utile ; ton adapté au profil (encourageant, factuel et positif, ou direct et bienveillant) ; phrases complètes, pas de formules toutes faites ; terminer par une perspective ou un conseil quand c'est possible.
@@ -2059,6 +2190,8 @@ function viewFiche() {
   return `
   <header class="bar">
     <button class="btn ghost" data-act="back">${ICON.back}Retour</button>
+    ${(() => { const o = V.order && V.order.includes(s.id) ? V.order : (V.order = studentsOf(s.cid).map(x => x.id)), i = o.indexOf(s.id);
+      return `<div class="fnav"><button class="btn icon-btn" data-act="fiche-nav" data-d="-1" ${i > 0 ? '' : 'disabled'} aria-label="Élève précédent">${ICON.back}</button><span class="small muted">${i + 1} / ${o.length}</span><button class="btn icon-btn" data-act="fiche-nav" data-d="1" ${i < o.length - 1 ? '' : 'disabled'} aria-label="Élève suivant">${ICON.next}</button></div>`; })()}
     <div class="ttl"><h1>${esc(s.first + ' ' + s.last)}${amenIcons(s)}</h1><div class="sub">${esc(c.name)}${stuGroups(s) ? ' · ' + stuGroups(s) : ''}</div></div>
     <span class="grow"></span>
     <div class="seg" role="group" aria-label="Période">${seg}</div>
@@ -2078,6 +2211,7 @@ function viewFiche() {
       <p class="small muted" style="margin:0">${esc(per.n)} : du ${fmtShort(per.s)} au ${fmtShort(per.e)}</p>
     </aside>
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      ${resultsCard(s, per)}
       ${per.n !== 'Année' ? implCard(s, per) : ''}
       ${per.n !== 'Année' ? bulCard(s, per) : ''}
       ${notesCard(s)}
@@ -2572,6 +2706,26 @@ async function runSelfTests() {
       eq(run({participe: r(4)}), 15.5, 'discret qui participe une fois sur quatre : 15,5');
       const ks = new Set(L30.map(x => x.key)); DB.obs = DB.obs.filter(o => !ks.has(o.ses)); L30.forEach(x => { delete DB.appr[x.key]; });
       eq(run({ras: [1]}), null, 'peu observé (bilans non faits) : pas de note proposée');
+    });
+
+    await group('Notes importées', () => {
+      const txt = `[E1] 05/${D(0, 1).slice(5, 7)}/${D(0, 1).slice(0, 4)} · Contrôle 1 · Écrit · /20 · coef 2\n[E2] 06/${D(0, 1).slice(5, 7)}/${D(0, 1).slice(0, 4)} · TP titrage · TP · /10 · coef 1\nÉlève | Contrôle 1 | TP titrage\nTEST Élève0 | 12 | 8\nÉlève1 Test | Abs | 6,5\nInconnu Zed | 15 | 7\nTEST Élève2 | 25 | 5`;
+      const r = parseGrades('tA', txt);
+      eq([r.evs.length, r.rows.length, r.evs[1].type, r.evs[1].max, r.evs[0].coef], [2, 4, 'tp', 10, 2], 'lecture des évaluations (type, barème, coef)');
+      eq(r.rows.map(x => x.sid), ['y0', 'y1', '', 'y2'], 'élèves reconnus (nom prénom ou prénom nom), inconnu signalé');
+      eq(r.rows[1].vals, ['Abs', 6.5], 'absent et virgule décimale');
+      V = {name: 'notes', cid: 'tA', p: 0}; GIMP = {cid: 'tA', ...r}; ACT['gimp-ok']();
+      const ev = DB.evals.filter(e => e.cid === 'tA');
+      eq(ev.length, 2, 'deux évaluations créées');
+      ok(gradeOf(ev[0], 'y2') == null, 'note impossible (25/20) non importée');
+      const per = {n: 't', s: '2000-01-01', e: '2100-01-01'}, rs = resultsOf(stu('y0'), per);
+      eq([fmtG(rs.ecrit), fmtG(rs.tp), fmtG(rs.moy)], ['12', '16', '13,3'], 'moyennes écrit, TP et générale (coefficients, ramenées sur 20)');
+      GIMP = {cid: 'tA', ...parseGrades('tA', txt.replace('| 12 |', '| 14 |'))}; ACT['gimp-ok']();
+      eq([DB.evals.filter(e => e.cid === 'tA').length, gradeOf(ev[0], 'y0')], [2, 14], 'réimport : mise à jour sans doublon');
+      V = {name: 'fiche', sid: 'y0', p: 0, order: ['y0', 'y1', 'y2']};
+      ok(html(viewFiche()).querySelector('.rescard .gspark'), 'fiche : carte Résultats et courbe');
+      ACT['fiche-nav']({dataset: {d: '1'}}); eq(V.sid, 'y1', 'fiche : élève suivant');
+      DB.evals = DB.evals.filter(e => e.cid !== 'tA'); Object.keys(DB.grades).forEach(k => { if (/\|y\d$/.test(k)) delete DB.grades[k]; });
     });
 
     await group('Données et compatibilité', () => {
@@ -3478,12 +3632,15 @@ function viewSuivi() {
     const IP = implP(), ir = IP.on ? implCalc(s, per) : null, ret = implRet(s.id, per), impl = ret ? ret.v : ir ? ir.note : null;
     let itr = 0; if (ir && ir.hist.length > 3) { const old = ir.hist.filter(h => h.d <= d21).pop(); if (old) { const dd = ir.hist[ir.hist.length - 1].n - old.n; itr = dd >= 0.5 ? 1 : dd <= -0.5 ? -1 : 0; } }
     const look = !!ir && ir.run >= 2 * IP.rasLen - 1;
-    return {s, pos, neg: sumC([...DISRUPT, 'passif']), dev: sumC(['devoir', 'devoir_inc', 'devoir_bac']), org: sumC([...ORGC]), ras: cnt.ras || 0, abs: cnt.absent || 0,
+    const rs = resultsOf(s, per); let mtr = 0; if (rs.hist.length >= 4) { const dd = rs.hist[rs.hist.length - 1].avg - rs.hist[rs.hist.length - 4].avg; mtr = dd >= 0.5 ? 1 : dd <= -0.5 ? -1 : 0; }
+    return {s, moy: rs.moy == null ? -1 : rs.moy, mEcr: rs.ecrit, mTp: rs.tp, mtr, pos, neg: sumC([...DISRUPT, 'passif']), dev: sumC(['devoir', 'devoir_inc', 'devoir_bac']), org: sumC([...ORGC]), ras: cnt.ras || 0, abs: cnt.absent || 0,
       impl: impl == null ? -1 : impl, implSet: !!ret, itr, look,
       last: lastO ? `${fmtShort(lastO.date)} · ${CAT[lastO.cat].l}${lastO.note ? ' — ' + lastO.note : ''}` : '—', surv, peu, disc, sum: stuSummary(s, per)};
   });
   const imps = rows.filter(r => r.impl >= 0), iAvg = imps.length ? imps.reduce((a, r) => a + r.impl, 0) / imps.length : null;
   const nLow = imps.filter(r => r.impl < 10).length, nLook = rows.filter(r => r.look).length;
+  const hasG = rows.some(r => r.moy >= 0), moys = rows.filter(r => r.moy >= 0), mAvg = moys.length ? moys.reduce((a, r) => a + r.moy, 0) / moys.length : null, mLow = moys.filter(r => r.moy < 10).length;
+  const moyCell = r => r.moy < 0 ? '<span class="muted">—</span>' : `<span class="ival ${r.moy < 10 ? 'low' : r.moy >= 15 ? 'high' : ''} set" title="Écrit ${fmtG(r.mEcr)} · TP ${fmtG(r.mTp)}">${fmtG(r.moy)}</span>${r.mtr ? `<i class="itr ${r.mtr > 0 ? 'up' : 'down'}">${r.mtr > 0 ? '↗' : '↘'}</i>` : ''}`;
   const implCell = r => r.impl < 0 ? '<span class="muted">—</span>' : `<span class="ival ${r.impl < 10 ? 'low' : r.impl >= 15 ? 'high' : ''} ${r.implSet ? 'set' : ''}" title="${r.implSet ? 'Note retenue' : 'Note proposée'}">${fmtH(r.impl)}</span>${r.itr ? `<i class="itr ${r.itr > 0 ? 'up' : 'down'}">${r.itr > 0 ? '↗' : '↘'}</i>` : ''}`;
   const nS = rows.filter(r => r.surv).length, nP = rows.filter(r => r.peu).length, nD = rows.filter(r => r.disc).length;
   if (V.sf === 'surv') rows = rows.filter(r => r.surv); else if (V.sf === 'peu') rows = rows.filter(r => r.peu); else if (V.sf === 'disc') rows = rows.filter(r => r.disc);
@@ -3495,7 +3652,7 @@ function viewSuivi() {
   const sv = V.sv === 'grid' ? 'grid' : 'list';
   const grid = rows.map(r => { const tot = r.pos + r.neg + r.ras, w = v => tot ? (v / tot * 100).toFixed(1) : 0;
     return `<button class="tile stile" data-act="fiche-open" data-sid="${r.s.id}" aria-label="${esc(r.s.first + ' ' + r.s.last)}">
-      <span class="ph">${photoHTML(r.s)}${r.abs ? ghostIcon(r.abs, 'gh-tile') : ''}${r.impl >= 0 ? `<span class="ibadge ${r.impl < 10 ? 'low' : r.impl >= 15 ? 'high' : ''}" title="Note d'implication">${fmtH(r.impl)}${r.itr ? (r.itr > 0 ? ' ↗' : ' ↘') : ''}</span>` : ''}${r.look ? '<span class="tag-look">👁 à regarder</span>' : ''}<span class="stags">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></span>
+      <span class="ph">${photoHTML(r.s)}${r.abs ? ghostIcon(r.abs, 'gh-tile') : ''}${r.moy >= 0 ? `<span class="ibadge mb ${r.moy < 10 ? 'low' : r.moy >= 15 ? 'high' : ''}" title="Moyenne (écrit ${fmtG(r.mEcr)}, TP ${fmtG(r.mTp)})">Moy. ${fmtG(r.moy)}</span>` : ''}${r.impl >= 0 ? `<span class="ibadge ${r.impl < 10 ? 'low' : r.impl >= 15 ? 'high' : ''}" title="Note d'implication">Impl. ${fmtH(r.impl)}${r.itr ? (r.itr > 0 ? ' ↗' : ' ↘') : ''}</span>` : ''}${r.look ? '<span class="tag-look">👁 à regarder</span>' : ''}<span class="stags">${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></span>
       <span class="nm">${esc(r.s.first)} <span>${esc(r.s.last)}</span>${dlIcon(r.s)}${amenIcons0(r.s)}</span>
       <span class="sumshort" title="${esc(r.sum.line)}">${esc(r.sum.head)}${r.sum.trend ? ` <i class="${/progrès/.test(r.sum.trend) ? 'up' : 'down'}">${/progrès/.test(r.sum.trend) ? '↗' : '↘'}</i>` : ''}${DB.notes.some(n => n.sid === r.s.id) ? ' <i class="hasnote" title="Notes de suivi">✎</i>' : ''}</span>
       <span class="sbar">${tot ? `<i class="sp" style="width:${w(r.pos)}%"></i><i class="sr" style="width:${w(r.ras)}%"></i><i class="sn" style="width:${w(r.neg)}%"></i>` : ''}</span>
@@ -3504,7 +3661,7 @@ function viewSuivi() {
       <span class="thumb">${photoHTML(r.s)}</span>
       <span class="nm">${esc(r.s.first)} <span class="muted">${esc(r.s.last)}</span>${amenIcons(r.s)}<span class="sumshort" title="${esc(r.sum.line)}">${esc(r.sum.head)}${r.sum.trend ? ` <i class="${/progrès/.test(r.sum.trend) ? 'up' : 'down'}">${/progrès/.test(r.sum.trend) ? '↗' : '↘'}</i>` : ''}${DB.notes.some(n => n.sid === r.s.id) ? ' <i class="hasnote" title="Notes de suivi">✎</i>' : ''}</span></span>
       <span class="muted small">${stuGroups(r.s) || '—'}</span>
-      <span class="num icell">${implCell(r)}</span><span class="num ${r.pos ? 'pos' : 'muted'}">${r.pos ? '+' + r.pos : 0}</span><span class="num ${r.neg ? 'neg' : 'muted'}">${r.neg ? '−' + r.neg : 0}</span><span class="num ${r.dev ? 'neg' : 'muted'}">${r.dev}</span><span class="num ${r.org ? 'neg' : 'muted'}">${r.org}</span><span class="num">${r.ras}</span><span class="num">${r.abs ? ghostIcon(r.abs) : '<span class="muted">0</span>'}</span>
+      <span class="num icell">${moyCell(r)}</span><span class="num icell">${implCell(r)}</span><span class="num ${r.pos ? 'pos' : 'muted'}">${r.pos ? '+' + r.pos : 0}</span><span class="num ${r.neg ? 'neg' : 'muted'}">${r.neg ? '−' + r.neg : 0}</span><span class="num ${r.dev ? 'neg' : 'muted'}">${r.dev}</span><span class="num ${r.org ? 'neg' : 'muted'}">${r.org}</span><span class="num">${r.ras}</span><span class="num">${r.abs ? ghostIcon(r.abs) : '<span class="muted">0</span>'}</span>
       <span class="last small">${esc(r.last)}</span>
       <span class="bdg">${r.look ? '<span class="chip dark">👁 à regarder</span>' : ''}${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></button>`).join('');
   return `${tabBar('suivi')}
@@ -3516,12 +3673,13 @@ function viewSuivi() {
       <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button>
       <button class="gchip" data-act="sui-f" data-v="disc" aria-pressed="${V.sf === 'disc'}"><span class="chip disc">${nD}</span> discret${nD > 1 ? 's' : ''}</button></div>
     ${(() => { const ks = (c.councils || []).filter(k => k.date >= addDays(todayStr(), -60)).sort((a, b) => a.date.localeCompare(b.date)); const k = ks.filter(x => x.date <= todayStr()).pop() || ks[0]; return k ? `<div class="row" style="gap:8px"><button class="btn" data-act="nw-open" data-cid="${c.id}" data-id="${k.id}">✎ Notes du conseil du ${esc(dayShort(k.date))}</button><span class="small muted">${plural(DB.notes.filter(n => n.ref === k.id && n.text).length, 'note saisie', 'notes saisies')} sur ${studentsOf(c.id).length}</span></div>` : ''; })()}
-    <div class="row" style="gap:8px"><button class="btn" data-act="bul-open" data-cid="${c.id}">✎ Appréciations ${esc(per.n !== 'Année' ? 'du ' + per.n : '')}</button><span class="small muted">${per.n !== 'Année' ? plural(studentsOf(c.id).filter(s => DB.bul[bulKey(s.id, per)]).length, 'rédigée', 'rédigées') + ' sur ' + studentsOf(c.id).length : ''}</span></div>
+    <div class="row" style="gap:8px"><button class="btn" data-act="notes-open" data-cid="${c.id}">📊 Notes</button><button class="btn" data-act="bul-open" data-cid="${c.id}">✎ Appréciations ${esc(per.n !== 'Année' ? 'du ' + per.n : '')}</button><span class="small muted">${per.n !== 'Année' ? plural(studentsOf(c.id).filter(s => DB.bul[bulKey(s.id, per)]).length, 'rédigée', 'rédigées') + ' sur ' + studentsOf(c.id).length : ''}</span></div>
+    ${hasG ? `<div class="isynth"><span><b>Notes</b> · moyenne de la classe ${fmtG(mAvg)} / 20</span><button type="button" class="gchip" data-act="sui-sort" data-k="moy"><span class="chip neg">${mLow}</span> sous 10</button></div>` : ''}
     ${implP().on ? `<div class="isynth"><span><b>Implication</b> · moyenne ${iAvg != null ? fmtN(Math.round(iAvg * 10) / 10) : '—'} / 20</span><button type="button" class="gchip" data-act="sui-sort" data-k="impl"><span class="chip neg">${nLow}</span> sous 10</button><span><span class="chip dark">${nLook}</span> à regarder</span><span class="small muted">Comptes en séances (une étiquette par séance, RAS automatiques compris). Comp. : bavard, s'amuse, agité, passif, comportement, sécurité · Dev. : devoirs non faits, incomplets, bâclés · Oubli : matériel, blouse, retard.</span></div>` : ''}
     ${apprBlockHTML(c, per)}
-    ${sv === 'grid' ? `<div class="row" style="gap:8px"><span class="small muted">Trier :</span>${['name', 'impl', 'pos', 'neg', 'dev', 'org', 'ras', 'abs'].map(k => `<button type="button" class="gchip" data-act="sui-sort" data-k="${k}" aria-pressed="${sk === k}">${{name: 'Nom', impl: 'Implication', pos: 'Positif', neg: 'Comportement', dev: 'Devoirs', org: 'Oublis', ras: 'RAS', abs: 'Absences'}[k]}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`).join('')}</div>
+    ${sv === 'grid' ? `<div class="row" style="gap:8px"><span class="small muted">Trier :</span>${['name', 'moy', 'impl', 'pos', 'neg', 'dev', 'org', 'ras', 'abs'].map(k => `<button type="button" class="gchip" data-act="sui-sort" data-k="${k}" aria-pressed="${sk === k}">${{name: 'Nom', moy: 'Moyenne', impl: 'Implication', pos: 'Positif', neg: 'Comportement', dev: 'Devoirs', org: 'Oublis', ras: 'RAS', abs: 'Absences'}[k]}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`).join('')}</div>
     <div class="tiles stiles">${grid || '<p class="muted">Aucun élève dans ce filtre.</p>'}</div>` : `<section class="card stable-card">
-      <div class="srow head"><span></span>${sh('name', 'Élève')}<span>Gr.</span>${sh('impl', 'Impl.', 'num')}${sh('pos', '+', 'num')}${sh('neg', 'Comp.', 'num')}${sh('dev', 'Dev.', 'num')}${sh('org', 'Oubli', 'num')}${sh('ras', 'RAS', 'num')}${sh('abs', 'Abs.', 'num')}<span class="last">Dernière remarque</span><span></span></div>
+      <div class="srow head"><span></span>${sh('name', 'Élève')}<span>Gr.</span>${sh('moy', 'Moy.', 'num')}${sh('impl', 'Impl.', 'num')}${sh('pos', '+', 'num')}${sh('neg', 'Comp.', 'num')}${sh('dev', 'Dev.', 'num')}${sh('org', 'Oubli', 'num')}${sh('ras', 'RAS', 'num')}${sh('abs', 'Abs.', 'num')}<span class="last">Dernière remarque</span><span></span></div>
       ${body || '<p class="muted" style="padding:14px;margin:0">Aucun élève dans ce filtre.</p>'}
     </section>`}
     <p class="small muted" style="margin:0">À surveiller : 3 remarques négatives ou plus sur les 14 derniers jours. Discret : seulement des RAS depuis 3 semaines (vu, sans se faire remarquer). Peu observé : aucune observation, RAS compris, depuis 3 semaines. Toucher un élève : sa fiche.</p>
@@ -4594,7 +4752,7 @@ const ACT = {
   'tr-go': () => commitTrombi(),
   htab: el => { V.tab = el.dataset.t; V.sf = null; render(); $('.main')?.scrollTo(0, 0); },
   eye: () => { DB.settings.hidePhotos = !DB.settings.hidePhotos; save(); renderKeep(); toast(DB.settings.hidePhotos ? 'Photos masquées' : 'Photos affichées'); },
-  'fiche-open': el => go({name:'fiche', sid: el.dataset.sid}),
+  'fiche-open': el => go({name:'fiche', sid: el.dataset.sid, order: [...document.querySelectorAll('[data-act="fiche-open"]')].map(x => x.dataset.sid).filter((x, i, a) => a.indexOf(x) === i)}),
   'sui-c': el => { V.scid = el.dataset.cid; V.sp = null; V.sf = null; render(); },
   'sui-v': el => { V.sv = el.dataset.v; render(); },
   'sui-p': el => { V.sp = +el.dataset.v; render(); },
@@ -4895,6 +5053,19 @@ const ACT = {
   'bul-import': () => { const c = cls(V.cid), per = periodsFor(c)[V.p], t = $('#bul-in').value; const r = bulImport(c, per, t);
     if (!r.n) { toast('Aucune ligne « [numéro] appréciation » trouvée'); return; } renderKeep(); toast(`${plural(r.n, 'appréciation importée', 'appréciations importées')}${r.bad.length ? ' · numéros inconnus : ' + r.bad.join(', ') : ''}`); },
   'bul-copy': async el => { const x = DB.bul[el.dataset.k]; if (!x) return; try { await navigator.clipboard.writeText(x.text); toast('Appréciation copiée'); } catch (e) { toast(x.text); } },
+  'notes-open': el => { const c = cls(el.dataset.cid), periods = periodsFor(c); go({name: 'notes', cid: c.id, p: V.sp != null && V.sp < periods.length ? V.sp : currentPeriodIndex(periods)}); },
+  'gimp-parse': () => { const t = $('#gimp-in').value; const r = parseGrades(V.cid, t); if (!r.evs.length || !r.rows.length) { toast('Format non reconnu : il faut des lignes [E1] … et des lignes NOM Prénom | note'); return; } GIMP = {cid: V.cid, ...r}; renderKeep(); },
+  'gimp-cancel': () => { GIMP = null; renderKeep(); },
+  'gimp-ok': () => { const imp = GIMP; if (!imp) return; let nE = 0, nG = 0;
+    imp.evs.forEach((e, i) => { let ex = DB.evals.find(x => x.cid === imp.cid && x.date === e.date && normN(x.title) === normN(e.title));
+      if (ex) Object.assign(ex, {type: e.type, max: e.max, coef: e.coef, t: Date.now()}); else { ex = {id: uid(), cid: imp.cid, ...e, t: Date.now()}; DB.evals.push(ex); nE++; }
+      imp.rows.forEach(r => { if (!r.sid) return; const v = r.vals[i]; if (v == null || (typeof v === 'string' && v[0] === '?')) return; if (typeof v === 'number' && (v < 0 || v > e.max)) return; DB.grades[gKey(ex.id, r.sid)] = {v, t: Date.now()}; nG++; }); });
+    GIMP = null; save(); renderKeep(); toast(`${plural(nG, 'note importée', 'notes importées')} · ${plural(nE, 'nouvelle évaluation', 'nouvelles évaluations')}`); },
+  gopen: el => { V.gopen = V.gopen === el.dataset.id ? null : el.dataset.id; renderKeep(); },
+  'geval-del': el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const saved = {e, g: Object.entries(DB.grades).filter(([k]) => k.startsWith(e.id + '|'))};
+    DB.evals = DB.evals.filter(x => x !== e); saved.g.forEach(([k]) => delete DB.grades[k]); save(); renderKeep();
+    toast('Évaluation supprimée', {label: 'Annuler', fn: () => { DB.evals.push(saved.e); saved.g.forEach(([k, v]) => { DB.grades[k] = v; }); save(); renderKeep(); }}); },
+  'fiche-nav': el => { const o = V.order || [], i = o.indexOf(V.sid), j = i + (+el.dataset.d); if (j < 0 || j >= o.length) return; V.sid = o[j]; NOTE_EDIT = null; saveNav(); renderKeep(); },
   'impl-reset': () => { delete DB.settings.impl; save(); renderKeep(); toast('Barème par défaut rétabli'); },
   'impl-copy': async () => { const c = cls(V.cid), per = periodsFor(c)[V.p]; const lines = studentsOf(c.id).map(s => { const r = implCalc(s, per), ret = implRet(s.id, per); const n = ret ? ret.v : r.note; return `${s.last} ${s.first}\t${n == null ? '' : String(n).replace('.', ',')}`; }).join('\n');
     try { await navigator.clipboard.writeText(lines); toast('Notes copiées (une ligne par élève : nom, note)'); } catch (e) { toast('Copie impossible'); } },
@@ -4986,6 +5157,12 @@ const CHG = {
     render(); toast(`${plural(ok, 'photo')} associée${ok > 1 ? 's' : ''}` + (miss.length ? ` · ${miss.length} non reconnue${miss.length > 1 ? 's' : ''}` : ''));
   },
   group: el => { const s = stu(el.dataset.sid); s.group = el.value; save(); render(); },
+  gimp: el => { const e = GIMP && GIMP.evs[+el.dataset.i]; if (!e) return; const f = el.dataset.f; e[f] = f === 'max' || f === 'coef' ? (parseFloat(el.value.replace(',', '.')) || (f === 'max' ? 20 : 1)) : el.value; renderKeep(); },
+  'gimp-stu': el => { const r = GIMP && GIMP.rows[+el.dataset.r]; if (r) { r.sid = el.value; renderKeep(); } },
+  geval: el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const f = el.dataset.f; e[f] = f === 'type' ? el.value : (parseFloat(el.value.replace(',', '.')) || (f === 'max' ? 20 : 1)); e.t = Date.now(); save(); renderKeep(); },
+  grade: el => { const k = el.dataset.k, raw = el.value.trim(); if (!raw) { delete DB.grades[k]; save(); return; }
+    let v; if (/^abs/i.test(raw)) v = 'Abs'; else if (/^disp/i.test(raw)) v = 'Disp'; else if (/^n\.?\s?n/i.test(raw)) v = 'NN'; else { v = parseFloat(raw.replace(',', '.')); if (isNaN(v) || v < 0 || v > +el.dataset.max) { toast('Note invalide'); el.value = ''; return; } }
+    DB.grades[k] = {v, t: Date.now()}; save(); },
   implN: el => { const v = el.value.trim().replace(',', '.'); if (v === '') delete DB.implN[el.dataset.k]; else { const n = Math.max(0, Math.min(20, Math.round(parseFloat(v) * 2) / 2)); if (isNaN(n)) return; DB.implN[el.dataset.k] = {v: n, t: Date.now()}; el.value = n; } save(); },
   impl: el => { const P = {...(DB.settings.impl || {})}; if (el.type === 'checkbox') P[el.dataset.k] = el.checked; else { const n = parseFloat(String(el.value).replace(',', '.')); if (isNaN(n)) return; P[el.dataset.k] = n; } DB.settings.impl = P; save(); },
   'cat-show': el => { const h = new Set(DB.settings.hiddenCats || []); if (el.checked) h.delete(el.dataset.k); else h.add(el.dataset.k); DB.settings.hiddenCats = [...h]; save(); },
@@ -5037,6 +5214,12 @@ document.addEventListener('click', e => {
   if (!el) return;
   const fn = ACT[el.dataset.act]; if (fn) fn(el, e);
 });
+/* fiche élève : glisser à gauche / à droite, ou flèches du clavier, pour passer à l'élève suivant ou précédent */
+let SW0 = null;
+document.addEventListener('touchstart', e => { if (V.name !== 'fiche' || e.touches.length !== 1 || e.target.closest('input, textarea, select, .seg, svg')) { SW0 = null; return; } SW0 = {x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now()}; }, {passive: true});
+document.addEventListener('touchend', e => { if (!SW0 || V.name !== 'fiche') return; const t = e.changedTouches[0], dx = t.clientX - SW0.x, dy = t.clientY - SW0.y; const ok = Math.abs(dx) > 90 && Math.abs(dy) < 50 && Date.now() - SW0.t < 600; SW0 = null;
+  if (ok && !$('#modal').innerHTML && !$('#layer').innerHTML) ACT['fiche-nav']({dataset: {d: dx < 0 ? '1' : '-1'}}); }, {passive: true});
+document.addEventListener('keydown', e => { if (V.name !== 'fiche' || e.target.closest('input, textarea, select') || $('#modal').innerHTML || $('#layer').innerHTML) return; if (e.key === 'ArrowRight') ACT['fiche-nav']({dataset: {d: '1'}}); else if (e.key === 'ArrowLeft') ACT['fiche-nav']({dataset: {d: '-1'}}); });
 document.addEventListener('input', e => { const el = e.target; if (!el.dataset || !el.dataset.count) return; const box = el.closest('li, .bulcard'), c = box && box.querySelector('.bulcnt'); if (c) { c.textContent = el.value.trim().length + ' / ' + el.dataset.count; c.classList.toggle('over', el.value.trim().length > +el.dataset.count); } });
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form]?.(f); });
@@ -5094,8 +5277,8 @@ async function showPersist() {
 /* Chaque enregistrement (élève, observation, contenu de séance…) porte une date de modification.
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
-const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup', 'notes'];
-const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN'];
+const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup', 'notes', 'evals'];
+const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN', 'grades'];
 const SYNC_SET = ['evenIsA', 'holidays', 'periods', 'hiddenCats', 'impl'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
 const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});

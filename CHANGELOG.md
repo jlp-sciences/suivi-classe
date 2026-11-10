@@ -1,5 +1,11 @@
 # Historique des versions
 
+## 3.09 — 10 novembre 2026
+- Notes : page « Notes » par classe (onglet Suivi), import depuis une capture d'École Directe lue par Claude (format [E1] … / NOM Prénom | note), aperçu de contrôle, réimport sans doublon, correction note par note.
+- Fiche élève : carte Résultats (moyennes écrit, TP, générale, comparées à la classe), courbe d'évolution de la moyenne, liste des notes.
+- Suivi : colonne Moy. (tendance sur 3 évaluations), pastille Moy. dans la grille, ligne de synthèse ; récapitulatif des appréciations avec les moyennes.
+- Fiche élève : passer à l'élève précédent / suivant (flèches, glissement du doigt, clavier), dans l'ordre du tableau de bord.
+
 ## 3.08 — 8 novembre 2026
 - Note d'implication : « Actif » et « Travail soigné » valent + 0,25 par séance (travail attendu) ; Participe, Moteur, Bonne question, Aide, Progrès restent à + 0,5.
 

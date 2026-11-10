@@ -85,6 +85,8 @@ async def main():
                 await pg.evaluate(f"V.tab = '{t}'; render()"); await pg.wait_for_timeout(80)
             await pg.evaluate("go({name: 'bul', cid: DB.classes[0].id, p: 0})"); await pg.wait_for_timeout(100)
             check(await pg.locator('.bullist li').count() > 0, f'{w}x{h} : page Appréciations')
+            await pg.evaluate("go({name: 'notes', cid: DB.classes[0].id, p: 0})"); await pg.wait_for_timeout(100)
+            check(await pg.locator('#gimp-in').count() == 1, f'{w}x{h} : page Notes')
             await pg.close()
 
         print('4. Position gardée lors des mises à jour automatiques')

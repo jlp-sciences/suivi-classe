@@ -1,5 +1,9 @@
 # Historique des versions
 
+## 3.11 — 13 novembre 2026
+- Note d'implication : chaque RAS coûte −0,33 (au lieu de « 2 RAS de suite = −0,5 ») ; la note monte si l'élève se manifeste à plus de 2 séances sur 5. Plafond passivité porté à 4. Alerte « à regarder » après 3 RAS de suite (réglable).
+- « Progrès / effort » rapporte +0,25, comme Actif et Travail soigné.
+
 ## 3.10 — 10 novembre 2026
 - Notes : import direct de l'export Excel « Les devoirs » d'École Directe (glisser le fichier ou le choisir), lu sur l'appareil. Classe reconnue d'après l'en-tête ; codes TP → TP, DL → Écrit · maison, autres → Écrit ; notes en bleu → non comptées ; évaluations encore vides ignorées ; lignes de synthèse ignorées.
 - Aperçu : contrôle des moyennes calculées par rapport à celles d'École Directe, écarts signalés.

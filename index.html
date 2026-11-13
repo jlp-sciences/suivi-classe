@@ -1131,7 +1131,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.10', d: '2026-11-10'};
+const APP_VERSION = {n: '3.11', d: '2026-11-13'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1749,9 +1749,9 @@ function viewGrid() {
     const name = (compact ? `${esc(s.first)} ${esc((s.last || '')[0] || '')}.` : `${esc(s.first)} <span>${esc(s.last)}</span>`) + dlIcon(s);
     const autoRas = !r.abs && !(r.pos || r.neg || r.ras || r.dv) && !isEv && sesEnded(ses) && bilanStarted(ses.key);
     const chips = (r.pos ? `<span class="chip pos">+${r.pos}</span>` : '') + (r.neg ? `<span class="chip neg">−${r.neg}</span>` : '') + (r.dv ? `<span class="chip dv" title="${CAT[r.dv].l}">${compact ? 'Dev.' : 'Devoir'}</span>` : '') + (r.ras ? `<span class="chip neu">RAS</span>` : '') + (autoRas ? '<span class="chip neu autoras" title="RAS automatique">RAS</span>' : '');
-    const look = !autoRas && !r.abs && !(r.pos || r.neg || r.ras || r.dv) && !isEv && rasRunBefore(s, ses) >= 2 * implP().rasLen - 1; // une séance avant la deuxième sanction
+    const look = !autoRas && !r.abs && !(r.pos || r.neg || r.ras || r.dv) && !isEv && rasRunBefore(s, ses) >= implP().rasAlert; // plusieurs séances de suite sans se manifester
     return `<button class="tile ${r.abs ? 'is-absent' : ''}" data-act="tile" data-long="fiche" data-sid="${s.id}" aria-label="${esc(s.first + ' ' + s.last)}${look ? ' — à regarder' : ''}">
-      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}${look ? '<span class="tag-look" title="RAS de suite, déjà pénalisé une fois : à regarder avant la prochaine pénalité">👁 à regarder</span>' : ''}</span>
+      <span class="ph">${photoHTML(s)}${r.abs ? '<span class="chip dark tag-abs">Absent/e</span>' : ''}${ckSet.has(s.id) ? '<span class="tag-chk" title="À vérifier">!</span>' : ''}${look ? '<span class="tag-look" title="Plusieurs RAS de suite : à regarder">👁 à regarder</span>' : ''}</span>
       <span class="nm">${name}</span><span class="cnt">${chips}</span></button>`;
   }).join('');
   const present = list.length - abs;
@@ -1928,9 +1928,9 @@ function nwSave() {
   save();
 }
 /* ---------- note d'implication (modèle « capital ») ---------- */
-const IMPL_DEF = {on: true, base: 15, gain: 0.5, gainLow: 0.25, bonusMax: 5, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasLen: 2, rasPen: 0.5, capComp: 6, capDev: 5, capOrg: 3, capPas: 3, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
+const IMPL_DEF = {on: true, base: 15, gain: 0.5, gainLow: 0.25, bonusMax: 5, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasCost: 0.33, rasAlert: 3, capComp: 6, capDev: 5, capOrg: 3, capPas: 4, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
 const implP = () => ({...IMPL_DEF, ...(DB.settings.impl || {})});
-const POS_LOW = new Set(['actif', 'soigne']); // le travail attendu, bien fait : vaut moins qu'une démarche en plus
+const POS_LOW = new Set(['actif', 'soigne', 'progres']); // le travail attendu, bien fait, ou un progrès : vaut moins qu'une démarche en plus
 const DISRUPT = new Set(['bavarde', 'samuse', 'agite', 'comportement', 'securite']), ORGC = new Set(['materiel', 'blouse', 'retard']);
 const sesEnded = x => { const t = todayStr(); if (x.date < t) return true; if (x.date > t) return false;
   let e = x.end; if (!e) { const sl = DB.slots.find(y => y.id === String(x.key).split('|')[1]); e = sl ? sl.end : null; } return !!e && nowMin() >= tMin(e); };
@@ -1973,8 +1973,8 @@ function implCalc(s, per) {
     if (cats.has('devoir_bac')) lose('dev', v(P.cDevPart));
     cats.forEach(c => { if (ORGC.has(c)) lose('org', v(P.cOrg)); });
     if (kind === 'eval') { hist.push({d: x.date, n: clampN(rawNow()), e: entry}); entry.delta = rawNow() - before; entry.note = clampN(rawNow()); entry.info = info; entry.eval = true; return; }
-    /* passivité : série de RAS */
-    if (kind === 'ras') { run++; entry.run = run; if (run >= P.rasLen) { lose('pas', v(P.rasPen)); info.push(`${P.rasLen} RAS de suite`); run = 0; } }
+    /* passivité : chaque RAS coûte un peu (la note monte si l'élève se manifeste à plus de 2 séances sur 5) */
+    if (kind === 'ras') { run++; entry.run = run; lose('pas', v(P.rasCost)); }
     else run = 0;
     /* gains : remboursent d'abord la dette la plus lourde, puis bonus */
     const posC = [...cats].filter(c => CAT[c].t === 'pos');
@@ -2017,7 +2017,7 @@ function implSpark(h, P) {
   return sparkWrap('ispark', W, H, inner, h.map((p, i) => x(i)), h.map(p => y(p.n)), h.map(implTip), 'Évolution de la note au fil des séances');
 }
 function implTable(P, k, nPlanned) {
-  const rows = [['Participe, moteur, bonne question, aide un camarade, progrès / effort', 'par séance', P.gain, 1], ['Actif, travail soigné', 'par séance', P.gainLow, 1], ['Bavard, s\'amuse, agité, comportement, sécurité TP', 'par séance', P.cDis, -1], ['Passif', 'par séance', P.cPas, -1], ['Devoir non fait', '', P.cDev, -1], ['Devoir incomplet ou bâclé', '', P.cDevPart, -1], ['Oubli de matériel ou de blouse, retard', '', P.cOrg, -1], [`${P.rasLen} RAS de suite`, '', P.rasPen, -1]];
+  const rows = [['Participe, moteur, bonne question, aide un camarade', 'par séance', P.gain, 1], ['Actif, travail soigné, progrès / effort', 'par séance', P.gainLow, 1], ['Bavard, s\'amuse, agité, comportement, sécurité TP', 'par séance', P.cDis, -1], ['Passif', 'par séance', P.cPas, -1], ['Devoir non fait', '', P.cDev, -1], ['Devoir incomplet ou bâclé', '', P.cDevPart, -1], ['Oubli de matériel ou de blouse, retard', '', P.cOrg, -1], ['RAS (présent, rien à signaler)', 'par séance', P.rasCost, -1]];
   const f = (x, sg) => (sg > 0 ? '+ ' : '− ') + fmtN(x);
   return `<table class="itab"><thead><tr><th>Remarque</th><th>Barème</th>${k != null ? `<th>Dans cette classe<span class="small muted"> (${plural(nPlanned, 'séance prévue', 'séances prévues')})</span></th>` : ''}</tr></thead><tbody>${rows.map(([l, sub, x, sg]) => `<tr><td>${esc(l)}${sub ? ` <span class="small muted">${sub}</span>` : ''}</td><td class="${sg > 0 ? 'pos' : 'neg'}">${f(x, sg)}</td>${k != null ? `<td class="${sg > 0 ? 'pos' : 'neg'}"><b>${f(x * k, sg)}</b></td>` : ''}</tr>`).join('')}</tbody></table>
   <p class="small muted" style="margin:0">Départ ${fmtN(P.base)} · bonus jusqu'à + ${fmtN(P.bonusMax)} · plafonds : comportement − ${fmtN(P.capComp)}, devoirs − ${fmtN(P.capDev)}, oublis et retards − ${fmtN(P.capOrg)}, passivité − ${fmtN(P.capPas)} (au-delà, compté à moitié) · plancher ${fmtN(P.floor)} · arrondi au demi-point. Les séances d'évaluation ne comptent que pour les oublis, retards, devoirs et incidents ; les absences ne comptent pas.${k != null && Math.abs(k - 1) > 0.01 ? ` Valeurs ajustées au rythme de la classe (× ${fmtN(k)} : ${P.ref} séances de référence).` : ''}</p>`;
@@ -2387,7 +2387,7 @@ function setCats() {
     return `<section class="card" style="display:flex;flex-direction:column;gap:12px;margin-top:16px"><h3 style="font-size:17px">Note d'implication</h3>
     <label class="check"><input type="checkbox" data-chg="impl" data-k="on" ${P.on ? 'checked' : ''}> <span>Proposer une note d'implication dans la fiche élève et la page Appréciations</span></label>
     <p class="small muted" style="margin:0">Chaque élève part du « départ » ; les points se perdent ou se regagnent séance après séance. Les valeurs ci-dessous valent pour ${P.ref} séances sur la période et sont ajustées automatiquement au rythme de chaque classe. Les séances d'évaluation ne comptent que pour les absences, retards, oublis et incidents.</p>
-    <div class="igrid">${f('base', 'Départ', 0.5)}${f('gain', 'Participe, moteur, question, aide, progrès (+)')}${f('gainLow', 'Actif, travail soigné (+)')}${f('bonusMax', 'Bonus maximal', 0.5)}${f('cDis', 'Bavard, dissipé, comportement (−)')}${f('cPas', 'Passif (−)')}${f('cDev', 'Devoir non fait (−)')}${f('cDevPart', 'Devoir incomplet ou bâclé (−)')}${f('cOrg', 'Oubli, retard (−)')}${f('rasLen', 'Série de RAS (séances)', 1)}${f('rasPen', 'Pénalité par série (−)')}${f('capComp', 'Plafond comportement', 0.5)}${f('capDev', 'Plafond devoirs', 0.5)}${f('capOrg', 'Plafond oublis, retards', 0.5)}${f('capPas', 'Plafond passivité', 0.5)}${f('soft', 'Au-delà du plafond (part comptée)', 0.25)}${f('floor', 'Plancher', 0.5)}${f('ref', 'Séances de référence', 1)}${f('obsMin', '% minimal de séances observées', 5)}</div>
+    <div class="igrid">${f('base', 'Départ', 0.5)}${f('gain', 'Participe, moteur, question, aide (+)')}${f('gainLow', 'Actif, travail soigné, progrès (+)')}${f('bonusMax', 'Bonus maximal', 0.5)}${f('cDis', 'Bavard, dissipé, comportement (−)')}${f('cPas', 'Passif (−)')}${f('cDev', 'Devoir non fait (−)')}${f('cDevPart', 'Devoir incomplet ou bâclé (−)')}${f('cOrg', 'Oubli, retard (−)')}${f('rasCost', 'Chaque RAS (−)', 0.01)}${f('rasAlert', 'Alerte « à regarder » après (RAS de suite)', 1)}${f('capComp', 'Plafond comportement', 0.5)}${f('capDev', 'Plafond devoirs', 0.5)}${f('capOrg', 'Plafond oublis, retards', 0.5)}${f('capPas', 'Plafond passivité', 0.5)}${f('soft', 'Au-delà du plafond (part comptée)', 0.25)}${f('floor', 'Plancher', 0.5)}${f('ref', 'Séances de référence', 1)}${f('obsMin', '% minimal de séances observées', 5)}</div>
     <div><button class="btn" data-act="impl-reset">Revenir au barème par défaut</button></div>
     <h4 style="margin:6px 0 0;font-size:15px">Ce que vaut chaque remarque</h4>${implTable(P, null, 0)}</section>`; })()}`;
 }
@@ -2835,13 +2835,15 @@ async function runSelfTests() {
       L30.forEach(x => { delete DB.content[x.key]; DB.appr[x.key] = 'bien'; });
       const run = spec => { DB.obs = DB.obs.filter(o => o.sid !== st.id); Object.entries(spec).forEach(([cat, idx]) => idx.forEach(i => DB.obs.push({id: 'ti' + cat + i, sid: st.id, cid: c.id, ses: L30[i - 1].key, date: L30[i - 1].date, cat, t: i, note: ''}))); return implCalc(st, per).note; };
       const r = n => Array.from({length: Math.ceil(30 / n)}, (_, i) => 1 + i * n).filter(x => x <= 30);
-      eq(run({participe: r(2), bavarde: [10]}), 20, 'bon élève (participe une séance sur deux) : 20');
-      eq(run({actif: r(2), bavarde: [10]}), 18, 'élève actif sans participer à l\'oral : 18');
-      eq(run({participe: [3, 8, 13, 18, 23, 28], bavarde: [5, 10, 15, 20, 25], devoir: [7, 19], blouse: [12]}), 8, 'élève moyen : 8');
+      eq(run({participe: r(2), bavarde: [10]}), 17, 'bon élève (participe une séance sur deux, bavard une fois) : 17');
+      eq(run({actif: r(2), bavarde: [10]}), 13, 'élève actif une séance sur deux sans participer à l\'oral : 13');
+      eq(run({participe: [3, 8, 13, 18, 23, 28], bavarde: [5, 10, 15, 20, 25], devoir: [7, 19], blouse: [12]}), 5, 'élève moyen : 5');
       eq(run({actif: [5, 20], bavarde: [1, 3, 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 26, 28], devoir: [2, 9, 17, 25], materiel: [7, 11, 15], blouse: [21, 27], retard: [29]}), 3, 'élève en difficulté : plancher 3');
-      eq(run({}), 10, 'élève invisible (que des RAS) : 10');
-      eq(run({participe: r(5)}), 12.5, 'discret qui participe une fois sur cinq : 12,5');
-      eq(run({participe: r(4)}), 15.5, 'discret qui participe une fois sur quatre : 15,5');
+      eq(run({}), 8, 'élève invisible (que des RAS) : 8');
+      eq(run({participe: r(1)}), 20, 'participe à chaque séance : 20');
+      eq(run({progres: r(2)}), run({actif: r(2)}), 'progrès / effort vaut comme actif (gain réduit)');
+      eq(run({participe: r(5)}), 11, 'discret qui participe une fois sur cinq : 11');
+      eq(run({participe: r(4)}), 11.5, 'discret qui participe une fois sur quatre : 11,5');
       { run({participe: [2], bavarde: [3]}); const ir = implCalc(st, per), sp = html(implSpark(ir.hist, ir.P)), tips = sp.querySelectorAll('.sptip');
         ok(tips.length === ir.hist.length && /Participe/.test(tips[1].textContent) && /note/.test(tips[1].textContent), 'courbe d\'implication : bulle avec la date, les remarques et la note'); }
       const ks = new Set(L30.map(x => x.key)); DB.obs = DB.obs.filter(o => !ks.has(o.ses)); L30.forEach(x => { delete DB.appr[x.key]; });
@@ -3784,7 +3786,7 @@ function viewSuivi() {
     const pos = Object.keys(cnt).filter(k => CAT[k].t === 'pos').reduce((a, k) => a + cnt[k], 0);
     const IP = implP(), ir = IP.on ? implCalc(s, per) : null, ret = implRet(s.id, per), impl = ret ? ret.v : ir ? ir.note : null;
     let itr = 0; if (ir && ir.hist.length > 3) { const old = ir.hist.filter(h => h.d <= d21).pop(); if (old) { const dd = ir.hist[ir.hist.length - 1].n - old.n; itr = dd >= 0.5 ? 1 : dd <= -0.5 ? -1 : 0; } }
-    const look = !!ir && ir.run >= 2 * IP.rasLen - 1;
+    const look = !!ir && ir.run >= IP.rasAlert;
     const rs = resultsOf(s, per); let mtr = 0; if (rs.hist.length >= 4) { const dd = rs.hist[rs.hist.length - 1].avg - rs.hist[rs.hist.length - 4].avg; mtr = dd >= 0.5 ? 1 : dd <= -0.5 ? -1 : 0; }
     return {s, moy: rs.moy == null ? -1 : rs.moy, mEcr: rs.ecrit, mTp: rs.tp, mtr, pos, neg: sumC([...DISRUPT, 'passif']), dev: sumC(['devoir', 'devoir_inc', 'devoir_bac']), org: sumC([...ORGC]), ras: cnt.ras || 0, abs: cnt.absent || 0,
       impl: impl == null ? -1 : impl, implSet: !!ret, itr, look,

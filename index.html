@@ -1928,7 +1928,7 @@ function nwSave() {
   save();
 }
 /* ---------- note d'implication (modèle « capital ») ---------- */
-const IMPL_DEF = {on: true, base: 15, gain: 0.5, gainLow: 0.25, bonusMax: 5, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasLen: 2, rasPen: 0.5, isoN: 4, isoPen: 0.5, rasAlert: 3, capComp: 6, capDev: 5, capOrg: 3, capPas: 3, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
+const IMPL_DEF = {on: true, base: 15, gain: 0.5, gainLow: 0.25, bonusMax: 5, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasLen: 2, rasPen: 0.5, isoN: 3, isoPen: 0.5, rasAlert: 3, capComp: 6, capDev: 5, capOrg: 3, capPas: 3, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
 const implP = () => ({...IMPL_DEF, ...(DB.settings.impl || {})});
 const POS_LOW = new Set(['actif', 'soigne', 'progres']); // le travail attendu, bien fait, ou un progrès : vaut moins qu'une démarche en plus
 const DISRUPT = new Set(['bavarde', 'samuse', 'agite', 'comportement', 'securite']), ORGC = new Set(['materiel', 'blouse', 'retard']);
@@ -2840,9 +2840,9 @@ async function runSelfTests() {
       L30.forEach(x => { delete DB.content[x.key]; DB.appr[x.key] = 'bien'; });
       const run = spec => { DB.obs = DB.obs.filter(o => o.sid !== st.id); Object.entries(spec).forEach(([cat, idx]) => idx.forEach(i => DB.obs.push({id: 'ti' + cat + i, sid: st.id, cid: c.id, ses: L30[i - 1].key, date: L30[i - 1].date, cat, t: i, note: ''}))); return implCalc(st, per).note; };
       const r = n => Array.from({length: Math.ceil(30 / n)}, (_, i) => 1 + i * n).filter(x => x <= 30);
-      eq(run({participe: r(2), bavarde: [10]}), 18.5, 'bon élève (participe une séance sur deux, bavard une fois) : 18,5');
-      eq(run({actif: r(2), bavarde: [10]}), 16.5, 'élève actif une séance sur deux sans participer à l\'oral : 16,5');
-      eq(run({participe: [3, 8, 13, 18, 23, 28], bavarde: [5, 10, 15, 20, 25], devoir: [7, 19], blouse: [12]}), 7.5, 'élève moyen : 7,5');
+      eq(run({participe: r(2), bavarde: [10]}), 18, 'bon élève (participe une séance sur deux, bavard une fois) : 18');
+      eq(run({actif: r(2), bavarde: [10]}), 16, 'élève actif une séance sur deux sans participer à l\'oral : 16');
+      eq(run({participe: [3, 8, 13, 18, 23, 28], bavarde: [5, 10, 15, 20, 25], devoir: [7, 19], blouse: [12]}), 7, 'élève moyen : 7');
       eq(run({actif: [5, 20], bavarde: [1, 3, 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 26, 28], devoir: [2, 9, 17, 25], materiel: [7, 11, 15], blouse: [21, 27], retard: [29]}), 3, 'élève en difficulté : plancher 3');
       eq(run({}), 10, 'élève invisible (que des RAS, déjà sanctionnés par séries) : 10');
       eq(run({participe: r(1)}), 20, 'participe à chaque séance : 20');
@@ -2850,7 +2850,7 @@ async function runSelfTests() {
       { run({}); eq(implCalc(st, per).isoTot, 0, 'RAS en série : pas comptés aussi comme isolés (pas de doublon)'); }
       eq(run({progres: r(2)}), run({actif: r(2)}), 'progrès / effort vaut comme actif (gain réduit)');
       eq(run({participe: r(5)}), 12.5, 'discret qui participe une fois sur cinq : 12,5');
-      eq(run({participe: r(4)}), 15, 'discret qui participe une fois sur quatre : 15');
+      eq(run({participe: r(4)}), 14.5, 'discret qui participe une fois sur quatre : 14,5');
       { run({participe: [2], bavarde: [3]}); const ir = implCalc(st, per), sp = html(implSpark(ir.hist, ir.P)), tips = sp.querySelectorAll('.sptip');
         ok(tips.length === ir.hist.length && /Participe/.test(tips[1].textContent) && /note/.test(tips[1].textContent), 'courbe d\'implication : bulle avec la date, les remarques et la note'); }
       const ks = new Set(L30.map(x => x.key)); DB.obs = DB.obs.filter(o => !ks.has(o.ses)); L30.forEach(x => { delete DB.appr[x.key]; });

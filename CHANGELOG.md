@@ -1,5 +1,10 @@
 # Historique des versions
 
+## 3.12 — 13 novembre 2026
+- Note d'implication : retour à la règle « 2 RAS de suite = −0,5 » (plafond passivité 3). Nouveau : les RAS isolés (entre deux séances où l'élève s'est manifesté) sont comptés, malus de −0,5 tous les 4, non rattrapable par la participation. Chaque RAS ne compte que dans une règle.
+- Réglages › Étiquettes : série de RAS, pénalité, nombre de RAS isolés par malus (0 = désactivé), malus, seuil de l'alerte « à regarder ».
+- « Progrès / effort » reste à +0,25.
+
 ## 3.11 — 13 novembre 2026
 - Note d'implication : chaque RAS coûte −0,33 (au lieu de « 2 RAS de suite = −0,5 ») ; la note monte si l'élève se manifeste à plus de 2 séances sur 5. Plafond passivité porté à 4. Alerte « à regarder » après 3 RAS de suite (réglable).
 - « Progrès / effort » rapporte +0,25, comme Actif et Travail soigné.

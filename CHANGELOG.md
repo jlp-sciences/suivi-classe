@@ -1,5 +1,11 @@
 # Historique des versions
 
+## 3.13 — 15 novembre 2026
+- Synchronisation : un appareil resté sur une ancienne version ne supprime plus les données qu'il ne connaît pas (cause de la disparition des notes importées) ; il les garde et les retransmet.
+- Synchronisation suspendue, avec message « mettez à jour », si un autre appareil utilise une version plus récente.
+- Corbeille de synchronisation (Réglages › Synchronisation) : copie de toute suppression de 20 éléments ou plus, avec bouton « Restaurer ».
+- Notes : moyenne, écart type, min. et max. sur chaque évaluation (page Notes, bulle de la courbe) et pour les moyennes des élèves (tableau de bord du Suivi).
+
 ## 3.12 — 13 novembre 2026
 - Note d'implication : retour à la règle « 2 RAS de suite = −0,5 » (plafond passivité 3). Nouveau : les RAS isolés (entre deux séances où l'élève s'est manifesté) sont comptés, malus de −0,5 tous les 3, non rattrapable par la participation. Chaque RAS ne compte que dans une règle.
 - Réglages › Étiquettes : série de RAS, pénalité, nombre de RAS isolés par malus (0 = désactivé), malus, seuil de l'alerte « à regarder ».

@@ -1015,6 +1015,8 @@ button.wpill{cursor:pointer}
 .ibadge{border:1.5px solid currentColor;padding:0 6px} .ibadge.low{color:var(--neg)} .ibadge.high{color:var(--pos)}
 .ibadge.mb{border-color:transparent;background:var(--ink-2);color:var(--surface)} .ibadge.mb.low{background:var(--neg);color:var(--on-neg)} .ibadge.mb.high{background:var(--pos);color:var(--on-pos)}
 .stile .ibadge ~ .stags{top:32px}
+.trl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px} .trl li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+.gst b{font-weight:700} .gch .gst{white-space:nowrap}
 .isynth{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
 
 /* ---- 3.07 : barème et chronologie par séance ---- */
@@ -1131,7 +1133,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.12', d: '2026-11-13'};
+const APP_VERSION = {n: '3.13', d: '2026-11-15'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -2057,6 +2059,10 @@ const gradeOf = (e, sid) => { const g = DB.grades[gKey(e.id, sid)]; return g ? g
 /* note qui compte dans les moyennes (les notes « non comptées », en bleu dans École Directe, sont exclues) */
 const gradeNum = (e, sid) => { const g = DB.grades[gKey(e.id, sid)]; return g && !g.nc && typeof g.v === 'number' ? g.v : null; };
 const gradeNC = (e, sid) => { const g = DB.grades[gKey(e.id, sid)]; return !!(g && g.nc); };
+/* statistiques d'une série : effectif, moyenne, écart type (population), min., max. */
+function gStats(l) { const n = l.length; if (!n) return null; const m = l.reduce((a, b) => a + b, 0) / n; return {n, m, sd: Math.sqrt(l.reduce((a, b) => a + (b - m) * (b - m), 0) / n), min: Math.min(...l), max: Math.max(...l)}; }
+const evalStats = e => gStats(studentsOf(e.cid).map(s => gradeNum(e, s.id)).filter(v => v != null && v >= 0 && v <= (e.max || 20)));
+const statTxt = (st, sfx = '') => st ? `moy. <b>${fmtG(st.m)}</b>${sfx} · σ ${fmtG(st.sd)} · min. ${fmtG(st.min)} · max. ${fmtG(st.max)}` : '—';
 const gtyL = e => e.type === 'tp' ? 'TP' : e.home ? 'Écrit · maison' : 'Écrit';
 const gtyChip = e => `<span class="gty ${e.type === 'tp' ? 'tp' : e.home ? 'dm' : ''}">${gtyL(e)}</span>`;
 const gtySel = (attrs, e) => `<select ${attrs}><option value="ecrit" ${e.type !== 'tp' && !e.home ? 'selected' : ''}>Écrit</option><option value="maison" ${e.type !== 'tp' && e.home ? 'selected' : ''}>Écrit · maison</option><option value="tp" ${e.type === 'tp' ? 'selected' : ''}>TP</option></select>`;
@@ -2079,7 +2085,7 @@ function gradeTip(p) {
   const e = p.e, raw = p.v * (e.max || 20) / 20, a = evalAvg(e);
   return `<div class="th"><b>${fmtTip(e.date)}</b> ${gtyChip(e)}</div><div class="tt">${esc(e.title)}</div>
     <div class="tg"><b class="${p.v < 10 ? 'neg' : ''}">${fmtG(raw)}</b> / ${fmtG(e.max)}${(e.max || 20) !== 20 ? ` <span class="muted">(soit ${fmtG(p.v)} / 20)</span>` : ''} · coef ${fmtG(e.coef)}</div>
-    <div class="small muted">Classe : ${a != null ? fmtG(a * (e.max || 20) / 20) + ' / ' + fmtG(e.max) : '—'}</div><div class="tf">Moyenne après : <b>${fmtG(p.avg)}</b></div>`;
+    <div class="small muted">Classe : ${(() => { const st = evalStats(e); return st ? `moy. ${fmtG(st.m)} / ${fmtG(e.max)} · σ ${fmtG(st.sd)}<br>min. ${fmtG(st.min)} – max. ${fmtG(st.max)}` : '—'; })()}</div><div class="tf">Moyenne après : <b>${fmtG(p.avg)}</b></div>`;
 }
 function gradeSpark(h, cls20) {
   if (!h.length) return '';
@@ -2216,7 +2222,7 @@ function viewNotes() {
       <p class="small muted">${plural(imp.rows.filter(r => r.sid).length, 'élève reconnu', 'élèves reconnus')} sur ${imp.rows.length}${list.length > imp.rows.length ? ` · ${plural(list.length - imp.rows.filter(r => r.sid).length, 'élève de la classe absent', 'élèves de la classe absents')} ${imp.ed ? 'du fichier' : 'de la capture'}` : ''}.</p>
       <div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" data-act="gimp-cancel">Annuler</button><button class="btn ink" data-act="gimp-ok">Valider l'import</button></div></section>` : '';
   const cards = ev.slice().reverse().map(e => { const a = evalAvg(e), n = list.filter(s => gradeNum(e, s.id) != null).length, open = V.gopen === e.id;
-    return `<li class="gcard ${open ? 'open' : ''}"><button type="button" class="gch" data-act="gopen" data-id="${e.id}"><span class="d">${fmtShort(e.date)}</span><b>${esc(e.title)}</b>${gtyChip(e)}<span class="small muted">sur ${fmtG(e.max)} · coef ${fmtG(e.coef)}</span><span class="grow"></span><span class="small">moyenne <b>${a != null ? fmtG(a * e.max / 20) : '—'}</b> · ${n} notes</span></button>
+    return `<li class="gcard ${open ? 'open' : ''}"><button type="button" class="gch" data-act="gopen" data-id="${e.id}"><span class="d">${fmtShort(e.date)}</span><b>${esc(e.title)}</b>${gtyChip(e)}<span class="small muted">sur ${fmtG(e.max)} · coef ${fmtG(e.coef)}</span><span class="grow"></span><span class="small gst">${statTxt(evalStats(e))} · ${plural(n, 'note')}</span></button>
       ${open ? `<div class="gedit"><div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px">${gtySel(`data-chg="geval" data-id="${e.id}" data-f="type"`, e)}<label class="small">sur <input type="number" step="0.5" data-chg="geval" data-id="${e.id}" data-f="max" value="${e.max}" style="width:70px"></label><label class="small">coef <input type="number" step="0.25" data-chg="geval" data-id="${e.id}" data-f="coef" value="${e.coef}" style="width:70px"></label><span class="grow"></span><button class="btn danger" data-act="geval-del" data-id="${e.id}">Supprimer l'évaluation</button></div>
         <div class="ggrid">${list.map(st => { const v = gradeOf(e, st.id), nc = gradeNC(e, st.id); return `<label class="${nc ? 'nc' : ''}"${nc ? ' title="Note non comptée dans la moyenne"' : ''}><span>${esc(st.last + ' ' + st.first)}</span><input type="text" inputmode="decimal" data-chg="grade" data-k="${gKey(e.id, st.id)}" data-max="${e.max}" value="${v == null ? '' : typeof v === 'number' ? String(v).replace('.', ',') : esc(v)}" placeholder="—"></label>`; }).join('')}</div></div>` : ''}</li>`; }).join('');
   return `
@@ -2857,6 +2863,32 @@ async function runSelfTests() {
       eq(run({ras: [1]}), null, 'peu observé (bilans non faits) : pas de note proposée');
     });
 
+    await group('Synchronisation : protections', async () => {
+      const sm0 = SM, tr0 = TRASH; SM = freshSM(); TRASH = [];
+      try {
+        syncTrack(); const L0 = Object.keys(SM.m).length; ok(L0 > 0, 'état de départ relevé');
+        /* une version plus récente a ajouté une collection inconnue : on la garde et on la retransmet */
+        const meta = JSON.parse(JSON.stringify(SM.m)), recs = {}; recordsOf(DB, {}).forEach((v, k) => { if (!k.startsWith('photo:')) recs[k] = v; });
+        meta['futur:x1'] = {t: Date.now(), h: 'zz'}; recs['futur:x1'] = {a: 1};
+        let r = mergeWith({meta, recs}, {}); ok(SM.m['futur:x1'] && !SM.m['futur:x1'].d, 'donnée inconnue gardée (pas de suppression)');
+        syncTrack(); ok(!SM.m['futur:x1'].d, 'donnée inconnue jamais marquée supprimée au relevé suivant');
+        r = mergeWith({meta, recs}, {}); ok(!r.push || (r.push.recs['futur:x1'] && r.push.av === APP_VERSION.n), 'donnée inconnue retransmise, version jointe à l\'envoi');
+        /* suppression massive venue de l'autre appareil : copie dans la corbeille, puis restauration */
+        const e0 = {id: 'tz-e', cid: DB.classes[0].id, date: todayStr(), title: 'Test', type: 'ecrit', max: 20, coef: 1};
+        DB.evals.push(e0); const st = studentsOf(e0.cid).slice(0, 25); st.forEach((x, i) => { DB.grades[gKey(e0.id, x.id)] = {v: 10 + i % 8, t: 1}; });
+        syncTrack(); const M2 = JSON.parse(JSON.stringify(SM.m)), later = Date.now() + 5000;
+        Object.keys(M2).forEach(k => { if (k.startsWith('grades:') && k.includes('tz-e')) M2[k] = {t: later, d: 1}; });
+        const R2 = {}; recordsOf(DB, {}).forEach((v, k) => { if (!k.startsWith('photo:')) R2[k] = v; });
+        mergeWith({meta: M2, recs: R2}, {});
+        ok(!st.some(x => DB.grades[gKey(e0.id, x.id)]), 'suppression massive appliquée');
+        ok(TRASH.length === 1 && TRASH[0].items.length === st.length && /notes/.test(trashSummary(TRASH[0])), 'copie gardée dans la corbeille (' + st.length + ' notes)');
+        const keepConfirm = window.confirm; window.confirm = () => true;
+        try { ACT['trash-restore']({dataset: {i: '0'}}); } finally { window.confirm = keepConfirm; }
+        ok(st.every(x => DB.grades[gKey(e0.id, x.id)]) && !TRASH.length, 'restauration depuis la corbeille');
+        syncTrack(); ok(st.every(x => { const m = SM.m['grades:' + gKey(e0.id, x.id)]; return m && !m.d && m.t > later - 6000; }), 'notes restaurées renvoyées aux autres appareils');
+        ok(html(trashHTML()).textContent.includes('Vide'), 'corbeille vide affichée');
+      } finally { SM = sm0; TRASH = tr0; }
+    });
     await group('Notes importées', () => {
       const txt = `[E1] 05/${D(0, 1).slice(5, 7)}/${D(0, 1).slice(0, 4)} · Contrôle 1 · Écrit · /20 · coef 2\n[E2] 06/${D(0, 1).slice(5, 7)}/${D(0, 1).slice(0, 4)} · TP titrage · TP · /10 · coef 1\nÉlève | Contrôle 1 | TP titrage\nTEST Élève0 | 12 | 8\nÉlève1 Test | Abs | 6,5\nInconnu Zed | 15 | 7\nTEST Élève2 | 25 | 5`;
       const r = parseGrades('tA', txt);
@@ -3836,7 +3868,7 @@ function viewSuivi() {
       <button class="gchip" data-act="sui-f" data-v="disc" aria-pressed="${V.sf === 'disc'}"><span class="chip disc">${nD}</span> discret${nD > 1 ? 's' : ''}</button></div>
     ${(() => { const ks = (c.councils || []).filter(k => k.date >= addDays(todayStr(), -60)).sort((a, b) => a.date.localeCompare(b.date)); const k = ks.filter(x => x.date <= todayStr()).pop() || ks[0]; return k ? `<div class="row" style="gap:8px"><button class="btn" data-act="nw-open" data-cid="${c.id}" data-id="${k.id}">✎ Notes du conseil du ${esc(dayShort(k.date))}</button><span class="small muted">${plural(DB.notes.filter(n => n.ref === k.id && n.text).length, 'note saisie', 'notes saisies')} sur ${studentsOf(c.id).length}</span></div>` : ''; })()}
     <div class="row" style="gap:8px"><button class="btn" data-act="notes-open" data-cid="${c.id}">📊 Notes</button><button class="btn" data-act="bul-open" data-cid="${c.id}">✎ Appréciations ${esc(per.n !== 'Année' ? 'du ' + per.n : '')}</button><span class="small muted">${per.n !== 'Année' ? plural(studentsOf(c.id).filter(s => DB.bul[bulKey(s.id, per)]).length, 'rédigée', 'rédigées') + ' sur ' + studentsOf(c.id).length : ''}</span></div>
-    ${hasG ? `<div class="isynth"><span><b>Notes</b> · moyenne de la classe ${fmtG(mAvg)} / 20</span><button type="button" class="gchip" data-act="sui-sort" data-k="moy"><span class="chip neg">${mLow}</span> sous 10</button></div>` : ''}
+    ${hasG ? `<div class="isynth"><span><b>Notes</b> · moyennes des élèves : ${(() => { const st = gStats(moys.map(r => r.moy)); return statTxt(st, ' / 20'); })()}</span><button type="button" class="gchip" data-act="sui-sort" data-k="moy"><span class="chip neg">${mLow}</span> sous 10</button></div>` : ''}
     ${implP().on ? `<div class="isynth"><span><b>Implication</b> · moyenne ${iAvg != null ? fmtN(Math.round(iAvg * 10) / 10) : '—'} / 20</span><button type="button" class="gchip" data-act="sui-sort" data-k="impl"><span class="chip neg">${nLow}</span> sous 10</button><span><span class="chip dark">${nLook}</span> à regarder</span><span class="small muted">Comptes en séances (une étiquette par séance, RAS automatiques compris). Comp. : bavard, s'amuse, agité, passif, comportement, sécurité · Dev. : devoirs non faits, incomplets, bâclés · Oubli : matériel, blouse, retard.</span></div>` : ''}
     ${apprBlockHTML(c, per)}
     ${sv === 'grid' ? `<div class="row" style="gap:8px"><span class="small muted">Trier :</span>${['name', 'moy', 'impl', 'pos', 'neg', 'dev', 'org', 'ras', 'abs'].map(k => `<button type="button" class="gchip" data-act="sui-sort" data-k="${k}" aria-pressed="${sk === k}">${{name: 'Nom', moy: 'Moyenne', impl: 'Implication', pos: 'Positif', neg: 'Comportement', dev: 'Devoirs', org: 'Oublis', ras: 'RAS', abs: 'Absences'}[k]}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`).join('')}</div>
@@ -5182,6 +5214,12 @@ const ACT = {
   'ready-toggle': () => { const k = V.ses.key, ct = DB.content[k] || (DB.content[k] = {ch: null, items: [], hw: []}); if (ct.ready) { delete ct.ready; if (ctEmpty(ct)) delete DB.content[k]; } else ct.ready = true; SESS_CACHE = {}; save(); renderKeep(); toast(DB.content[k] && DB.content[k].ready ? 'Séance marquée prête' : 'Séance à nouveau en préparation'); },
   'sync-now': () => syncNow(true),
   'sync-login': () => msLogin(false),
+  'trash-restore': el => { const t = TRASH[+el.dataset.i]; if (!t) return;
+    if (!confirm(`Restaurer ${trashSummary(t)} ?`)) return;
+    let n = 0; t.items.forEach(([p, v]) => { const i = p.indexOf(':'), c = p.slice(0, i), id = p.slice(i + 1);
+      const has = SYNC_ARR.includes(c) ? (DB[c] || []).some(x => x && x.id === id) : SYNC_MAP.includes(c) ? (DB[c] || {})[id] !== undefined : true;
+      if (!has) { putRec(p, v); n++; } });
+    TRASH.splice(+el.dataset.i, 1); persistTrash(); SESS_CACHE = {}; save(); render(); toast(n ? `${plural(n, 'élément restauré', 'éléments restaurés')}.` : 'Tout était déjà présent.'); },
   'sync-logout': () => { syncLogout(); render(); toast('Déconnecté de OneDrive. Les données restent sur cet appareil.'); },
   'sy-copy': () => { const v = redirectUri(); (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => toast('Adresse copiée'), () => { $('#sy-uri').select(); toast('Sélectionnez puis copiez l\'adresse.'); }); },
   'sy-save': () => {
@@ -5506,14 +5544,25 @@ function putRec(p, v) {
     else { PHOTOS[id] = v; if (STORAGE_OK) Store.putPhoto(id, v).catch(() => {}); }
   }
 }
+/* enregistrement géré par cette version ? (une version plus ancienne ne doit jamais supprimer ce qu'elle ne connaît pas) */
+function syncKnown(p) { const i = p.indexOf(':'), c = p.slice(0, i), id = p.slice(i + 1); return SYNC_ARR.includes(c) || SYNC_MAP.includes(c) || c === 'photo' || (c === 'settings' && SYNC_SET.includes(id)); }
 /* relève les modifications depuis la dernière fois ; renvoie true s'il y en a */
 function syncTrack() {
   const R = recordsOf(DB, PHOTOS), m = SM.m, now = Date.now(), base = !SM.init; let ch = false;
   for (const [p, v] of R) { const h = recHash(p, v), x = m[p]; if (!x || x.d || x.h !== h) { m[p] = {t: base ? 1 : MIG_STAMP.has(p) ? MIG_STAMP.get(p) : now, h}; ch = true; } }
   MIG_STAMP.clear();
-  for (const p in m) if (!m[p].d && !R.has(p)) { m[p] = {t: now, d: 1}; ch = true; }
+  for (const p in m) if (!m[p].d && !R.has(p) && syncKnown(p)) { m[p] = {t: now, d: 1}; ch = true; }
   if (base) { SM.init = true; ch = false; }
   return ch;
+}
+/* corbeille : copie de ce qu'une synchronisation a supprimé en nombre (20 éléments ou plus), restaurable */
+const TRASH_MIN = 20; let TRASH = [];
+function trashAdd(items) { TRASH.unshift({at: Date.now(), items: JSON.parse(JSON.stringify(items))}); TRASH = TRASH.slice(0, 5); persistTrash(); }
+const persistTrash = () => STORAGE_OK && !IS_DEMO && !TESTING ? Store.run('kv', 'readwrite', s => s.put(JSON.parse(JSON.stringify(TRASH)), 'trash')).catch(() => {}) : Promise.resolve();
+function trashSummary(t) {
+  const n = {}; t.items.forEach(([p]) => { const c = p.slice(0, p.indexOf(':')); n[c] = (n[c] || 0) + 1; });
+  const L = {grades: ['note', 'notes'], evals: ['évaluation', 'évaluations'], obs: ['remarque', 'remarques'], students: ['élève', 'élèves'], notes: ['note de suivi', 'notes de suivi'], bul: ['appréciation', 'appréciations'], slots: ['créneau', 'créneaux'], classes: ['classe', 'classes']};
+  return Object.entries(n).sort((a, b) => b[1] - a[1]).map(([c, k]) => L[c] ? plural(k, L[c][0], L[c][1]) : `${k} ${c}`).join(', ');
 }
 const persistSM = () => STORAGE_OK && !IS_DEMO ? Store.run('kv', 'readwrite', s => s.put(JSON.parse(JSON.stringify(SM)), 'sync')).catch(() => {}) : Promise.resolve();
 function resetSM() { SM = freshSM(); PH.clear(); syncTrack(); persistSM(); }
@@ -5533,10 +5582,12 @@ function mergeWith(remote, got, opts = {}) {
   const R = recordsOf(DB, PHOTOS), L = SM.m, M = (remote && remote.meta) || {}, RR = (remote && remote.recs) || {};
   const fresh = !!remote && !DB.classes.length && (!SM.last || !!opts.keepLocal);
   const outMeta = {}, outRecs = {}, pushPhotos = [], delPhotos = [];
-  let changed = 0, needPush = !remote;
+  let changed = 0, needPush = !remote; const dels = [];
   const paths = new Set([...Object.keys(L), ...Object.keys(M)]);
   for (const p of paths) {
     const lm = L[p], rm = M[p], isPhoto = p.startsWith('photo:');
+    /* donnée d'une version plus récente : transmise telle quelle, jamais supprimée ici */
+    if (!syncKnown(p)) { if (rm) { L[p] = rm; outMeta[p] = rm; if (!rm.d) outRecs[p] = RR[p]; } else delete L[p]; continue; }
     let win;
     if (fresh) win = rm ? 'R' : 'X';
     else if (!rm) win = 'L';
@@ -5550,7 +5601,7 @@ function mergeWith(remote, got, opts = {}) {
           const v = got && got[p.slice(6)];
           if (v == null) { outMeta[p] = rm; continue; } // photo pas encore téléchargée : on réessaiera
           putRec(p, v);
-        } else putRec(p, rm.d ? undefined : RR[p]);
+        } else { if (!isPhoto && rm.d && lm && !lm.d && R.has(p)) dels.push([p, R.get(p)]); putRec(p, rm.d ? undefined : RR[p]); }
         changed++;
       }
       L[p] = rm; outMeta[p] = rm; if (!rm.d && !isPhoto) outRecs[p] = RR[p];
@@ -5564,8 +5615,9 @@ function mergeWith(remote, got, opts = {}) {
     }
   }
   if (changed) { SESS_CACHE = {}; if (!DB.rooms.length) DB.rooms = defaultRooms(); }
+  if (dels.length >= TRASH_MIN) trashAdd(dels);
   syncTrack(); // aligne les empreintes après application
-  return {changed, push: needPush ? {app: 'suivi-classe-sync', v: 1, at: Date.now(), recs: outRecs, meta: outMeta} : null, pushPhotos, delPhotos};
+  return {changed, push: needPush ? {app: 'suivi-classe-sync', v: 1, av: APP_VERSION.n, at: Date.now(), recs: outRecs, meta: outMeta} : null, pushPhotos, delPhotos};
 }
 function afterApply(n) {
   if (STORAGE_OK) Store.saveCore().catch(() => {});
@@ -5699,6 +5751,7 @@ async function syncNow(manual) {
       if (item) {
         remote = JSON.parse(await gunz(await remoteBlob(item)));
         if (!remote || remote.app !== 'suivi-classe-sync') throw syncErr('format');
+        if (remote.av && parseFloat(remote.av) > parseFloat(APP_VERSION.n)) { try { navigator.serviceWorker && navigator.serviceWorker.getRegistration().then(r => r && r.update()); } catch (e) {} throw syncErr('newer', 0, remote.av); }
         await pool(photosToFetch(remote), 4, async sid => {
           const it = await remoteItem('p-' + sid + '.txt'); if (it) got[sid] = await (await remoteBlob(it)).text();
         });
@@ -5724,7 +5777,7 @@ async function syncNow(manual) {
     persistSM();
     if (e.kind === 'relogin') setSync('relogin');
     else if (!e.kind || !navigator.onLine) setSync('offline');
-    else setSync('err', e.kind === 'format' ? 'Fichier de synchronisation illisible.' : e.status === 403 ? 'Accès refusé par OneDrive.' : e.status === 507 ? 'OneDrive est plein.' : 'Erreur OneDrive' + (e.status ? ' (' + e.status + ')' : '') + '.');
+    else setSync('err', e.kind === 'newer' ? `Un autre appareil utilise la version ${e.message} : mettez à jour celui-ci (fermez complètement l'application puis rouvrez-la). Synchronisation suspendue d'ici là, rien n'est perdu.` : e.kind === 'format' ? 'Fichier de synchronisation illisible.' : e.status === 403 ? 'Accès refusé par OneDrive.' : e.status === 507 ? 'OneDrive est plein.' : 'Erreur OneDrive' + (e.status ? ' (' + e.status + ')' : '') + '.');
     if (manual) toast(SYNC.state === 'relogin' ? 'Reconnexion à OneDrive nécessaire.' : SYNC.state === 'offline' ? 'Pas de réseau : nouvel essai plus tard.' : SYNC.msg);
   } finally {
     SYNC.busy = false;
@@ -5770,6 +5823,11 @@ function syncStatusHTML() {
     <div><div class="lbl">Dernière synchronisation</div><div class="synclast">${esc(fmtSyncLong(SM.last))}</div><div class="small">${esc(line)}</div></div>
     <div class="row">${st === 'relogin' ? '<button class="btn ink" data-act="sync-login">Se reconnecter</button>' : `<button class="btn ink" data-act="sync-now" ${st === 'run' ? 'disabled' : ''}>${ICON.sync}Synchroniser maintenant</button>`}</div></div>`;
 }
+function trashHTML() {
+  return `<section class="card" style="display:flex;flex-direction:column;gap:8px"><h3 style="font-size:17px">Corbeille de synchronisation</h3>
+    <p class="small muted" style="margin:0">Quand une synchronisation supprime ${TRASH_MIN} éléments ou plus d'un coup, une copie est gardée ici sur cet appareil (5 dernières). « Restaurer » les remet et les renvoie aux autres appareils.</p>
+    ${TRASH.length ? `<ul class="trl">${TRASH.map((t, i) => `<li><span><b>${esc(fmtSyncLong(t.at))}</b><br><span class="small muted">${esc(trashSummary(t))}</span></span><button class="btn" data-act="trash-restore" data-i="${i}">Restaurer</button></li>`).join('')}</ul>` : '<p class="small muted" style="margin:0">Vide : aucune suppression massive.</p>'}</section>`;
+}
 function setSync2() {
   if (IS_DEMO) return `<section class="card"><h3 style="font-size:17px">Synchronisation</h3><p class="muted">Indisponible dans la démo.</p></section>`;
   const cfg = syncCfg() || {}, con = syncConnected();
@@ -5789,6 +5847,7 @@ function setSync2() {
         <div class="row"><button class="btn" data-act="sync-share">Envoyer la configuration à un autre appareil</button><button class="btn ghost" data-act="sync-logout">Se déconnecter</button></div>`
       : `<p style="margin:0" class="muted">Tablette et téléphone partagent les mêmes données, automatiquement, via votre OneDrive de l'établissement.</p>`}
     </section>
+    ${trashHTML()}
     <section class="card" style="display:flex;flex-direction:column;gap:10px">
       <h3 style="font-size:17px">Réglage</h3>
       ${guide}
@@ -5887,7 +5946,7 @@ async function init() {
   if (IS_DEMO && !DB.classes.length) { loadDemo(); if (STORAGE_OK) Store.replaceAll().catch(() => {}); }
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
   if (!IS_DEMO && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  if (!IS_DEMO && STORAGE_OK) { try { const sm = await Store.run('kv', 'readonly', s => s.get('sync')); if (sm && sm.m) SM = Object.assign(freshSM(), sm); } catch (e) {} }
+  if (!IS_DEMO && STORAGE_OK) { try { const sm = await Store.run('kv', 'readonly', s => s.get('sync')); if (sm && sm.m) SM = Object.assign(freshSM(), sm); } catch (e) {} try { const t = await Store.run('kv', 'readonly', s => s.get('trash')); if (Array.isArray(t)) TRASH = t; } catch (e) {} }
   if (!IS_DEMO) syncTrack() && (SM.dirty = true), persistSM();
   const gotLink = !IS_DEMO && readSyncLink();
   /* connexion Microsoft à renouveler : on le fait discrètement à l'ouverture */

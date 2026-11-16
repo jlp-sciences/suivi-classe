@@ -1,5 +1,8 @@
 # Historique des versions
 
+## 3.14 — 16 novembre 2026
+- Appréciations : mots-clés par élève et par période (palette à toucher : attitude, participation, travail, compétences, résultats ; saisie libre mémorisée), avec accord ♂ / ♀. Les mots-clés sont joints au récapitulatif copié pour Claude.
+
 ## 3.13 — 15 novembre 2026
 - Synchronisation : un appareil resté sur une ancienne version ne supprime plus les données qu'il ne connaît pas (cause de la disparition des notes importées) ; il les garde et les retransmet.
 - Synchronisation suspendue, avec message « mettez à jour », si un autre appareil utilise une version plus récente.

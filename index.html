@@ -1015,6 +1015,17 @@ button.wpill{cursor:pointer}
 .ibadge{border:1.5px solid currentColor;padding:0 6px} .ibadge.low{color:var(--neg)} .ibadge.high{color:var(--pos)}
 .ibadge.mb{border-color:transparent;background:var(--ink-2);color:var(--surface)} .ibadge.mb.low{background:var(--neg);color:var(--on-neg)} .ibadge.mb.high{background:var(--pos);color:var(--on-pos)}
 .stile .ibadge ~ .stags{top:32px}
+.kwrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:6px 0}
+.kwc{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid currentColor;background:transparent;line-height:1.3}
+.kwc.pos{color:var(--pos-ink)} .kwc.neg{color:var(--neg-ink)} .kwc.neu{color:var(--ink-2)}
+.kwc.on.pos{background:var(--pos-soft);border-color:transparent} .kwc.on.neg{background:var(--neg-soft);border-color:transparent} .kwc.on.neu{background:var(--surface-2);border-color:transparent}
+.kwc.add{color:var(--muted);border-style:dashed;font-weight:500}
+.sexsel{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;margin-right:4px}
+.sexsel button{border:0;background:transparent;font:inherit;font-size:15px;line-height:1;padding:4px 8px;cursor:pointer;color:var(--muted)}
+.sexsel button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.kwpal{display:flex;flex-direction:column;gap:6px;padding:10px;margin:0 0 8px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.kwg{display:flex;flex-wrap:wrap;align-items:center;gap:5px} .kwgl{font-size:11.5px;font-weight:700;color:var(--muted);width:108px;flex:none;text-transform:uppercase;letter-spacing:.03em}
+.kwpal .kwc{background:var(--surface)} .kwin{flex:1;min-width:180px;padding:5px 9px;font-size:14px}
 .trl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px} .trl li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
 .gst b{font-weight:700} .gch .gst{white-space:nowrap}
 .isynth{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
@@ -1133,7 +1144,7 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.13', d: '2026-11-15'};
+const APP_VERSION = {n: '3.14', d: '2026-11-16'};
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1214,7 +1225,7 @@ const SEATDEF = {
 const FIXED = {board: [560, 56], desk: [240, 96]};
 const ITEM_LABEL = {ilot: 'Îlot de 4', ilot6: 'Îlot de 6', simple: 'Paillasse de 2', double: 'Paillasses face à face', L: 'Paillasse en L (3)', board: 'Tableau', desk: 'Bureau'};
 const isFixed = it => !!FIXED[it.type];
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], evals:[], bul:{}, implN:{}, grades:{}, appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], evals:[], bul:{}, implN:{}, grades:{}, kw:{}, appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 const MIG_STAMP = new Map(); // enregistrements créés par une migration : datés « anciens » pour la synchro (une vraie modification l'emporte toujours)
@@ -1229,7 +1240,7 @@ function migrate(core) {
   if (!Array.isArray(d.catchup)) d.catchup = [];
   if (!Array.isArray(d.notes)) d.notes = [];
   if (!Array.isArray(d.evals)) d.evals = [];
-  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN', 'grades'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+  ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN', 'grades', 'kw'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   /* labos v3 : on repart des 6 labos par défaut et de plans vides (une seule fois par appareil).
      Les labos par défaut sont marqués « anciens » pour la synchro : une disposition déjà retouchée sur un autre appareil l'emporte. */
   if (!(core && core.settings && core.settings.labsV3)) {
@@ -2255,13 +2266,46 @@ function bulCard(s, per) {
     <textarea rows="3" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Appréciation du bulletin (250 caractères au plus) — saisie ici ou importée depuis « Appréciations » dans l'onglet Suivi">${esc(cur)}</textarea>
     <span class="bulcnt ${cur.length > BUL_MAX ? 'over' : ''}">${cur.length} / ${BUL_MAX}</span></section>`;
 }
+/* ---------- mots-clés pour les appréciations (par élève et par période) ---------- */
+/* forme « masculin/féminin » quand elles diffèrent ; l'identifiant est la forme masculine */
+const KW_G = [
+  ['Attitude', [['volontaire', 'pos'], ['impliqué/impliquée', 'pos'], ['motivé/motivée', 'pos'], ['sérieux/sérieuse', 'pos'], ['attentif/attentive', 'pos'], ["à l'écoute", 'pos'], ['curieux/curieuse', 'pos'], ['dynamique', 'pos'], ['autonome', 'pos'], ['persévérant/persévérante', 'pos'], ['respectueux/respectueuse', 'pos'], ['agréable', 'pos'],
+    ['bavard/bavarde', 'neg'], ['dissipé/dissipée', 'neg'], ['distrait/distraite', 'neg'], ['agité/agitée', 'neg'], ['passif/passive', 'neg'], ['dispersé/dispersée', 'neg'], ['nonchalant/nonchalante', 'neg'], ['irrégulier/irrégulière', 'neg'],
+    ['discret/discrète', 'neu'], ['réservé/réservée', 'neu'], ['timide', 'neu']]],
+  ['Participation', [['participe volontiers', 'pos'], ['interventions pertinentes', 'pos'], ['aide ses camarades', 'pos'], ["n'ose pas prendre la parole", 'neu'], ['doit participer davantage', 'neg']]],
+  ['Travail', [['travail régulier', 'pos'], ['appliqué/appliquée', 'pos'], ['soigneux/soigneuse', 'pos'], ['rigoureux/rigoureuse', 'pos'], ['bonne méthode', 'pos'], ['travail approfondi', 'pos'],
+    ['travail irrégulier', 'neg'], ['leçons non apprises', 'neg'], ['devoirs non faits', 'neg'], ['travail superficiel', 'neg'], ['manque de méthode', 'neg'], ['manque de rigueur', 'neg'], ['manque de soin', 'neg'], ['oublis de matériel', 'neg']]],
+  ['Compétences', [['bon raisonnement', 'pos'], ["à l'aise en TP", 'pos'], ['manipulations soignées', 'pos'], ['bonne rédaction', 'pos'],
+    ['difficultés de rédaction', 'neg'], ['difficultés en calcul', 'neg'], ['difficultés à analyser un document', 'neg'], ['mal à l\'aise en TP', 'neg']]],
+  ['Résultats', [['très bons résultats', 'pos'], ['résultats solides', 'pos'], ['en progrès', 'pos'], ['efforts visibles', 'pos'], ['résultats fragiles', 'neg'], ['en difficulté', 'neg'], ['en baisse', 'neg'], ['décrochage', 'neg']]]];
+const KW = {}; KW_G.forEach(([, l]) => l.forEach(([f, t]) => { const [m, w] = f.split('/'); KW[m] = {m, f: w || m, t}; }));
+/* forme accordée : garçon, fille, ou écriture inclusive si non précisé */
+function kwForm(id, sex) {
+  const k = KW[id]; if (!k) return id; if (k.f === k.m || sex === 'm') return k.m; if (sex === 'f') return k.f;
+  let i = 0; while (i < k.m.length && k.m[i] === k.f[i]) i++; return k.m + '·' + k.f.slice(i);
+}
+const kwOf = (sid, per) => (DB.kw[bulKey(sid, per)] || {}).w || [];
+const kwCustom = () => [...new Set(Object.values(DB.kw).flatMap(x => x.w || []).filter(w => !KW[w]))].sort((a, b) => a.localeCompare(b, 'fr'));
+function kwRow(s, per) {
+  const k = bulKey(s.id, per), sel = kwOf(s.id, per), open = V.kwOpen === s.id;
+  const chip = (w, on) => `<button type="button" class="kwc ${KW[w] ? KW[w].t : 'neu'}${on ? ' on' : ''}" data-act="kw-tog" data-k="${esc(k)}" data-sid="${s.id}" data-w="${esc(w)}" aria-pressed="${on}">${esc(kwForm(w, s.sex))}${on ? ' ×' : ''}</button>`;
+  const cust = kwCustom();
+  return `<div class="kwrow"><span class="sexsel" role="group" aria-label="Accord des mots">${['m', 'f'].map(x => `<button type="button" data-act="sex" data-sid="${s.id}" data-v="${x}" aria-pressed="${s.sex === x}" title="${x === 'm' ? 'Garçon' : 'Fille'}">${x === 'm' ? '♂' : '♀'}</button>`).join('')}</span>
+    ${sel.map(w => chip(w, true)).join('')}
+    <button type="button" class="kwc add" data-act="kw-open" data-sid="${s.id}" aria-expanded="${open}">${open ? 'Fermer' : '+ Mots-clés'}</button></div>
+    ${open ? `<div class="kwpal">${KW_G.map(([g, l]) => `<div class="kwg"><span class="kwgl">${g}</span>${l.map(([f]) => f.split('/')[0]).filter(w => !sel.includes(w)).map(w => chip(w, false)).join('')}</div>`).join('')}
+      ${cust.filter(w => !sel.includes(w)).length ? `<div class="kwg"><span class="kwgl">Vos mots</span>${cust.filter(w => !sel.includes(w)).map(w => chip(w, false)).join('')}</div>` : ''}
+      <div class="kwg"><span class="kwgl">Autre</span><input type="text" class="kwin" data-chg="kw-new" data-k="${esc(k)}" data-sid="${s.id}" placeholder="Écrire un mot puis Entrée" maxlength="60"></div></div>` : ''}`;
+}
+function kwSet(k, list) { if (list.length) DB.kw[k] = {w: list, t: Date.now()}; else delete DB.kw[k]; save(); }
 function bulExportText(c, per) {
   const list = studentsOf(c.id);
   const lines = list.map((s, i) => {
     const sm = stuSummary(s, per, true), notes = DB.notes.filter(n => n.sid === s.id && n.date >= addDays(per.s, -30) && n.date <= addDays(per.e, 30)).map(n => `${NOTE_L[n.kind] || 'Note'} (${dayShort(n.date)}) : ${n.text.replace(/\s+/g, ' ')}`);
     const cur = DB.bul[bulKey(s.id, per)];
     const rs = resultsOf(s, per), gtxt = rs.ev.length ? ` — Moyennes : écrit ${fmtG(rs.ecrit)}, TP ${fmtG(rs.tp)}, générale ${fmtG(rs.moy)} (classe ${fmtG(classAvg(c.id, per))})${rs.hist.length >= 2 ? ', évolution ' + rs.hist.map(h => fmtG(h.avg)).join(' → ') : ''}` : '';
-    return `[${i + 1}] ${stuLabel(s, list)} — ${sm.line}${gtxt} — ${sm.detail}${notes.length ? ' — Notes : ' + notes.join(' | ') : ''}${cur ? ' — Appréciation actuelle : ' + cur.text : ''}`;
+    const kw = kwOf(s.id, per).map(w => kwForm(w, s.sex));
+    return `[${i + 1}] ${stuLabel(s, list)}${s.sex ? ` (${s.sex === 'f' ? 'fille' : 'garçon'})` : ''} — ${kw.length ? 'Mots-clés du professeur : ' + kw.join(', ') + ' — ' : ''}${sm.line}${gtxt} — ${sm.detail}${notes.length ? ' — Notes : ' + notes.join(' | ') : ''}${cur ? ' — Appréciation actuelle : ' + cur.text : ''}`;
   });
   return `APPRÉCIATIONS À RÉDIGER — ${c.name} — ${levelOf(c) === '2de' ? 'Physique-chimie Seconde' : levelOf(c) === '1re' ? 'Enseignement scientifique' : 'Physique-chimie'} — ${per.n} (du ${fmtShort(per.s)} au ${fmtShort(per.e)})
 Consignes : ${BUL_MAX} caractères maximum, espaces compris, le plus court possible tout en étant utile ; ton adapté au profil (encourageant, factuel et positif, ou direct et bienveillant) ; phrases complètes, pas de formules toutes faites ; terminer par une perspective ou un conseil quand c'est possible.
@@ -2300,6 +2344,7 @@ function viewBul() {
       <ul class="bullist">${list.map((s, i) => { const k = bulKey(s.id, per), cur = DB.bul[k] ? DB.bul[k].text : '';
         const ir = implP().on ? implCalc(s, per) : null, ret = implRet(s.id, per);
         return `<li><div class="bh"><span class="thumb">${photoHTML(s)}</span><b>${i + 1}. ${esc(s.first + ' ' + s.last)}</b><span class="small muted sumshort" style="flex:1">${esc(stuSummary(s, per).head)}</span>${ir ? `<label class="inl" title="Note d'implication : proposée ${ir.note != null ? fmtH(ir.note) : '—'}">Impl. <input type="number" min="0" max="20" step="0.5" data-chg="implN" data-k="${esc(implKey(s.id, per))}" value="${ret ? ret.v : ''}" placeholder="${ir.note != null ? fmtH(ir.note) : '—'}"></label>` : ''}<span class="bulcnt ${cur.length > BUL_MAX ? 'over' : ''}">${cur.length} / ${BUL_MAX}</span><button class="btn" data-act="bul-copy" data-k="${esc(k)}" ${cur ? '' : 'disabled'}>Copier</button></div>
+          ${kwRow(s, per)}
           <textarea rows="2" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Pas encore d'appréciation">${esc(cur)}</textarea></li>`; }).join('')}</ul></section>
   </div></main>`;
 }
@@ -2834,6 +2879,20 @@ async function runSelfTests() {
       eq([r.n, r.bad], [2, ['99']], 'import des appréciations');
       eq(DB.bul[bulKey('y1', per)].text, 'Des efforts à poursuivre.', 'appréciation rangée au bon élève (nom retiré)');
       ok(recordsOf(DB, {}).has('bul:' + bulKey('y0', per)), 'appréciations synchronisées');
+      /* mots-clés par élève */
+      eq([kwForm('impliqué', 'm'), kwForm('impliqué', 'f'), kwForm('impliqué'), kwForm('sérieux'), kwForm('attentif'), kwForm('discret'), kwForm('volontaire', 'f'), kwForm('mot perso', 'f')],
+        ['impliqué', 'impliquée', 'impliqué·e', 'sérieux·se', 'attentif·ve', 'discret·ète', 'volontaire', 'mot perso'], 'mots-clés : accord garçon, fille ou écriture inclusive');
+      const kk = bulKey('y0', per), y0 = stu('y0');
+      ACT['kw-tog']({dataset: {k: kk, sid: 'y0', w: 'bavard'}}); ACT['kw-tog']({dataset: {k: kk, sid: 'y0', w: 'en progrès'}});
+      CHG['kw-new']({value: '  Sérieuse ', dataset: {k: kk, sid: 'y0'}}); CHG['kw-new']({value: 'leader du groupe', dataset: {k: kk, sid: 'y0'}});
+      eq(kwOf('y0', per), ['bavard', 'en progrès', 'sérieux', 'leader du groupe'], 'mots-clés : ajout par clic et par saisie (mot connu reconnu)');
+      ACT.sex({dataset: {sid: 'y0', v: 'f'}});
+      ok(/\(fille\) — Mots-clés du professeur : bavarde, en progrès, sérieuse, leader du groupe — /.test(bulExportText(cls('tA'), per)), 'mots-clés accordés dans le récapitulatif pour Claude');
+      V.kwOpen = 'y0'; { const h = html(kwRow(y0, per)); ok(h.querySelectorAll('.kwc.on').length === 4 && [...h.querySelectorAll('.kwpal .kwc')].some(b => b.textContent === 'volontaire') && h.querySelector('.kwin'), 'mots-clés : choisis affichés, palette et saisie libre'); }
+      V.kwOpen = null; { const st2 = stu('y1'); ok([...html(kwRow(st2, per)).querySelectorAll('.kwc')].length === 1, 'palette fermée par défaut'); V.kwOpen = 'y1'; ok([...html(kwRow(st2, per)).querySelectorAll('.kwg')].some(g => /Vos mots/.test(g.textContent) && /leader du groupe/.test(g.textContent)), 'mot écrit à la main proposé aux autres élèves'); V.kwOpen = null; }
+      ACT['kw-tog']({dataset: {k: kk, sid: 'y0', w: 'bavard'}}); eq(kwOf('y0', per).length, 3, 'mot-clé retiré par clic');
+      ok(recordsOf(DB, {}).has('kw:' + kk), 'mots-clés synchronisés');
+      DB.kw = {}; y0.sex = '';
       DB.bul = {};
     });
 
@@ -5252,6 +5311,9 @@ const ACT = {
     try { await navigator.clipboard.writeText(txt); toast('Récapitulatif copié : collez-le dans la conversation avec Claude'); } catch (e) { openModal(`<h2>Récapitulatif à copier</h2><textarea rows="14" style="width:100%" readonly>${esc(txt)}</textarea><div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`); } },
   'bul-import': () => { const c = cls(V.cid), per = periodsFor(c)[V.p], t = $('#bul-in').value; const r = bulImport(c, per, t);
     if (!r.n) { toast('Aucune ligne « [numéro] appréciation » trouvée'); return; } renderKeep(); toast(`${plural(r.n, 'appréciation importée', 'appréciations importées')}${r.bad.length ? ' · numéros inconnus : ' + r.bad.join(', ') : ''}`); },
+  'kw-open': el => { V.kwOpen = V.kwOpen === el.dataset.sid ? null : el.dataset.sid; renderKeep(); },
+  'kw-tog': el => { const k = el.dataset.k, w = el.dataset.w, l = ((DB.kw[k] || {}).w || []).slice(), i = l.indexOf(w); if (i >= 0) l.splice(i, 1); else l.push(w); kwSet(k, l); renderKeep(); },
+  sex: el => { const s = stu(el.dataset.sid); if (!s) return; s.sex = s.sex === el.dataset.v ? '' : el.dataset.v; s.t = Date.now(); save(); renderKeep(); },
   'bul-copy': async el => { const x = DB.bul[el.dataset.k]; if (!x) return; try { await navigator.clipboard.writeText(x.text); toast('Appréciation copiée'); } catch (e) { toast(x.text); } },
   'notes-open': el => { const c = cls(el.dataset.cid), periods = periodsFor(c); go({name: 'notes', cid: c.id, p: V.sp != null && V.sp < periods.length ? V.sp : currentPeriodIndex(periods)}); },
   'gimp-parse': () => { const t = $('#gimp-in').value; const r = parseGrades(V.cid, t); if (!r.evs.length || !r.rows.length) { toast('Format non reconnu : il faut des lignes [E1] … et des lignes NOM Prénom | note'); return; } GIMP = {cid: V.cid, ...r}; renderKeep(); },
@@ -5367,6 +5429,8 @@ const CHG = {
   implN: el => { const v = el.value.trim().replace(',', '.'); if (v === '') delete DB.implN[el.dataset.k]; else { const n = Math.max(0, Math.min(20, Math.round(parseFloat(v) * 2) / 2)); if (isNaN(n)) return; DB.implN[el.dataset.k] = {v: n, t: Date.now()}; el.value = n; } save(); },
   impl: el => { const P = {...(DB.settings.impl || {})}; if (el.type === 'checkbox') P[el.dataset.k] = el.checked; else { const n = parseFloat(String(el.value).replace(',', '.')); if (isNaN(n)) return; P[el.dataset.k] = n; } DB.settings.impl = P; save(); },
   'cat-show': el => { const h = new Set(DB.settings.hiddenCats || []); if (el.checked) h.delete(el.dataset.k); else h.add(el.dataset.k); DB.settings.hiddenCats = [...h]; save(); },
+  'kw-new': el => { const w = el.value.trim().replace(/\s+/g, ' '); if (!w) return; const k = el.dataset.k, l = ((DB.kw[k] || {}).w || []).slice();
+    const id = Object.keys(KW).find(x => normN(x) === normN(w) || normN(KW[x].f) === normN(w)) || w; if (!l.includes(id)) l.push(id); el.value = ''; kwSet(k, l); renderKeep(); setTimeout(() => { const n = document.querySelector(`.kwin[data-sid="${el.dataset.sid}"]`); if (n) n.focus(); }, 60); },
   bul: el => { const k = el.dataset.k; const v = el.value.trim(); if (v) DB.bul[k] = {text: v, t: Date.now()}; else delete DB.bul[k]; save(); },
   'class-pt': el => { cls(el.dataset.cid).pt = el.value; save(); },
   'class-g2': el => { const c = cls(el.dataset.cid); if (el.checked) c.g2 = true; else delete c.g2; save(); render(); },
@@ -5508,7 +5572,7 @@ async function showPersist() {
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
 const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup', 'notes', 'evals'];
-const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN', 'grades'];
+const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN', 'grades', 'kw'];
 const SYNC_SET = ['evenIsA', 'holidays', 'periods', 'hiddenCats', 'impl'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
 const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});

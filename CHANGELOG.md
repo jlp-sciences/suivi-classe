@@ -1,5 +1,8 @@
 # Historique des versions
 
+## 3.17 — 16 novembre 2026
+- Consigne pour Claude : constat à la troisième personne en commençant par le prénom, conseil en vouvoyant l'élève.
+
 ## 3.16 — 16 novembre 2026
 - « Appréciations » devient « Préparer le conseil de classe » ; moyenne de la période à côté de chaque élève (survol ou toucher : écrit et TP), à côté de la note d'implication.
 - Mots-clés enrichis (correct, convenable, passable, insuffisant, participations ponctuelles, sérieux·se en activité de groupe) et nouvelle catégorie « Conseils ».

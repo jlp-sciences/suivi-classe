@@ -1093,7 +1093,7 @@ button.wpill{cursor:pointer}
 .gdrop{display:flex;align-items:center;gap:14px;padding:18px 20px;border:2px dashed var(--line-2);border-radius:14px;cursor:pointer;background:var(--surface-2)}
 .gdrop:hover,.gdrop.over{border-color:var(--pos);background:color-mix(in srgb,var(--pos) 8%,var(--surface))}
 .gdi{font-size:28px;line-height:1;color:var(--pos)}
-.gcheck{margin:0 0 8px;padding:8px 12px;border-radius:10px;font-size:14px} .gcheck.good{background:var(--pos-soft);color:var(--pos-ink)} .gcheck.bad{background:var(--neg-soft);color:var(--neg-ink)}
+.gcheck{margin:0 0 8px;padding:8px 12px;border-radius:10px;font-size:14px} .gcheck.warn{display:block;background:var(--surface-2);border:1px solid var(--line-2);cursor:pointer} .gmerge{cursor:pointer;gap:6px;white-space:normal} .gcheck.good{background:var(--pos-soft);color:var(--pos-ink)} .gcheck.bad{background:var(--neg-soft);color:var(--neg-ink)}
 .gimp td.nc,.gv.nc b,.ggrid label.nc input{color:var(--muted);font-style:italic;opacity:.75}
 .gty.dm{background:color-mix(in srgb,var(--ink-2) 10%,transparent);color:var(--ink-2);border:1px dashed var(--ink-2)}
 .gspark .gdm{fill:var(--surface);stroke:var(--ink-2);stroke-width:2}
@@ -1144,7 +1144,8 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.14', d: '2026-11-16'};
+const APP_VERSION = {n: '3.15', d: '2026-11-16'};
+const SW_CACHE = 'suivi-classe-v31'; // identique à CACHE dans sw.js (vérifié par les tests)
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -2200,6 +2201,23 @@ function parseED(grid) {
 }
 /* moyenne d'un élève sur les évaluations du fichier, comme l'application la calculera */
 function gimpAvg(imp, r) { let a = 0, w = 0; imp.evs.forEach((e, i) => { const v = r.vals[i]; if (typeof v !== 'number' || (r.nc && r.nc[i]) || v < 0 || v > e.max) return; a += v / (e.max || 20) * 20 * gCoef(e); w += gCoef(e); }); return w ? a / w : null; }
+const viewNotesPreviewTest = () => { const keep = V; V = {name: 'notes', cid: GIMP.cid, p: 0}; try { return viewNotes(); } finally { V = keep; } };
+/* correspondance entre les évaluations lues et celles déjà dans l'application :
+   ex = même date et même intitulé ; ren = probablement renommée dans École Directe (même date, même barème, ancien intitulé absent, mêmes notes) ;
+   missing = notes présentes dans l'application mais absentes du fichier (export Excel seulement) */
+function gimpPlan(imp) {
+  const own = DB.evals.filter(x => x.cid === imp.cid), used = new Set(), mg = imp.merge || {};
+  const plan = imp.evs.map(e => { const ex = own.find(x => !used.has(x.id) && x.date === e.date && normN(x.title) === normN(e.title)); if (ex) used.add(ex.id); return {ex: ex || null, ren: null}; });
+  const titles = new Set(imp.evs.map(e => e.date + '|' + normN(e.title)));
+  imp.evs.forEach((e, i) => { if (plan[i].ex) return; let best = null, bs = 0;
+    own.filter(x => !used.has(x.id) && x.date === e.date && (x.max || 20) === (e.max || 20) && !titles.has(x.date + '|' + normN(x.title))).forEach(x => {
+      let same = 0, tot = 0; imp.rows.forEach(r => { if (!r.sid) return; const v = r.vals[i], g = DB.grades[gKey(x.id, r.sid)]; if (v == null || !g) return; tot++; if (g.v === v) same++; });
+      const sc = tot ? same / tot : 0; if (tot >= 3 && sc >= 0.8 && sc > bs) { best = x; bs = sc; } });
+    if (best) { plan[i].ren = best; used.add(best.id); } });
+  const target = i => plan[i].ex || (plan[i].ren && mg[i] !== false ? plan[i].ren : null), missing = [];
+  if (imp.ed) imp.evs.forEach((e, i) => { const ex = target(i); if (!ex) return; imp.rows.forEach(r => { if (r.sid && r.vals[i] == null && DB.grades[gKey(ex.id, r.sid)]) missing.push({k: gKey(ex.id, r.sid), i, name: r.name}); }); });
+  return {plan, target, missing};
+}
 async function gimpFile(file) {
   if (!file) return;
   if (!/\.xlsx$/i.test(file.name)) { toast('Choisissez le fichier Excel (.xlsx) exporté depuis École Directe'); return; }
@@ -2209,7 +2227,7 @@ async function gimpFile(file) {
   const studs = studentsOf(cid), n = x => normN(x);
   const findStu = name => { const k = n(name); return studs.find(s => n(s.last + ' ' + s.first) === k || n(s.first + ' ' + s.last) === k) || studs.find(s => k.includes(n(s.last)) && k.includes(n(s.first))) || null; };
   r.rows.forEach(x => { x.sid = (findStu(x.name) || {}).id || ''; });
-  GIMP = {cid, evs: r.evs, rows: r.rows, ed: true, file: file.name, fcls: r.cls, clsOk: !!target};
+  GIMP = {cid, evs: r.evs, rows: r.rows, ed: true, file: file.name, fcls: r.cls, clsOk: !!target, merge: {}, rm: false};
   if (cid !== V.cid) { const c = cls(cid), periods = periodsFor(c); V.cid = cid; if (V.p == null || V.p >= periods.length) V.p = currentPeriodIndex(periods); saveNav(); }
   renderKeep();
 }
@@ -2220,6 +2238,7 @@ function viewNotes() {
   const per = periods[V.p], ev = evalsOf(c.id, per), list = studentsOf(c.id);
   const seg = periods.map((p, i) => `<button type="button" data-act="period" data-i="${i}" aria-pressed="${i === V.p}">${esc(p.n)}</button>`).join('');
   const imp = GIMP && GIMP.cid === c.id ? GIMP : null;
+  const gp = imp ? gimpPlan(imp) : null;
   const preview = imp ? `<section class="card"><h2 style="font-size:16px;margin:0 0 6px">Aperçu avant import</h2>
       ${imp.file ? `<p class="small" style="margin:0 0 6px">Fichier <b>${esc(imp.file)}</b>${imp.fcls ? ` · classe du fichier : <b>${esc(imp.fcls)}</b>` : ''}${imp.clsOk ? '' : ` · <span style="color:var(--neg)">classe introuvable dans l'application : import dans ${esc(c.name)}</span>`}</p>` : ''}
       ${imp.ed ? (() => { const ok = imp.rows.filter(r => r.sid && typeof r.ed === 'number'), diff = ok.filter(r => { const m = gimpAvg(imp, r); return m == null || Math.abs(m - r.ed) > 0.05; }), nNc = imp.rows.reduce((a, r) => a + (r.nc || []).filter(Boolean).length, 0);
@@ -2228,7 +2247,8 @@ function viewNotes() {
       <div class="gimpev">${imp.evs.map((e, i) => `<div class="gie"><b>E${i + 1}</b><input type="date" data-chg="gimp" data-i="${i}" data-f="date" value="${e.date}"><input type="text" data-chg="gimp" data-i="${i}" data-f="title" value="${esc(e.title)}">
         ${e.code ? `<span class="chip neu" title="Code École Directe">${esc(e.code)}</span>` : ''}${gtySel(`data-chg="gimp" data-i="${i}" data-f="type"`, e)}
         <label>sur <input type="number" step="0.5" data-chg="gimp" data-i="${i}" data-f="max" value="${e.max}"></label><label>coef <input type="number" step="0.25" data-chg="gimp" data-i="${i}" data-f="coef" value="${e.coef}"></label>
-        ${DB.evals.some(x => x.cid === c.id && x.date === e.date && normN(x.title) === normN(e.title)) ? '<span class="chip neu">déjà importée : mise à jour</span>' : '<span class="chip pos">nouvelle</span>'}</div>`).join('')}</div>
+        ${gp.plan[i].ex ? '<span class="chip neu">déjà importée : mise à jour</span>' : gp.plan[i].ren ? `<label class="chip neu gmerge" title="Même date, même barème et mêmes notes qu'une évaluation déjà importée dont l'intitulé a disparu du fichier"><input type="checkbox" data-chg="gimp-merge" data-i="${i}" ${(imp.merge || {})[i] !== false ? 'checked' : ''}> renommée ? était « ${esc(gp.plan[i].ren.title)} » : fusionner</label>` : '<span class="chip pos">nouvelle</span>'}</div>`).join('')}</div>
+      ${gp.missing.length ? `<label class="gcheck warn"><input type="checkbox" data-chg="gimp-rm" ${imp.rm ? 'checked' : ''}> ${plural(gp.missing.length, 'note est', 'notes sont')} dans l'application mais plus dans le fichier (${gp.missing.slice(0, 4).map(m => `E${m.i + 1} ${esc(m.name)}`).join(', ')}${gp.missing.length > 4 ? '…' : ''}) : cochez pour ${gp.missing.length > 1 ? 'les' : 'la'} retirer aussi. Sinon, ${gp.missing.length > 1 ? 'elles sont gardées' : 'elle est gardée'}.</label>` : ''}
       <div class="gtwrap"><table class="itab gimp"><thead><tr><th>Élève lu</th><th>Élève</th>${imp.evs.map((e, i) => `<th>E${i + 1}</th>`).join('')}${imp.ed ? '<th>Moyenne</th>' : ''}</tr></thead><tbody>${imp.rows.map((r, ri) => `<tr class="${r.sid ? '' : 'bad'}"><td>${esc(r.name)}</td><td><select data-chg="gimp-stu" data-r="${ri}"><option value="">— ignorer —</option>${list.map(s => `<option value="${s.id}" ${s.id === r.sid ? 'selected' : ''}>${esc(s.last + ' ' + s.first)}</option>`).join('')}</select></td>${imp.evs.map((e, i) => { const v = r.vals[i]; const bad = (typeof v === 'number' && (v < 0 || v > e.max)) || (typeof v === 'string' && v[0] === '?');
         const nc = r.nc && r.nc[i]; return `<td class="${bad ? 'bad' : ''}${nc ? ' nc' : ''}"${nc ? ' title="Non comptée (en bleu dans École Directe)"' : ''}>${v == null ? '—' : typeof v === 'number' ? fmtG(v) : esc(v.replace(/^\?/, ''))}</td>`; }).join('')}${imp.ed ? (() => { const m = gimpAvg(imp, r), d = m != null && typeof r.ed === 'number' ? Math.abs(m - r.ed) : null; return `<td class="${d != null && d > 0.05 ? 'bad' : ''}">${fmtG(m)}${typeof r.ed === 'number' ? ` <span class="small muted">/ ÉD ${fmtG(r.ed)}</span>` : ''}</td>`; })() : ''}</tr>`).join('')}</tbody></table></div>
       <p class="small muted">${plural(imp.rows.filter(r => r.sid).length, 'élève reconnu', 'élèves reconnus')} sur ${imp.rows.length}${list.length > imp.rows.length ? ` · ${plural(list.length - imp.rows.filter(r => r.sid).length, 'élève de la classe absent', 'élèves de la classe absents')} ${imp.ed ? 'du fichier' : 'de la capture'}` : ''}.</p>
@@ -2991,6 +3011,16 @@ async function runSelfTests() {
         DB.grades[gKey('tz0', 'y0')] = {v: 10, t: 1}; DB.grades[gKey('tz1', 'y0')] = {v: 20, t: 1};
         eq([avgOf([ea, eb], 'y0'), gNumIn('0', 'coef'), gNumIn('', 'coef'), gNumIn('0', 'max'), gNumIn('2,5', 'coef')], [10, 0, 1, 20, 2.5], 'coefficient 0 : évaluation non comptée dans la moyenne');
         delete DB.grades[gKey('tz0', 'y0')]; delete DB.grades[gKey('tz1', 'y0')]; }
+      /* réimport : évaluation renommée dans École Directe, note retirée du fichier */
+      { const L5 = studentsOf('tA').slice(0, 6), mk = (title, drop) => ({cid: 'tA', ed: true, merge: {}, rm: false, evs: [{date: '2026-10-01', title, code: 'IE', type: 'ecrit', max: 20, coef: 1}], rows: L5.map((x, i) => ({name: x.first, sid: x.id, vals: [i === drop ? null : 8 + i], nc: [], ed: null}))});
+        GIMP = mk('Interro ancienne', -1); ACT['gimp-ok'](); const e1 = DB.evals.find(e => e.cid === 'tA' && e.title === 'Interro ancienne');
+        GIMP = mk('Interro renommée', 5); let gp = gimpPlan(GIMP);
+        ok(e1 && gp.plan[0].ren === e1 && gp.missing.length === 1, 'réimport : évaluation renommée reconnue (mêmes date, barème et notes), note absente du fichier signalée');
+        ok(/renommée \? était « Interro ancienne »/.test(html(viewNotesPreviewTest()).textContent), 'aperçu : fusion proposée');
+        GIMP.merge[0] = false; eq(gimpPlan(GIMP).missing.length, 0, 'fusion décochée : traitée comme une nouvelle évaluation'); GIMP.merge[0] = true;
+        GIMP.rm = true; ACT['gimp-ok']();
+        ok(e1.title === 'Interro renommée' && DB.evals.filter(e => e.cid === 'tA' && e.date === '2026-10-01').length === 1 && !DB.grades[gKey(e1.id, L5[5].id)] && DB.grades[gKey(e1.id, L5[0].id)].v === 8, 'fusion : intitulé mis à jour, pas de doublon, note retirée sur demande');
+        GIMP = mk('Tout autre devoir', -1); GIMP.rows.forEach((r, i) => { r.vals = [19 - i]; }); ok(!gimpPlan(GIMP).plan[0].ren, 'même date mais notes différentes : pas de fusion proposée'); GIMP = null; }
       DB.evals = DB.evals.filter(e => e.cid !== 'tA'); Object.keys(DB.grades).forEach(k => { if (/\|y\d$/.test(k)) delete DB.grades[k]; });
     });
 
@@ -5333,11 +5363,15 @@ const ACT = {
   'notes-open': el => { const c = cls(el.dataset.cid), periods = periodsFor(c); go({name: 'notes', cid: c.id, p: V.sp != null && V.sp < periods.length ? V.sp : currentPeriodIndex(periods)}); },
   'gimp-parse': () => { const t = $('#gimp-in').value; const r = parseGrades(V.cid, t); if (!r.evs.length || !r.rows.length) { toast('Format non reconnu : il faut des lignes [E1] … et des lignes NOM Prénom | note'); return; } GIMP = {cid: V.cid, ...r}; renderKeep(); },
   'gimp-cancel': () => { GIMP = null; renderKeep(); },
-  'gimp-ok': () => { const imp = GIMP; if (!imp) return; let nE = 0, nG = 0, nAll = 0;
-    imp.evs.forEach((e, i) => { let ex = DB.evals.find(x => x.cid === imp.cid && x.date === e.date && normN(x.title) === normN(e.title));
-      if (ex) { const nw = {type: e.type, home: !!e.home, code: e.code || ex.code || '', max: e.max, coef: e.coef}; if (Object.keys(nw).some(k => ex[k] !== nw[k])) Object.assign(ex, nw, {t: Date.now()}); } else { ex = {id: uid(), cid: imp.cid, date: e.date, title: e.title, type: e.type, home: !!e.home, code: e.code || '', max: e.max, coef: e.coef, t: Date.now()}; DB.evals.push(ex); nE++; }
-      imp.rows.forEach(r => { if (!r.sid) return; const v = r.vals[i]; if (v == null || (typeof v === 'string' && v[0] === '?')) return; if (typeof v === 'number' && (v < 0 || v > e.max)) return; const gk = gKey(ex.id, r.sid), old = DB.grades[gk], nc = !!(r.nc && r.nc[i]); nAll++; if (old && old.v === v && !!old.nc === nc) return; DB.grades[gk] = nc ? {v, t: Date.now(), nc: true} : {v, t: Date.now()}; nG++; }); });
-    GIMP = null; save(); renderKeep(); toast(nG || nE ? `${plural(nG, 'note ajoutée ou modifiée', 'notes ajoutées ou modifiées')} sur ${nAll} · ${plural(nE, 'nouvelle évaluation', 'nouvelles évaluations')}` : `Rien de nouveau : les ${nAll} notes du fichier sont déjà à jour.`); },
+  'gimp-ok': () => { const imp = GIMP; if (!imp) return; let nE = 0, nG = 0, nAll = 0, nRm = 0; const gp = gimpPlan(imp);
+    imp.evs.forEach((e, i) => { let ex = gp.target(i);
+      const nw = {title: e.title, type: e.type, home: !!e.home, code: e.code || (ex && ex.code) || '', max: e.max, coef: e.coef};
+      if (ex) { if (Object.keys(nw).some(k => ex[k] !== nw[k])) Object.assign(ex, nw, {t: Date.now()}); } else { ex = {id: uid(), cid: imp.cid, date: e.date, ...nw, t: Date.now()}; DB.evals.push(ex); nE++; }
+      imp.rows.forEach(r => { if (!r.sid) return; const v = r.vals[i]; if (v == null || (typeof v === 'string' && v[0] === '?')) return; if (typeof v === 'number' && (v < 0 || v > e.max)) return;
+        const gk = gKey(ex.id, r.sid), old = DB.grades[gk], nc = !!(r.nc && r.nc[i]); nAll++; if (old && old.v === v && !!old.nc === nc) return; DB.grades[gk] = nc ? {v, t: Date.now(), nc: true} : {v, t: Date.now()}; nG++; }); });
+    if (imp.rm) gp.missing.forEach(m => { if (DB.grades[m.k]) { delete DB.grades[m.k]; nRm++; } });
+    GIMP = null; save(); renderKeep();
+    toast(nG || nE || nRm ? `${plural(nG, 'note ajoutée ou modifiée', 'notes ajoutées ou modifiées')} sur ${nAll} · ${plural(nE, 'nouvelle évaluation', 'nouvelles évaluations')}${nRm ? ' · ' + plural(nRm, 'note retirée', 'notes retirées') : ''}` : `Rien de nouveau : les ${nAll} notes du fichier sont déjà à jour.`); },
   gopen: el => { V.gopen = V.gopen === el.dataset.id ? null : el.dataset.id; renderKeep(); },
   'geval-del': el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const saved = {e, g: Object.entries(DB.grades).filter(([k]) => k.startsWith(e.id + '|'))};
     DB.evals = DB.evals.filter(x => x !== e); saved.g.forEach(([k]) => delete DB.grades[k]); save(); renderKeep();
@@ -5437,6 +5471,8 @@ const CHG = {
   },
   group: el => { const s = stu(el.dataset.sid); s.group = el.value; save(); render(); },
   gimp: el => { const e = GIMP && GIMP.evs[+el.dataset.i]; if (!e) return; const f = el.dataset.f; if (f === 'type') { setGty(e, el.value); renderKeep(); return; } e[f] = f === 'max' || f === 'coef' ? gNumIn(el.value, f) : el.value; renderKeep(); },
+  'gimp-merge': el => { if (!GIMP) return; (GIMP.merge = GIMP.merge || {})[el.dataset.i] = el.checked; renderKeep(); },
+  'gimp-rm': el => { if (GIMP) GIMP.rm = el.checked; },
   gfile: el => { const f = el.files && el.files[0]; el.value = ''; gimpFile(f); },
   'gimp-stu': el => { const r = GIMP && GIMP.rows[+el.dataset.r]; if (r) { r.sid = el.value; renderKeep(); } },
   geval: el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const f = el.dataset.f; if (f === 'type') setGty(e, el.value); else e[f] = gNumIn(el.value, f); e.t = Date.now(); save(); renderKeep(); },
@@ -6024,13 +6060,37 @@ document.addEventListener('pointerdown', e => { if (e.target.closest && e.target
 ['scroll', 'keydown'].forEach(ev => document.addEventListener(ev, e => { if (ev === 'scroll' && e.target && e.target.closest && e.target.closest('#hovercard')) return; hovEl = null; hideHover(); }, true));
 document.addEventListener('scroll', () => hideAmen(), true);
 
+/* mise à jour dès l'ouverture : si une version plus récente est en ligne, on l'installe et on recharge AVANT la première
+   synchronisation, pour qu'une ancienne version ne touche jamais aux données partagées. Une seule tentative par ouverture. */
+const SW_ON = () => !IS_DEMO && 'serviceWorker' in navigator && (location.protocol === 'https:' || /[?&]swtest=1/.test(location.search));
+const swNum = n => +(String(n).match(/(\d+)\s*$/) || [0, 0])[1];
+async function updateCheck() {
+  if (!SW_ON() || !navigator.onLine || /[?&](code|error)=/.test(location.search)) return false;
+  try {
+    if (sessionStorage.getItem('sc-upd')) return false;
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 4000);
+    const r = await fetch('./sw.js?check=' + Date.now(), {cache: 'no-store', signal: ctl.signal}); clearTimeout(to);
+    const m = r.ok ? (await r.text()).match(/CACHE\s*=\s*'([^']+)'/) : null;
+    if (!m || swNum(m[1]) <= swNum(SW_CACHE)) return false;
+    sessionStorage.setItem('sc-upd', '1');
+    const reg = await navigator.serviceWorker.getRegistration(); if (!reg) return false;
+    toast('Nouvelle version : mise à jour en cours…');
+    await reg.update();
+    const sw = reg.installing || reg.waiting;
+    if (!sw) return false; // le serveur n'a pas encore la nouvelle version partout : on continue normalement
+    if (sw.state !== 'activated') await new Promise(res => { const t = setTimeout(res, 15000); sw.addEventListener('statechange', () => { if (sw.state === 'activated' || sw.state === 'redundant') { clearTimeout(t); res(); } }); });
+    const ae = document.activeElement; if (ae && ae.blur) ae.blur(); // enregistre une saisie en cours
+    if (STORAGE_OK) { try { await Store.saveCore(); } catch (e) {} }
+    location.reload(); return true;
+  } catch (e) { return false; }
+}
 /* ---------- démarrage ---------- */
 async function init() {
   STORAGE_OK = await Store.open();
   if (STORAGE_OK) { try { const {core, photos} = await Store.load(); if (core) DB = migrate(core); PHOTOS = photos || {}; } catch (e) { STORAGE_OK = false; } }
   if (IS_DEMO && !DB.classes.length) { loadDemo(); if (STORAGE_OK) Store.replaceAll().catch(() => {}); }
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
-  if (!IS_DEMO && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (SW_ON()) navigator.serviceWorker.register('sw.js').catch(() => {});
   if (!IS_DEMO && STORAGE_OK) { try { const sm = await Store.run('kv', 'readonly', s => s.get('sync')); if (sm && sm.m) SM = Object.assign(freshSM(), sm); } catch (e) {} try { const t = await Store.run('kv', 'readonly', s => s.get('trash')); if (Array.isArray(t)) TRASH = t; } catch (e) {} }
   if (!IS_DEMO) syncTrack() && (SM.dirty = true), persistSM();
   const gotLink = !IS_DEMO && readSyncLink();
@@ -6052,6 +6112,7 @@ async function init() {
   setInterval(() => { if (V.name === 'today' && !$('#modal').innerHTML && document.visibilityState === 'visible') autoRender(); }, 60000);
   if (gotLink) { STACK = []; V = {name: 'settings', tab: 'sync'}; render(); toast('Configuration OneDrive reçue : touchez « Se connecter à OneDrive ».'); }
   if (loggedNow && V.name === 'settings') render();
+  if (await updateCheck()) return; // la nouvelle version prend la main : pas de synchronisation avec l'ancienne
   if (syncConnected()) {
     if (SYNC.state === 'off') setSync('idle');
     syncNow();

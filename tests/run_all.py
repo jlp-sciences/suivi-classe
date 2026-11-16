@@ -5,8 +5,9 @@
    2. vérifie l'affichage de la vue semaine (rien ne déborde ni ne se chevauche) sur 4 tailles d'écran ;
    3. parcourt les écrans principaux et s'assure qu'aucune erreur JavaScript n'apparaît ;
    4. vérifie que la position de défilement est gardée lors d'une mise à jour automatique ;
-   5. importe un export Excel « Les devoirs » d'École Directe fabriqué (élèves fictifs) et compare les moyennes."""
-import asyncio, http.server, socketserver, threading, functools, os, sys, tempfile
+   5. importe un export Excel « Les devoirs » d'École Directe fabriqué (élèves fictifs) et compare les moyennes ;
+   6. simule la publication d'une nouvelle version : l'application doit se mettre à jour dès l'ouverture, avant de synchroniser."""
+import asyncio, http.server, socketserver, threading, functools, os, sys, tempfile, shutil, re
 from playwright.async_api import async_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -158,6 +159,36 @@ async def main():
             await pg.set_input_files('input[data-chg=gfile]', tmp); await pg.wait_for_timeout(400); await pg.click('[data-act=gimp-ok]'); await pg.wait_for_timeout(200)
             check(await pg.evaluate("(cid) => DB.evals.filter(e => e.cid === cid).length", info['cid']) == 3, 'réimport du même fichier : pas de doublon')
             await pg.close()
+
+        print("6. Mise à jour dès l'ouverture")
+        src = open(os.path.join(ROOT, 'index.html'), encoding='utf-8').read(); swsrc = open(os.path.join(ROOT, 'sw.js'), encoding='utf-8').read()
+        c1 = re.search(r"const SW_CACHE = '([^']+)'", src).group(1); c2 = re.search(r"const CACHE = '([^']+)'", swsrc).group(1)
+        check(c1 == c2, f'index.html et sw.js annoncent le même cache ({c1})')
+        tmpd = tempfile.mkdtemp()
+        for f in os.listdir(ROOT):
+            if os.path.isfile(os.path.join(ROOT, f)): shutil.copy(os.path.join(ROOT, f), tmpd)
+        class Q2(http.server.SimpleHTTPRequestHandler):
+            def log_message(self, *a): pass
+            def end_headers(self): self.send_header('Cache-Control', 'max-age=600'); super().end_headers()  # comme GitHub Pages
+        srv2 = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Q2, directory=tmpd)); port2 = srv2.server_address[1]
+        threading.Thread(target=srv2.serve_forever, daemon=True).start()
+        ctx = await b.new_context(viewport={'width': 1024, 'height': 768}); pg = await ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
+        url = f'http://localhost:{port2}/?swtest=1'
+        await pg.goto(url); await pg.wait_for_function("navigator.serviceWorker.controller !== null", timeout=15000)
+        v1 = await pg.evaluate("APP_VERSION.n")
+        # « publication » : nouvelle version sur le serveur
+        n = int(re.search(r'(\d+)$', c1).group(1)) + 1
+        open(os.path.join(tmpd, 'index.html'), 'w', encoding='utf-8').write(src.replace(c1, f'suivi-classe-v{n}').replace("const APP_VERSION = {n: '" + v1 + "'", "const APP_VERSION = {n: '99.0'"))
+        open(os.path.join(tmpd, 'sw.js'), 'w', encoding='utf-8').write(swsrc.replace(c2, f'suivi-classe-v{n}'))
+        for f in ('index.html', 'sw.js'): os.utime(os.path.join(tmpd, f), (os.path.getatime(os.path.join(tmpd, f)), os.path.getmtime(os.path.join(tmpd, f)) + 10))  # date de modification nettement différente (le serveur de test répond à la seconde près)
+        await pg.goto(url)   # une seule ouverture : l'ancienne version démarre, voit la nouvelle, l'installe et recharge
+        try:
+            await pg.wait_for_function("typeof APP_VERSION !== 'undefined' && APP_VERSION.n === '99.0'", timeout=30000); okv = True
+        except Exception: okv = False
+        check(okv, 'nouvelle version chargée dès la première ouverture (sans fermer puis rouvrir)')
+        await pg.wait_for_timeout(1500)
+        check(await pg.evaluate("APP_VERSION.n") == '99.0' and await pg.evaluate("sessionStorage.getItem('sc-upd')") == '1', 'un seul rechargement, pas de boucle')
+        await ctx.close(); srv2.shutdown()
         await b.close()
     check(not errs, 'aucune erreur JavaScript' + ('' if not errs else ' : ' + ' | '.join(errs[:5])))
     print('\nRésultat :', 'TOUT EST CORRECT' if not FAILS else f'{len(FAILS)} ÉCHEC(S)')

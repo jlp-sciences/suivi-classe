@@ -1,10 +1,11 @@
 // Suivi de classe : fonctionnement hors ligne.
 // Aucune donnée d'élève ne passe ici : elles restent dans le stockage de la tablette.
-const CACHE = 'suivi-classe-v30';
+const CACHE = 'suivi-classe-v31';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable.png', './pdf.min.js', './pdf.worker.min.js'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // {cache: 'reload'} : toujours la version du serveur, jamais une copie gardée par le navigateur
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, {cache: 'reload'})))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));

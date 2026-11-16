@@ -1,5 +1,9 @@
 # Historique des versions
 
+## 3.15 — 16 novembre 2026
+- Mise à jour dès l'ouverture : si une version plus récente est en ligne, l'application l'installe et se recharge avant la première synchronisation (une ancienne version ne touche plus aux données partagées).
+- Réimport d'un relevé École Directe : une évaluation renommée est reconnue (même date, même barème, mêmes notes) et fusionnée au lieu d'être importée en double ; les notes présentes dans l'application mais retirées du fichier sont signalées, avec une case pour les retirer aussi.
+
 ## 3.14 — 16 novembre 2026
 - Appréciations : mots-clés par élève et par période (palette à toucher : attitude, participation, travail, compétences, résultats ; saisie libre mémorisée), avec accord ♂ / ♀. Les mots-clés sont joints au récapitulatif copié pour Claude.
 - Récapitulatif pour Claude : note d'implication jointe comme simple repère (retenue si elle existe, sinon calculée).

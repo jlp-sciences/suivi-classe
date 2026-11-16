@@ -975,7 +975,7 @@ button.wpill{cursor:pointer}
 .bstep p{margin:0} .bstep textarea{width:100%}
 .bullist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .bullist li{display:flex;flex-direction:column;gap:6px;padding-bottom:10px;border-bottom:1px solid var(--line)}
-.bullist .bh{display:flex;align-items:center;gap:10px;min-width:0}
+.bullist .bh{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
 .bullist .bh .thumb{width:36px;height:36px;flex:none}
 .bullist .bh .sumshort{min-width:0}
 
@@ -1965,7 +1965,7 @@ function implCalc(s, per) {
   const byKey = new Map(); DB.obs.forEach(o => { if (o.sid !== s.id || !CAT[o.cat]) return; const a = byKey.get(o.ses); if (a) a.push(o); else byKey.set(o.ses, [o]); });
   const k = all.length ? P.ref / all.length : 1, v = x => x * k;
   const caps = {comp: P.capComp, dev: P.capDev, org: P.capOrg, pas: P.capPas}, debt = {comp: 0, dev: 0, org: 0, pas: 0}, lost = {comp: 0, dev: 0, org: 0, pas: 0};
-  let bonus = 0, repaid = 0, gained = 0, run = 0, nObs = 0, nFollow = 0, iso = 0, isoTot = 0, malus = 0; const hist = [], log = [];
+  let bonus = 0, repaid = 0, gained = 0, run = 0, streak = 0, nObs = 0, nFollow = 0, iso = 0, isoTot = 0, malus = 0; const hist = [], log = [];
   const NAMES = {comp: 'comportement', dev: 'devoirs', org: 'oublis et retards', pas: 'passivité'};
   let info = [];
   const lose = (f, x) => { const room = Math.max(0, caps[f] - debt[f]); const d = x <= room ? x : room + (x - room) * P.soft; if (x > room + 1e-9) info.push(`plafond ${NAMES[f]} atteint : compté ${room > 1e-9 ? 'en partie ' : ''}à moitié`); debt[f] += d; lost[f] += d; };
@@ -1987,11 +1987,11 @@ function implCalc(s, per) {
     cats.forEach(c => { if (ORGC.has(c)) lose('org', v(P.cOrg)); });
     if (kind === 'eval') { hist.push({d: x.date, n: clampN(rawNow()), e: entry}); entry.delta = rawNow() - before; entry.note = clampN(rawNow()); entry.info = info; entry.eval = true; return; }
     /* passivité : série de RAS */
-    if (kind === 'ras') { run++; entry.run = run; if (run >= P.rasLen) { lose('pas', v(P.rasPen)); info.push(`${P.rasLen} RAS de suite`); run = 0; } }
+    if (kind === 'ras') { run++; streak++; entry.run = streak; if (run >= P.rasLen) { lose('pas', v(P.rasPen)); info.push(`${P.rasLen} RAS de suite`); run = 0; } }
     else {
       /* RAS isolés (jamais sanctionnés par une série) : malus tous les isoN, non rattrapable par la participation */
       if (run > 0 && P.isoN > 0) { iso += run; isoTot += run; while (iso >= P.isoN) { iso -= P.isoN; malus += v(P.isoPen); info.push(`${P.isoN} RAS isolés : malus non rattrapable`); } }
-      run = 0;
+      run = 0; streak = 0;
     }
     /* gains : remboursent d'abord la dette la plus lourde, puis bonus */
     const posC = [...cats].filter(c => CAT[c].t === 'pos');
@@ -2006,7 +2006,7 @@ function implCalc(s, per) {
   const raw = rawNow();
   const note = Math.round(Math.max(P.floor, Math.min(20, raw)) * 2) / 2;
   const enough = nFollow >= 3 && nObs / Math.max(1, nFollow) * 100 >= P.obsMin;
-  return {note: enough ? note : null, raw, k, nPlanned: all.length, nFollow, nObs, bonus, gained, repaid, debt, lost, hist, run, P, log, iso, isoTot, malus};
+  return {note: enough ? note : null, raw, k, nPlanned: all.length, nFollow, nObs, bonus, gained, repaid, debt, lost, hist, run, streak, P, log, iso, isoTot, malus};
 }
 const fmtN = x => (Math.round(x * 100) / 100).toLocaleString('fr-FR', {maximumFractionDigits: 2});
 const fmtH = x => (Math.round(x * 2) / 2).toLocaleString('fr-FR');
@@ -2078,10 +2078,11 @@ const gtyL = e => e.type === 'tp' ? 'TP' : e.home ? 'Écrit · maison' : 'Écrit
 const gtyChip = e => `<span class="gty ${e.type === 'tp' ? 'tp' : e.home ? 'dm' : ''}">${gtyL(e)}</span>`;
 const gtySel = (attrs, e) => `<select ${attrs}><option value="ecrit" ${e.type !== 'tp' && !e.home ? 'selected' : ''}>Écrit</option><option value="maison" ${e.type !== 'tp' && e.home ? 'selected' : ''}>Écrit · maison</option><option value="tp" ${e.type === 'tp' ? 'selected' : ''}>TP</option></select>`;
 const setGty = (e, v) => { e.type = v === 'tp' ? 'tp' : 'ecrit'; e.home = v === 'maison'; };
+const gCoef = e => typeof e.coef === 'number' && e.coef >= 0 ? e.coef : 1; // un coefficient 0 est permis : l'évaluation ne compte pas
 const on20 = (e, v) => typeof v === 'number' ? v / (e.max || 20) * 20 : null;
 const fmtG = x => x == null ? '—' : (Math.round(x * 10) / 10).toLocaleString('fr-FR');
 /* moyennes pondérées par les coefficients, sur 20 */
-function avgOf(list, sid) { let a = 0, w = 0; list.forEach(e => { const v = on20(e, gradeNum(e, sid)); if (v == null) return; a += v * (e.coef || 1); w += (e.coef || 1); }); return w ? a / w : null; }
+function avgOf(list, sid) { let a = 0, w = 0; list.forEach(e => { const v = on20(e, gradeNum(e, sid)); if (v == null) return; a += v * gCoef(e); w += gCoef(e); }); return w ? a / w : null; }
 function resultsOf(s, per) {
   const ev = evalsOf(s.cid, per), ecr = ev.filter(e => e.type !== 'tp'), tp = ev.filter(e => e.type === 'tp');
   const hist = []; ev.forEach((e, i) => { const v = gradeNum(e, s.id); if (v == null) return; hist.push({e, v: on20(e, v), avg: avgOf(ev.slice(0, i + 1), s.id)}); });
@@ -2186,7 +2187,7 @@ function parseED(grid) {
   for (let r = start; r < grid.length; r++) {
     const row = grid[r] || []; let nc = -1; row.forEach((x, c) => { if (nc < 0 && c < (cols[0] ?? 99) && c !== cMoy && x && typeof x.v === 'string' && x.v.trim()) nc = c; });
     if (nc < 0) continue; const name = txt(r, nc);
-    if (/^(moyenne|%|edit|édit)/i.test(name)) break;
+    if (/^(moyenne\s+(classe|minimale|maximale|g[ée]n[ée]rale)|%|[ée]dit[ée]\s+le\b)/i.test(name)) break;
     const vals = [], ncs = [];
     cols.forEach((c, i) => { const x = cell(r, c), v = x.v; if (v == null || v === '') { vals[i] = null; return; }
       if (typeof v === 'number') { vals[i] = v; if (x.fill) ncs[i] = true; return; }
@@ -2198,7 +2199,7 @@ function parseED(grid) {
   return {cls: cm ? cm[1].trim() : '', evs: evs.filter((e, i) => keep[i]), rows: studs.map(s => ({name: s.name, ed: s.ed, vals: s.vals.filter((v, i) => keep[i]), nc: s.nc.filter((v, i) => keep[i])}))};
 }
 /* moyenne d'un élève sur les évaluations du fichier, comme l'application la calculera */
-function gimpAvg(imp, r) { let a = 0, w = 0; imp.evs.forEach((e, i) => { const v = r.vals[i]; if (typeof v !== 'number' || (r.nc && r.nc[i]) || v < 0 || v > e.max) return; a += v / (e.max || 20) * 20 * (e.coef || 1); w += (e.coef || 1); }); return w ? a / w : null; }
+function gimpAvg(imp, r) { let a = 0, w = 0; imp.evs.forEach((e, i) => { const v = r.vals[i]; if (typeof v !== 'number' || (r.nc && r.nc[i]) || v < 0 || v > e.max) return; a += v / (e.max || 20) * 20 * gCoef(e); w += gCoef(e); }); return w ? a / w : null; }
 async function gimpFile(file) {
   if (!file) return;
   if (!/\.xlsx$/i.test(file.name)) { toast('Choisissez le fichier Excel (.xlsx) exporté depuis École Directe'); return; }
@@ -2286,15 +2287,15 @@ function kwForm(id, sex) {
 }
 const kwOf = (sid, per) => (DB.kw[bulKey(sid, per)] || {}).w || [];
 const kwCustom = () => [...new Set(Object.values(DB.kw).flatMap(x => x.w || []).filter(w => !KW[w]))].sort((a, b) => a.localeCompare(b, 'fr'));
-function kwRow(s, per) {
+function kwRow(s, per, cust0) {
   const k = bulKey(s.id, per), sel = kwOf(s.id, per), open = V.kwOpen === s.id;
   const chip = (w, on) => `<button type="button" class="kwc ${KW[w] ? KW[w].t : 'neu'}${on ? ' on' : ''}" data-act="kw-tog" data-k="${esc(k)}" data-sid="${s.id}" data-w="${esc(w)}" aria-pressed="${on}">${esc(kwForm(w, s.sex))}${on ? ' ×' : ''}</button>`;
-  const cust = kwCustom();
+  const cust = open ? (cust0 || kwCustom()).filter(w => !sel.includes(w)) : [];
   return `<div class="kwrow"><span class="sexsel" role="group" aria-label="Accord des mots">${['m', 'f'].map(x => `<button type="button" data-act="sex" data-sid="${s.id}" data-v="${x}" aria-pressed="${s.sex === x}" title="${x === 'm' ? 'Garçon' : 'Fille'}">${x === 'm' ? '♂' : '♀'}</button>`).join('')}</span>
     ${sel.map(w => chip(w, true)).join('')}
     <button type="button" class="kwc add" data-act="kw-open" data-sid="${s.id}" aria-expanded="${open}">${open ? 'Fermer' : '+ Mots-clés'}</button></div>
     ${open ? `<div class="kwpal">${KW_G.map(([g, l]) => `<div class="kwg"><span class="kwgl">${g}</span>${l.map(([f]) => f.split('/')[0]).filter(w => !sel.includes(w)).map(w => chip(w, false)).join('')}</div>`).join('')}
-      ${cust.filter(w => !sel.includes(w)).length ? `<div class="kwg"><span class="kwgl">Vos mots</span>${cust.filter(w => !sel.includes(w)).map(w => chip(w, false)).join('')}</div>` : ''}
+      ${cust.length ? `<div class="kwg"><span class="kwgl">Vos mots</span>${cust.map(w => chip(w, false)).join('')}</div>` : ''}
       <div class="kwg"><span class="kwgl">Autre</span><input type="text" class="kwin" data-chg="kw-new" data-k="${esc(k)}" data-sid="${s.id}" placeholder="Écrire un mot puis Entrée" maxlength="60"></div></div>` : ''}`;
 }
 function kwSet(k, list) { if (list.length) DB.kw[k] = {w: list, t: Date.now()}; else delete DB.kw[k]; save(); }
@@ -2336,16 +2337,16 @@ function viewBul() {
     <div class="ttl"><h1>Appréciations</h1><div class="sub">${esc(c.name)} · ${plural(done, 'appréciation', 'appréciations')} sur ${list.length}</div></div><span class="grow"></span><div class="seg" role="group" aria-label="Période">${seg}</div></header>
   <main class="main"><div class="wrap" style="max-width:980px;display:flex;flex-direction:column;gap:14px">
     <section class="card bulsteps">
-      <div class="bstep"><b>1</b><div><strong>Copier le récapitulatif de la classe</strong><p class="small muted">Résumé, chiffres, tendance et notes de suivi de chaque élève (prénom et initiale du nom), avec vos consignes de rédaction.</p><button class="btn ink" data-act="bul-export">Copier pour Claude</button></div></div>
+      <div class="bstep"><b>1</b><div><strong>Copier le récapitulatif de la classe</strong><p class="small muted">Pour chaque élève (prénom et initiale du nom) : vos mots-clés, le résumé de vos observations, les moyennes, la tendance et vos notes de suivi, avec vos consignes de rédaction. Ajoutez d'abord les mots-clés ci-dessous si vous le souhaitez.</p><button class="btn ink" data-act="bul-export">Copier pour Claude</button></div></div>
       <div class="bstep"><b>2</b><div><strong>Le coller dans la conversation avec Claude</strong><p class="small muted">Claude répond avec une ligne par élève : <code>[numéro] appréciation</code>.</p></div></div>
       <div class="bstep"><b>3</b><div><strong>Coller la réponse ici</strong><textarea id="bul-in" rows="4" placeholder="[1] …&#10;[2] …"></textarea><button class="btn ink" data-act="bul-import" style="margin-top:6px">Importer les appréciations</button></div></div>
     </section>
     <section class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="font-size:16px;margin:0">Relire et copier vers École Directe</h2>${implP().on ? '<button class="btn" data-act="impl-copy">Copier les notes d\'implication</button>' : ''}</div>
-      <ul class="bullist">${list.map((s, i) => { const k = bulKey(s.id, per), cur = DB.bul[k] ? DB.bul[k].text : '';
+      <ul class="bullist">${(() => { const cust = kwCustom(); return list.map((s, i) => { const k = bulKey(s.id, per), cur = DB.bul[k] ? DB.bul[k].text : '';
         const ir = implP().on ? implCalc(s, per) : null, ret = implRet(s.id, per);
         return `<li><div class="bh"><span class="thumb">${photoHTML(s)}</span><b>${i + 1}. ${esc(s.first + ' ' + s.last)}</b><span class="small muted sumshort" style="flex:1">${esc(stuSummary(s, per).head)}</span>${ir ? `<label class="inl" title="Note d'implication : proposée ${ir.note != null ? fmtH(ir.note) : '—'}">Impl. <input type="number" min="0" max="20" step="0.5" data-chg="implN" data-k="${esc(implKey(s.id, per))}" value="${ret ? ret.v : ''}" placeholder="${ir.note != null ? fmtH(ir.note) : '—'}"></label>` : ''}<span class="bulcnt ${cur.length > BUL_MAX ? 'over' : ''}">${cur.length} / ${BUL_MAX}</span><button class="btn" data-act="bul-copy" data-k="${esc(k)}" ${cur ? '' : 'disabled'}>Copier</button></div>
-          ${kwRow(s, per)}
-          <textarea rows="2" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Pas encore d'appréciation">${esc(cur)}</textarea></li>`; }).join('')}</ul></section>
+          ${kwRow(s, per, cust)}
+          <textarea rows="2" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Pas encore d'appréciation">${esc(cur)}</textarea></li>`; }).join(''); })()}</ul></section>
   </div></main>`;
 }
 function viewFiche() {
@@ -2892,6 +2893,7 @@ async function runSelfTests() {
       V.kwOpen = null; { const st2 = stu('y1'); ok([...html(kwRow(st2, per)).querySelectorAll('.kwc')].length === 1, 'palette fermée par défaut'); V.kwOpen = 'y1'; ok([...html(kwRow(st2, per)).querySelectorAll('.kwg')].some(g => /Vos mots/.test(g.textContent) && /leader du groupe/.test(g.textContent)), 'mot écrit à la main proposé aux autres élèves'); V.kwOpen = null; }
       ACT['kw-tog']({dataset: {k: kk, sid: 'y0', w: 'bavard'}}); eq(kwOf('y0', per).length, 3, 'mot-clé retiré par clic');
       ok(recordsOf(DB, {}).has('kw:' + kk), 'mots-clés synchronisés');
+      eq([cmpVer('3.10', '3.9'), cmpVer('3.14', '3.14'), cmpVer('3.9', '3.14') < 0, cmpVer('4.0', '3.99') > 0], [1, 0, true, true], 'comparaison de versions (3.10 > 3.9)');
       DB.kw = {}; y0.sex = '';
       DB.bul = {};
     });
@@ -2913,6 +2915,7 @@ async function runSelfTests() {
       eq(run({participe: r(1)}), 20, 'participe à chaque séance : 20');
       { run({participe: r(2)}); const ir = implCalc(st, per); ok(ir.isoTot > 0 && ir.malus > 0 && ir.note < 20 && ir.bonus >= ir.P.bonusMax - 1e-9, 'RAS isolés : malus non rattrapable même avec le bonus au maximum'); }
       { run({}); eq(implCalc(st, per).isoTot, 0, 'RAS en série : pas comptés aussi comme isolés (pas de doublon)'); }
+      { run({}); const a1 = implCalc(st, per).streak; run({participe: r(1)}); ok(a1 >= implP().rasAlert && implCalc(st, per).streak === 0, 'tableau de bord : alerte « à regarder » sur la série réelle de RAS'); }
       eq(run({progres: r(2)}), run({actif: r(2)}), 'progrès / effort vaut comme actif (gain réduit)');
       eq(run({participe: r(5)}), 12.5, 'discret qui participe une fois sur cinq : 12,5');
       eq(run({participe: r(4)}), 14.5, 'discret qui participe une fois sur quatre : 14,5');
@@ -2932,6 +2935,9 @@ async function runSelfTests() {
         let r = mergeWith({meta, recs}, {}); ok(SM.m['futur:x1'] && !SM.m['futur:x1'].d, 'donnée inconnue gardée (pas de suppression)');
         syncTrack(); ok(!SM.m['futur:x1'].d, 'donnée inconnue jamais marquée supprimée au relevé suivant');
         r = mergeWith({meta, recs}, {}); ok(!r.push || (r.push.recs['futur:x1'] && r.push.av === APP_VERSION.n), 'donnée inconnue retransmise, version jointe à l\'envoi');
+        { const sid0 = DB.students[0].id, M3 = JSON.parse(JSON.stringify(SM.m)), R3 = {}; recordsOf(DB, {}).forEach((v, k) => { if (!k.startsWith('photo:')) R3[k] = v; });
+          delete R3['students:' + sid0]; const r3 = mergeWith({meta: M3, recs: R3}, {});
+          ok(stu(sid0) && r3.push && r3.push.recs['students:' + sid0], 'fichier incomplet (entrée sans contenu) : la donnée locale est gardée et renvoyée'); }
         /* suppression massive venue de l'autre appareil : copie dans la corbeille, puis restauration */
         const e0 = {id: 'tz-e', cid: DB.classes[0].id, date: todayStr(), title: 'Test', type: 'ecrit', max: 20, coef: 1};
         DB.evals.push(e0); const st = studentsOf(e0.cid).slice(0, 25); st.forEach((x, i) => { DB.grades[gKey(e0.id, x.id)] = {v: 10 + i % 8, t: 1}; });
@@ -2978,6 +2984,11 @@ async function runSelfTests() {
       eq([pe.cls, pe.evs.map(e => e.type + (e.home ? '+maison' : '') + ':' + e.max + ':' + e.coef), pe.rows.length, pe.rows[1].nc[0], pe.rows[0].ed], ['2nde 5', ['ecrit+maison:10:0.5', 'tp:20:1'], 2, true, 13.33], 'export École Directe : classe, codes, barèmes, note en bleu, DS sans note ignoré');
       eq([normCls('3ème 4'), normCls('3e 4'), normCls('2nde 5'), normCls('2de 5')], ['3 4', '3 4', '2 5', '2 5'], 'noms de classe École Directe reconnus');
       eq([fmtG(gimpAvg({evs: pe.evs}, pe.rows[0])), fmtG(gimpAvg({evs: pe.evs}, pe.rows[1]))], ['13,3', '12'], 'moyenne calculée comme École Directe (note en bleu exclue)');
+      { const g2 = JSON.parse(JSON.stringify(grid)); g2.splice(6, 0, [C(null), C('EDITH MOYENNE'), C(null), C(10), C(null), C(3), C(null), C(5), C(10), C(null)]); eq(parseED(g2).rows.length, 3, 'élève dont le nom commence par « Edit » ou « Moyenne » : pas pris pour la fin de la liste'); }
+      { const ea = {id: 'tz0', cid: 'tA', date: todayStr(), title: 'a', type: 'ecrit', max: 20, coef: 1}, eb = {id: 'tz1', cid: 'tA', date: todayStr(), title: 'b', type: 'tp', max: 20, coef: 0};
+        DB.grades[gKey('tz0', 'y0')] = {v: 10, t: 1}; DB.grades[gKey('tz1', 'y0')] = {v: 20, t: 1};
+        eq([avgOf([ea, eb], 'y0'), gNumIn('0', 'coef'), gNumIn('', 'coef'), gNumIn('0', 'max'), gNumIn('2,5', 'coef')], [10, 0, 1, 20, 2.5], 'coefficient 0 : évaluation non comptée dans la moyenne');
+        delete DB.grades[gKey('tz0', 'y0')]; delete DB.grades[gKey('tz1', 'y0')]; }
       DB.evals = DB.evals.filter(e => e.cid !== 'tA'); Object.keys(DB.grades).forEach(k => { if (/\|y\d$/.test(k)) delete DB.grades[k]; });
     });
 
@@ -3286,12 +3297,14 @@ function renderKeep() {
 }
 /* redessin automatique (synchronisation, horloge) : jamais pendant que l'on fait défiler ou que l'on touche l'écran */
 let LAST_TOUCH = 0, AUTO_T = null;
-['touchstart', 'touchmove', 'wheel', 'pointerdown'].forEach(ev => window.addEventListener(ev, () => { LAST_TOUCH = Date.now(); }, {passive: true, capture: true}));
+['touchstart', 'touchmove', 'wheel', 'pointerdown', 'keydown', 'input'].forEach(ev => window.addEventListener(ev, () => { LAST_TOUCH = Date.now(); }, {passive: true, capture: true}));
 function autoRender() {
   clearTimeout(AUTO_T);
   const wait = 1200 - (Date.now() - LAST_TOUCH);
   if (wait > 0) { AUTO_T = setTimeout(autoRender, wait + 100); return; }
   if ($('#modal').innerHTML || $('#layer').innerHTML || (typeof DRAG !== 'undefined' && DRAG)) return;
+  /* une saisie est en cours (appréciation, note, mot-clé…) : on attend qu'elle soit terminée pour ne rien effacer */
+  const ae = document.activeElement; if (ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName) && typeof ae.value === 'string' && ae.type !== 'checkbox' && ae.type !== 'radio' && ae.type !== 'file' && ae.value !== ae.defaultValue) { AUTO_T = setTimeout(autoRender, 1500); return; }
   renderKeep();
 }
 async function commitTrombi() {
@@ -3884,7 +3897,7 @@ function viewSuivi() {
     const pos = Object.keys(cnt).filter(k => CAT[k].t === 'pos').reduce((a, k) => a + cnt[k], 0);
     const IP = implP(), ir = IP.on ? implCalc(s, per) : null, ret = implRet(s.id, per), impl = ret ? ret.v : ir ? ir.note : null;
     let itr = 0; if (ir && ir.hist.length > 3) { const old = ir.hist.filter(h => h.d <= d21).pop(); if (old) { const dd = ir.hist[ir.hist.length - 1].n - old.n; itr = dd >= 0.5 ? 1 : dd <= -0.5 ? -1 : 0; } }
-    const look = !!ir && ir.run >= IP.rasAlert;
+    const look = !!ir && ir.streak >= IP.rasAlert;
     const rs = resultsOf(s, per); let mtr = 0; if (rs.hist.length >= 4) { const dd = rs.hist[rs.hist.length - 1].avg - rs.hist[rs.hist.length - 4].avg; mtr = dd >= 0.5 ? 1 : dd <= -0.5 ? -1 : 0; }
     return {s, moy: rs.moy == null ? -1 : rs.moy, mEcr: rs.ecrit, mTp: rs.tp, mtr, pos, neg: sumC([...DISRUPT, 'passif']), dev: sumC(['devoir', 'devoir_inc', 'devoir_bac']), org: sumC([...ORGC]), ras: cnt.ras || 0, abs: cnt.absent || 0,
       impl: impl == null ? -1 : impl, implSet: !!ret, itr, look,
@@ -5318,11 +5331,11 @@ const ACT = {
   'notes-open': el => { const c = cls(el.dataset.cid), periods = periodsFor(c); go({name: 'notes', cid: c.id, p: V.sp != null && V.sp < periods.length ? V.sp : currentPeriodIndex(periods)}); },
   'gimp-parse': () => { const t = $('#gimp-in').value; const r = parseGrades(V.cid, t); if (!r.evs.length || !r.rows.length) { toast('Format non reconnu : il faut des lignes [E1] … et des lignes NOM Prénom | note'); return; } GIMP = {cid: V.cid, ...r}; renderKeep(); },
   'gimp-cancel': () => { GIMP = null; renderKeep(); },
-  'gimp-ok': () => { const imp = GIMP; if (!imp) return; let nE = 0, nG = 0;
+  'gimp-ok': () => { const imp = GIMP; if (!imp) return; let nE = 0, nG = 0, nAll = 0;
     imp.evs.forEach((e, i) => { let ex = DB.evals.find(x => x.cid === imp.cid && x.date === e.date && normN(x.title) === normN(e.title));
-      if (ex) Object.assign(ex, {type: e.type, home: !!e.home, code: e.code || ex.code || '', max: e.max, coef: e.coef, t: Date.now()}); else { ex = {id: uid(), cid: imp.cid, date: e.date, title: e.title, type: e.type, home: !!e.home, code: e.code || '', max: e.max, coef: e.coef, t: Date.now()}; DB.evals.push(ex); nE++; }
-      imp.rows.forEach(r => { if (!r.sid) return; const v = r.vals[i]; if (v == null || (typeof v === 'string' && v[0] === '?')) return; if (typeof v === 'number' && (v < 0 || v > e.max)) return; DB.grades[gKey(ex.id, r.sid)] = r.nc && r.nc[i] ? {v, t: Date.now(), nc: true} : {v, t: Date.now()}; nG++; }); });
-    GIMP = null; save(); renderKeep(); toast(`${plural(nG, 'note importée', 'notes importées')} · ${plural(nE, 'nouvelle évaluation', 'nouvelles évaluations')}`); },
+      if (ex) { const nw = {type: e.type, home: !!e.home, code: e.code || ex.code || '', max: e.max, coef: e.coef}; if (Object.keys(nw).some(k => ex[k] !== nw[k])) Object.assign(ex, nw, {t: Date.now()}); } else { ex = {id: uid(), cid: imp.cid, date: e.date, title: e.title, type: e.type, home: !!e.home, code: e.code || '', max: e.max, coef: e.coef, t: Date.now()}; DB.evals.push(ex); nE++; }
+      imp.rows.forEach(r => { if (!r.sid) return; const v = r.vals[i]; if (v == null || (typeof v === 'string' && v[0] === '?')) return; if (typeof v === 'number' && (v < 0 || v > e.max)) return; const gk = gKey(ex.id, r.sid), old = DB.grades[gk], nc = !!(r.nc && r.nc[i]); nAll++; if (old && old.v === v && !!old.nc === nc) return; DB.grades[gk] = nc ? {v, t: Date.now(), nc: true} : {v, t: Date.now()}; nG++; }); });
+    GIMP = null; save(); renderKeep(); toast(nG || nE ? `${plural(nG, 'note ajoutée ou modifiée', 'notes ajoutées ou modifiées')} sur ${nAll} · ${plural(nE, 'nouvelle évaluation', 'nouvelles évaluations')}` : `Rien de nouveau : les ${nAll} notes du fichier sont déjà à jour.`); },
   gopen: el => { V.gopen = V.gopen === el.dataset.id ? null : el.dataset.id; renderKeep(); },
   'geval-del': el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const saved = {e, g: Object.entries(DB.grades).filter(([k]) => k.startsWith(e.id + '|'))};
     DB.evals = DB.evals.filter(x => x !== e); saved.g.forEach(([k]) => delete DB.grades[k]); save(); renderKeep();
@@ -5408,6 +5421,8 @@ Object.keys(UNDO_MSG).forEach(name => {
     try { fn(el, e); } finally { UNDO = null; if (!u.shown && JSON.stringify(DB) !== u.cp) showUndo(UNDO_MSG[name], u); }
   };
 });
+/* barème (> 0, 20 par défaut) ou coefficient (≥ 0, 1 par défaut) saisi à la main */
+const gNumIn = (txt, f) => { const n = parseFloat(String(txt).replace(',', '.')); return f === 'max' ? (n > 0 ? n : 20) : (n >= 0 ? n : 1); };
 const CHG = {
   'photo-edit': async el => { const f = el.files[0]; if (!f) return; const ok = await setPhoto(el.dataset.sid, f); closeModal(); render(); toast(ok ? 'Photo enregistrée' : "Cette image n'a pas pu être lue."); },
   photo: async el => { const f = el.files[0]; if (!f) return; const ok = await setPhoto(el.dataset.sid, f); render(); toast(ok ? 'Photo enregistrée' : "Cette image n'a pas pu être lue."); },
@@ -5419,10 +5434,10 @@ const CHG = {
     render(); toast(`${plural(ok, 'photo')} associée${ok > 1 ? 's' : ''}` + (miss.length ? ` · ${miss.length} non reconnue${miss.length > 1 ? 's' : ''}` : ''));
   },
   group: el => { const s = stu(el.dataset.sid); s.group = el.value; save(); render(); },
-  gimp: el => { const e = GIMP && GIMP.evs[+el.dataset.i]; if (!e) return; const f = el.dataset.f; if (f === 'type') { setGty(e, el.value); renderKeep(); return; } e[f] = f === 'max' || f === 'coef' ? (parseFloat(el.value.replace(',', '.')) || (f === 'max' ? 20 : 1)) : el.value; renderKeep(); },
+  gimp: el => { const e = GIMP && GIMP.evs[+el.dataset.i]; if (!e) return; const f = el.dataset.f; if (f === 'type') { setGty(e, el.value); renderKeep(); return; } e[f] = f === 'max' || f === 'coef' ? gNumIn(el.value, f) : el.value; renderKeep(); },
   gfile: el => { const f = el.files && el.files[0]; el.value = ''; gimpFile(f); },
   'gimp-stu': el => { const r = GIMP && GIMP.rows[+el.dataset.r]; if (r) { r.sid = el.value; renderKeep(); } },
-  geval: el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const f = el.dataset.f; if (f === 'type') setGty(e, el.value); else e[f] = (parseFloat(el.value.replace(',', '.')) || (f === 'max' ? 20 : 1)); e.t = Date.now(); save(); renderKeep(); },
+  geval: el => { const e = DB.evals.find(x => x.id === el.dataset.id); if (!e) return; const f = el.dataset.f; if (f === 'type') setGty(e, el.value); else e[f] = gNumIn(el.value, f); e.t = Date.now(); save(); renderKeep(); },
   grade: el => { const k = el.dataset.k, raw = el.value.trim(); if (!raw) { delete DB.grades[k]; save(); return; }
     let v; if (/^abs/i.test(raw)) v = 'Abs'; else if (/^disp/i.test(raw)) v = 'Disp'; else if (/^n\.?\s?n/i.test(raw)) v = 'NN'; else { v = parseFloat(raw.replace(',', '.')); if (isNaN(v) || v < 0 || v > +el.dataset.max) { toast('Note invalide'); el.value = ''; return; } }
     const old = DB.grades[k]; DB.grades[k] = old && old.nc && old.v === v ? {v, t: Date.now(), nc: true} : {v, t: Date.now()}; save(); },
@@ -5609,6 +5624,7 @@ function putRec(p, v) {
   }
 }
 /* enregistrement géré par cette version ? (une version plus ancienne ne doit jamais supprimer ce qu'elle ne connaît pas) */
+const cmpVer = (a, b) => { const A = String(a).split('.').map(Number), B = String(b).split('.').map(Number); for (let i = 0; i < Math.max(A.length, B.length); i++) { const d = (A[i] || 0) - (B[i] || 0); if (d) return d; } return 0; };
 function syncKnown(p) { const i = p.indexOf(':'), c = p.slice(0, i), id = p.slice(i + 1); return SYNC_ARR.includes(c) || SYNC_MAP.includes(c) || c === 'photo' || (c === 'settings' && SYNC_SET.includes(id)); }
 /* relève les modifications depuis la dernière fois ; renvoie true s'il y en a */
 function syncTrack() {
@@ -5658,6 +5674,9 @@ function mergeWith(remote, got, opts = {}) {
     else if (!lm) win = 'R';
     else win = rm.t > lm.t ? 'R' : lm.t > rm.t ? 'L' : (opts.keepLocal ? 'L' : 'R');
     if (win === 'X') { if (!lm.d) { putRec(p, undefined); changed++; } delete L[p]; continue; }
+    if (win === 'R' && !isPhoto && !rm.d && RR[p] === undefined) { /* fichier incomplet : on garde et on renvoie la version locale */
+      if (lm && !lm.d && R.has(p)) { outMeta[p] = lm; outRecs[p] = R.get(p); needPush = true; } else if (lm) outMeta[p] = lm;
+      continue; }
     if (win === 'R') {
       const same = lm && lm.h === rm.h && !!lm.d === !!rm.d;
       if (!same) {
@@ -5815,7 +5834,7 @@ async function syncNow(manual) {
       if (item) {
         remote = JSON.parse(await gunz(await remoteBlob(item)));
         if (!remote || remote.app !== 'suivi-classe-sync') throw syncErr('format');
-        if (remote.av && parseFloat(remote.av) > parseFloat(APP_VERSION.n)) { try { navigator.serviceWorker && navigator.serviceWorker.getRegistration().then(r => r && r.update()); } catch (e) {} throw syncErr('newer', 0, remote.av); }
+        if (remote.av && cmpVer(remote.av, APP_VERSION.n) > 0) { try { navigator.serviceWorker && navigator.serviceWorker.getRegistration().then(r => r && r.update()); } catch (e) {} throw syncErr('newer', 0, remote.av); }
         await pool(photosToFetch(remote), 4, async sid => {
           const it = await remoteItem('p-' + sid + '.txt'); if (it) got[sid] = await (await remoteBlob(it)).text();
         });

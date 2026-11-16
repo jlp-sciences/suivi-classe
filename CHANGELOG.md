@@ -2,6 +2,7 @@
 
 ## 3.14 — 16 novembre 2026
 - Appréciations : mots-clés par élève et par période (palette à toucher : attitude, participation, travail, compétences, résultats ; saisie libre mémorisée), avec accord ♂ / ♀. Les mots-clés sont joints au récapitulatif copié pour Claude.
+- Récapitulatif pour Claude : note d'implication jointe comme simple repère (retenue si elle existe, sinon calculée).
 - Corrections après relecture du code : une saisie en cours (appréciation, note, mot-clé) n'est plus effacée quand une synchronisation redessine la page ; un coefficient 0 ne compte plus comme 1 ; l'alerte « à regarder » du tableau de bord fonctionne de nouveau ; un élève dont le nom commence par « Edit… » ou « Moyenne… » n'interrompt plus l'import ; page Appréciations ajustée sur téléphone.
 - Synchronisation : une entrée sans contenu dans le fichier ne supprime jamais la donnée locale ; comparaison de versions fiable.
 - Réimport d'un relevé : seules les notes nouvelles ou modifiées sont réécrites.

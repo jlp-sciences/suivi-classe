@@ -2306,7 +2306,8 @@ function bulExportText(c, per) {
     const cur = DB.bul[bulKey(s.id, per)];
     const rs = resultsOf(s, per), gtxt = rs.ev.length ? ` — Moyennes : écrit ${fmtG(rs.ecrit)}, TP ${fmtG(rs.tp)}, générale ${fmtG(rs.moy)} (classe ${fmtG(classAvg(c.id, per))})${rs.hist.length >= 2 ? ', évolution ' + rs.hist.map(h => fmtG(h.avg)).join(' → ') : ''}` : '';
     const kw = kwOf(s.id, per).map(w => kwForm(w, s.sex));
-    return `[${i + 1}] ${stuLabel(s, list)}${s.sex ? ` (${s.sex === 'f' ? 'fille' : 'garçon'})` : ''} — ${kw.length ? 'Mots-clés du professeur : ' + kw.join(', ') + ' — ' : ''}${sm.line}${gtxt} — ${sm.detail}${notes.length ? ' — Notes : ' + notes.join(' | ') : ''}${cur ? ' — Appréciation actuelle : ' + cur.text : ''}`;
+    const ir = implP().on ? implCalc(s, per) : null, ret = implRet(s.id, per), itxt = ret ? ` — Implication (repère du professeur, hors moyenne) : ${fmtH(ret.v)}/20` : ir && ir.note != null ? ` — Implication (repère calculé, hors moyenne) : ${fmtH(ir.note)}/20` : '';
+    return `[${i + 1}] ${stuLabel(s, list)}${s.sex ? ` (${s.sex === 'f' ? 'fille' : 'garçon'})` : ''} — ${kw.length ? 'Mots-clés du professeur : ' + kw.join(', ') + ' — ' : ''}${sm.line}${gtxt}${itxt} — ${sm.detail}${notes.length ? ' — Notes : ' + notes.join(' | ') : ''}${cur ? ' — Appréciation actuelle : ' + cur.text : ''}`;
   });
   return `APPRÉCIATIONS À RÉDIGER — ${c.name} — ${levelOf(c) === '2de' ? 'Physique-chimie Seconde' : levelOf(c) === '1re' ? 'Enseignement scientifique' : 'Physique-chimie'} — ${per.n} (du ${fmtShort(per.s)} au ${fmtShort(per.e)})
 Consignes : ${BUL_MAX} caractères maximum, espaces compris, le plus court possible tout en étant utile ; ton adapté au profil (encourageant, factuel et positif, ou direct et bienveillant) ; phrases complètes, pas de formules toutes faites ; terminer par une perspective ou un conseil quand c'est possible.
@@ -2893,6 +2894,7 @@ async function runSelfTests() {
       V.kwOpen = null; { const st2 = stu('y1'); ok([...html(kwRow(st2, per)).querySelectorAll('.kwc')].length === 1, 'palette fermée par défaut'); V.kwOpen = 'y1'; ok([...html(kwRow(st2, per)).querySelectorAll('.kwg')].some(g => /Vos mots/.test(g.textContent) && /leader du groupe/.test(g.textContent)), 'mot écrit à la main proposé aux autres élèves'); V.kwOpen = null; }
       ACT['kw-tog']({dataset: {k: kk, sid: 'y0', w: 'bavard'}}); eq(kwOf('y0', per).length, 3, 'mot-clé retiré par clic');
       ok(recordsOf(DB, {}).has('kw:' + kk), 'mots-clés synchronisés');
+      DB.implN[implKey('y0', per)] = {v: 14.5, t: 1}; ok(/Implication \(repère du professeur, hors moyenne\) : 14,5\/20/.test(bulExportText(cls('tA'), per)), 'note d\'implication retenue jointe au récapitulatif'); delete DB.implN[implKey('y0', per)];
       eq([cmpVer('3.10', '3.9'), cmpVer('3.14', '3.14'), cmpVer('3.9', '3.14') < 0, cmpVer('4.0', '3.99') > 0], [1, 0, true, true], 'comparaison de versions (3.10 > 3.9)');
       DB.kw = {}; y0.sex = '';
       DB.bul = {};

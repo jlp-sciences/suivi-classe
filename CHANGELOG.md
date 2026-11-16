@@ -1,5 +1,10 @@
 # Historique des versions
 
+## 3.16 — 16 novembre 2026
+- « Appréciations » devient « Préparer le conseil de classe » ; moyenne de la période à côté de chaque élève (survol ou toucher : écrit et TP), à côté de la note d'implication.
+- Mots-clés enrichis (correct, convenable, passable, insuffisant, participations ponctuelles, sérieux·se en activité de groupe) et nouvelle catégorie « Conseils ».
+- Consigne du récapitulatif pour Claude : prénom et vouvoiement, constat puis conseil, mots-clés prioritaires, implication comme simple repère, expressions habituelles.
+
 ## 3.15 — 16 novembre 2026
 - Mise à jour dès l'ouverture : si une version plus récente est en ligne, l'application l'installe et se recharge avant la première synchronisation (une ancienne version ne touche plus aux données partagées).
 - Réimport d'un relevé École Directe : une évaluation renommée est reconnue (même date, même barème, mêmes notes) et fusionnée au lieu d'être importée en double ; les notes présentes dans l'application mais retirées du fichier sont signalées, avec une case pour les retirer aussi.

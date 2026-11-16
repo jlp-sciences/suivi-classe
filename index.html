@@ -1015,9 +1015,14 @@ button.wpill{cursor:pointer}
 .ibadge{border:1.5px solid currentColor;padding:0 6px} .ibadge.low{color:var(--neg)} .ibadge.high{color:var(--pos)}
 .ibadge.mb{border-color:transparent;background:var(--ink-2);color:var(--surface)} .ibadge.mb.low{background:var(--neg);color:var(--on-neg)} .ibadge.mb.high{background:var(--pos);color:var(--on-pos)}
 .stile .ibadge ~ .stags{top:32px}
+.mtip{position:relative;cursor:pointer;font:inherit;font-weight:800;border:0;white-space:nowrap} .nomoy{opacity:.55;white-space:nowrap}
+.mtip .tipx{display:none;position:absolute;z-index:30;top:calc(100% + 6px);right:0;padding:6px 10px;border-radius:8px;background:var(--surface);color:var(--ink);border:1px solid var(--line-2);box-shadow:0 6px 16px rgba(0,0,0,.16);font-size:13px;font-weight:600;white-space:nowrap}
+.mtip:hover .tipx,.mtip.show .tipx{display:block}
+.bullist .iimp{border:1.5px solid var(--ink-2);border-radius:7px;padding:0 0 0 6px;white-space:nowrap}
 .kwrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:6px 0}
 .kwc{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid currentColor;background:transparent;line-height:1.3}
-.kwc.pos{color:var(--pos-ink)} .kwc.neg{color:var(--neg-ink)} .kwc.neu{color:var(--ink-2)}
+.kwc.pos{color:var(--pos-ink)} .kwc.neg{color:var(--neg-ink)} .kwc.neu{color:var(--ink-2)} .kwc.cons{color:#2563A8}
+.kwc.on.cons{background:color-mix(in srgb,#2563A8 13%,transparent);border-color:transparent}
 .kwc.on.pos{background:var(--pos-soft);border-color:transparent} .kwc.on.neg{background:var(--neg-soft);border-color:transparent} .kwc.on.neu{background:var(--surface-2);border-color:transparent}
 .kwc.add{color:var(--muted);border-style:dashed;font-weight:500}
 .sexsel{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;margin-right:4px}
@@ -1144,8 +1149,8 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.15', d: '2026-11-16'};
-const SW_CACHE = 'suivi-classe-v31'; // identique à CACHE dans sw.js (vérifié par les tests)
+const APP_VERSION = {n: '3.16', d: '2026-11-16'};
+const SW_CACHE = 'suivi-classe-v32'; // identique à CACHE dans sw.js (vérifié par les tests)
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -2293,17 +2298,21 @@ const KW_G = [
   ['Attitude', [['volontaire', 'pos'], ['impliqué/impliquée', 'pos'], ['motivé/motivée', 'pos'], ['sérieux/sérieuse', 'pos'], ['attentif/attentive', 'pos'], ["à l'écoute", 'pos'], ['curieux/curieuse', 'pos'], ['dynamique', 'pos'], ['autonome', 'pos'], ['persévérant/persévérante', 'pos'], ['respectueux/respectueuse', 'pos'], ['agréable', 'pos'],
     ['bavard/bavarde', 'neg'], ['dissipé/dissipée', 'neg'], ['distrait/distraite', 'neg'], ['agité/agitée', 'neg'], ['passif/passive', 'neg'], ['dispersé/dispersée', 'neg'], ['nonchalant/nonchalante', 'neg'], ['irrégulier/irrégulière', 'neg'],
     ['discret/discrète', 'neu'], ['réservé/réservée', 'neu'], ['timide', 'neu']]],
-  ['Participation', [['participe volontiers', 'pos'], ['interventions pertinentes', 'pos'], ['aide ses camarades', 'pos'], ["n'ose pas prendre la parole", 'neu'], ['doit participer davantage', 'neg']]],
-  ['Travail', [['travail régulier', 'pos'], ['appliqué/appliquée', 'pos'], ['soigneux/soigneuse', 'pos'], ['rigoureux/rigoureuse', 'pos'], ['bonne méthode', 'pos'], ['travail approfondi', 'pos'],
+  ['Participation', [['participe volontiers', 'pos'], ['interventions pertinentes', 'pos'], ['aide ses camarades', 'pos'], ['participations ponctuelles', 'neu'], ["n'ose pas prendre la parole", 'neu']]],
+  ['Travail', [['travail régulier', 'pos'], ['appliqué/appliquée', 'pos'], ['soigneux/soigneuse', 'pos'], ['rigoureux/rigoureuse', 'pos'], ['bonne méthode', 'pos'], ['travail approfondi', 'pos'], ['sérieux en activité de groupe/sérieuse en activité de groupe', 'pos'],
     ['travail irrégulier', 'neg'], ['leçons non apprises', 'neg'], ['devoirs non faits', 'neg'], ['travail superficiel', 'neg'], ['manque de méthode', 'neg'], ['manque de rigueur', 'neg'], ['manque de soin', 'neg'], ['oublis de matériel', 'neg']]],
   ['Compétences', [['bon raisonnement', 'pos'], ["à l'aise en TP", 'pos'], ['manipulations soignées', 'pos'], ['bonne rédaction', 'pos'],
     ['difficultés de rédaction', 'neg'], ['difficultés en calcul', 'neg'], ['difficultés à analyser un document', 'neg'], ['mal à l\'aise en TP', 'neg']]],
-  ['Résultats', [['très bons résultats', 'pos'], ['résultats solides', 'pos'], ['en progrès', 'pos'], ['efforts visibles', 'pos'], ['résultats fragiles', 'neg'], ['en difficulté', 'neg'], ['en baisse', 'neg'], ['décrochage', 'neg']]]];
+  ['Résultats', [['très bons résultats', 'pos'], ['résultats solides', 'pos'], ['en progrès', 'pos'], ['efforts visibles', 'pos'], ['correct', 'neu'], ['convenable', 'neu'], ['passable', 'neu'],
+    ['insuffisant', 'neg'], ['résultats fragiles', 'neg'], ['en difficulté', 'neg'], ['en baisse', 'neg'], ['décrochage', 'neg']]],
+  ['Conseils', [['revoir les méthodes de travail', 'cons'], ['participer davantage', 'cons'], ['poursuivre les efforts', 'cons'], ['se concentrer davantage en classe', 'cons'], ['être plus attentif/être plus attentive', 'cons'],
+    ['approfondir le travail en classe', 'cons'], ['approfondir le travail à la maison', 'cons'], ["ne pas hésiter à demander de l'aide en cas de difficulté", 'cons'], ["s'accrocher", 'cons'], ['courage', 'cons'], ['ne pas se décourager', 'cons']]]];
 const KW = {}; KW_G.forEach(([, l]) => l.forEach(([f, t]) => { const [m, w] = f.split('/'); KW[m] = {m, f: w || m, t}; }));
 /* forme accordée : garçon, fille, ou écriture inclusive si non précisé */
 function kwForm(id, sex) {
   const k = KW[id]; if (!k) return id; if (k.f === k.m || sex === 'm') return k.m; if (sex === 'f') return k.f;
-  let i = 0; while (i < k.m.length && k.m[i] === k.f[i]) i++; return k.m + '·' + k.f.slice(i);
+  const a = k.m.split(' '), b = k.f.split(' '), j = a.findIndex((w, x) => w !== b[x]); if (j < 0 || a.length !== b.length || a.slice(j + 1).join(' ') !== b.slice(j + 1).join(' ')) return k.m;
+  let i = 0; while (i < a[j].length && a[j][i] === b[j][i]) i++; a[j] = a[j] + '·' + b[j].slice(i); return a.join(' ');
 }
 const kwOf = (sid, per) => (DB.kw[bulKey(sid, per)] || {}).w || [];
 const kwCustom = () => [...new Set(Object.values(DB.kw).flatMap(x => x.w || []).filter(w => !KW[w]))].sort((a, b) => a.localeCompare(b, 'fr'));
@@ -2330,7 +2339,15 @@ function bulExportText(c, per) {
     return `[${i + 1}] ${stuLabel(s, list)}${s.sex ? ` (${s.sex === 'f' ? 'fille' : 'garçon'})` : ''} — ${kw.length ? 'Mots-clés du professeur : ' + kw.join(', ') + ' — ' : ''}${sm.line}${gtxt}${itxt} — ${sm.detail}${notes.length ? ' — Notes : ' + notes.join(' | ') : ''}${cur ? ' — Appréciation actuelle : ' + cur.text : ''}`;
   });
   return `APPRÉCIATIONS À RÉDIGER — ${c.name} — ${levelOf(c) === '2de' ? 'Physique-chimie Seconde' : levelOf(c) === '1re' ? 'Enseignement scientifique' : 'Physique-chimie'} — ${per.n} (du ${fmtShort(per.s)} au ${fmtShort(per.e)})
-Consignes : ${BUL_MAX} caractères maximum, espaces compris, le plus court possible tout en étant utile ; ton adapté au profil (encourageant, factuel et positif, ou direct et bienveillant) ; phrases complètes, pas de formules toutes faites ; terminer par une perspective ou un conseil quand c'est possible.
+Consignes :
+- ${BUL_MAX} caractères maximum, espaces compris, le plus court possible tout en étant utile.
+- Commencer par le prénom de l'élève et le vouvoyer (ex. « Léa, vous… »).
+- Structure : un constat (attitude, travail, résultats), puis un conseil concret.
+- Ton adapté au profil : encourageant, factuel et positif, ou direct et bienveillant ; jamais condescendant.
+- Phrases complètes, pas de formules toutes faites, pas de chiffres ; ne rien inventer.
+- « Mots-clés du professeur » (dont les conseils) : mes impressions, prioritaires sur le reste des données ; accorder selon fille / garçon.
+- « Implication » : simple repère, hors moyenne, à ne jamais citer.
+- Reprendre si elles conviennent mes expressions (une au plus par élève, pas deux fois de suite) : inverser la tendance, changer la dynamique, se donner les moyens, investi(e) dans ses apprentissages, revoir les méthodes de travail, je compte sur vous pour…
 Répondre avec une ligne par élève, au format exact : [numéro] appréciation
 
 ${lines.join('\n')}`;
@@ -2355,7 +2372,7 @@ function viewBul() {
   const seg = periods.slice(0, -1).map((p, i) => `<button type="button" data-act="period" data-i="${i}" aria-pressed="${i === V.p}">${esc(p.n)}</button>`).join('');
   return `
   <header class="bar"><button class="btn ghost" data-act="back">${ICON.back}Retour</button>
-    <div class="ttl"><h1>Appréciations</h1><div class="sub">${esc(c.name)} · ${plural(done, 'appréciation', 'appréciations')} sur ${list.length}</div></div><span class="grow"></span><div class="seg" role="group" aria-label="Période">${seg}</div></header>
+    <div class="ttl"><h1>Préparer le conseil de classe</h1><div class="sub">${esc(c.name)} · ${plural(done, 'appréciation', 'appréciations')} sur ${list.length}</div></div><span class="grow"></span><div class="seg" role="group" aria-label="Période">${seg}</div></header>
   <main class="main"><div class="wrap" style="max-width:980px;display:flex;flex-direction:column;gap:14px">
     <section class="card bulsteps">
       <div class="bstep"><b>1</b><div><strong>Copier le récapitulatif de la classe</strong><p class="small muted">Pour chaque élève (prénom et initiale du nom) : vos mots-clés, le résumé de vos observations, les moyennes, la tendance et vos notes de suivi, avec vos consignes de rédaction. Ajoutez d'abord les mots-clés ci-dessous si vous le souhaitez.</p><button class="btn ink" data-act="bul-export">Copier pour Claude</button></div></div>
@@ -2365,7 +2382,7 @@ function viewBul() {
     <section class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="font-size:16px;margin:0">Relire et copier vers École Directe</h2>${implP().on ? '<button class="btn" data-act="impl-copy">Copier les notes d\'implication</button>' : ''}</div>
       <ul class="bullist">${(() => { const cust = kwCustom(); return list.map((s, i) => { const k = bulKey(s.id, per), cur = DB.bul[k] ? DB.bul[k].text : '';
         const ir = implP().on ? implCalc(s, per) : null, ret = implRet(s.id, per);
-        return `<li><div class="bh"><span class="thumb">${photoHTML(s)}</span><b>${i + 1}. ${esc(s.first + ' ' + s.last)}</b><span class="small muted sumshort" style="flex:1">${esc(stuSummary(s, per).head)}</span>${ir ? `<label class="inl" title="Note d'implication : proposée ${ir.note != null ? fmtH(ir.note) : '—'}">Impl. <input type="number" min="0" max="20" step="0.5" data-chg="implN" data-k="${esc(implKey(s.id, per))}" value="${ret ? ret.v : ''}" placeholder="${ir.note != null ? fmtH(ir.note) : '—'}"></label>` : ''}<span class="bulcnt ${cur.length > BUL_MAX ? 'over' : ''}">${cur.length} / ${BUL_MAX}</span><button class="btn" data-act="bul-copy" data-k="${esc(k)}" ${cur ? '' : 'disabled'}>Copier</button></div>
+        return `<li><div class="bh"><span class="thumb">${photoHTML(s)}</span><b>${i + 1}. ${esc(s.first + ' ' + s.last)}</b><span class="small muted sumshort" style="flex:1">${esc(stuSummary(s, per).head)}</span>${(() => { const r = resultsOf(s, per); if (r.moy == null || r.moy < 0) return '<span class="ival mo nomoy" title="Pas encore de note">Moy. —</span>'; const tip = `Écrit ${fmtG(r.ecrit)} · TP ${fmtG(r.tp)}`; return `<button type="button" class="ival mo mtip ${r.moy < 10 ? 'low' : r.moy >= 15 ? 'high' : ''}" data-act="moy-tip" title="${tip}" aria-label="Moyenne ${fmtG(r.moy)} : ${tip}">Moy. ${fmtG(r.moy)}<span class="tipx" role="tooltip">${tip}</span></button>`; })()}${ir ? `<label class="inl iimp" title="Note d'implication : proposée ${ir.note != null ? fmtH(ir.note) : '—'}">Impl. <input type="number" min="0" max="20" step="0.5" data-chg="implN" data-k="${esc(implKey(s.id, per))}" value="${ret ? ret.v : ''}" placeholder="${ir.note != null ? fmtH(ir.note) : '—'}"></label>` : ''}<span class="bulcnt ${cur.length > BUL_MAX ? 'over' : ''}">${cur.length} / ${BUL_MAX}</span><button class="btn" data-act="bul-copy" data-k="${esc(k)}" ${cur ? '' : 'disabled'}>Copier</button></div>
           ${kwRow(s, per, cust)}
           <textarea rows="2" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Pas encore d'appréciation">${esc(cur)}</textarea></li>`; }).join(''); })()}</ul></section>
   </div></main>`;
@@ -2904,6 +2921,8 @@ async function runSelfTests() {
       /* mots-clés par élève */
       eq([kwForm('impliqué', 'm'), kwForm('impliqué', 'f'), kwForm('impliqué'), kwForm('sérieux'), kwForm('attentif'), kwForm('discret'), kwForm('volontaire', 'f'), kwForm('mot perso', 'f')],
         ['impliqué', 'impliquée', 'impliqué·e', 'sérieux·se', 'attentif·ve', 'discret·ète', 'volontaire', 'mot perso'], 'mots-clés : accord garçon, fille ou écriture inclusive');
+      eq([kwForm('sérieux en activité de groupe'), kwForm('être plus attentif'), kwForm('être plus attentif', 'f'), KW['courage'].t], ['sérieux·se en activité de groupe', 'être plus attentif·ve', 'être plus attentive', 'cons'], 'mots-clés de plusieurs mots et catégorie Conseils');
+      ok(/Commencer par le prénom de l'élève et le vouvoyer/.test(bulExportText(cls('tA'), per)), 'consigne : prénom et vouvoiement');
       const kk = bulKey('y0', per), y0 = stu('y0');
       ACT['kw-tog']({dataset: {k: kk, sid: 'y0', w: 'bavard'}}); ACT['kw-tog']({dataset: {k: kk, sid: 'y0', w: 'en progrès'}});
       CHG['kw-new']({value: '  Sérieuse ', dataset: {k: kk, sid: 'y0'}}); CHG['kw-new']({value: 'leader du groupe', dataset: {k: kk, sid: 'y0'}});
@@ -3971,7 +3990,7 @@ function viewSuivi() {
       <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button>
       <button class="gchip" data-act="sui-f" data-v="disc" aria-pressed="${V.sf === 'disc'}"><span class="chip disc">${nD}</span> discret${nD > 1 ? 's' : ''}</button></div>
     ${(() => { const ks = (c.councils || []).filter(k => k.date >= addDays(todayStr(), -60)).sort((a, b) => a.date.localeCompare(b.date)); const k = ks.filter(x => x.date <= todayStr()).pop() || ks[0]; return k ? `<div class="row" style="gap:8px"><button class="btn" data-act="nw-open" data-cid="${c.id}" data-id="${k.id}">✎ Notes du conseil du ${esc(dayShort(k.date))}</button><span class="small muted">${plural(DB.notes.filter(n => n.ref === k.id && n.text).length, 'note saisie', 'notes saisies')} sur ${studentsOf(c.id).length}</span></div>` : ''; })()}
-    <div class="row" style="gap:8px"><button class="btn" data-act="notes-open" data-cid="${c.id}">📊 Notes</button><button class="btn" data-act="bul-open" data-cid="${c.id}">✎ Appréciations ${esc(per.n !== 'Année' ? 'du ' + per.n : '')}</button><span class="small muted">${per.n !== 'Année' ? plural(studentsOf(c.id).filter(s => DB.bul[bulKey(s.id, per)]).length, 'rédigée', 'rédigées') + ' sur ' + studentsOf(c.id).length : ''}</span></div>
+    <div class="row" style="gap:8px"><button class="btn" data-act="notes-open" data-cid="${c.id}">📊 Notes</button><button class="btn" data-act="bul-open" data-cid="${c.id}">✎ Préparer le conseil de classe${esc(per.n !== 'Année' ? ' (' + per.n + ')' : '')}</button><span class="small muted">${per.n !== 'Année' ? plural(studentsOf(c.id).filter(s => DB.bul[bulKey(s.id, per)]).length, 'rédigée', 'rédigées') + ' sur ' + studentsOf(c.id).length : ''}</span></div>
     ${hasG ? `<div class="isynth"><span><b>Notes</b> · moyennes des élèves : ${(() => { const st = gStats(moys.map(r => r.moy)); return statTxt(st, ' / 20'); })()}</span><button type="button" class="gchip" data-act="sui-sort" data-k="moy"><span class="chip neg">${mLow}</span> sous 10</button></div>` : ''}
     ${implP().on ? `<div class="isynth"><span><b>Implication</b> · moyenne ${iAvg != null ? fmtN(Math.round(iAvg * 10) / 10) : '—'} / 20</span><button type="button" class="gchip" data-act="sui-sort" data-k="impl"><span class="chip neg">${nLow}</span> sous 10</button><span><span class="chip dark">${nLook}</span> à regarder</span><span class="small muted">Comptes en séances (une étiquette par séance, RAS automatiques compris). Comp. : bavard, s'amuse, agité, passif, comportement, sécurité · Dev. : devoirs non faits, incomplets, bâclés · Oubli : matériel, blouse, retard.</span></div>` : ''}
     ${apprBlockHTML(c, per)}
@@ -5356,6 +5375,7 @@ const ACT = {
     try { await navigator.clipboard.writeText(txt); toast('Récapitulatif copié : collez-le dans la conversation avec Claude'); } catch (e) { openModal(`<h2>Récapitulatif à copier</h2><textarea rows="14" style="width:100%" readonly>${esc(txt)}</textarea><div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`); } },
   'bul-import': () => { const c = cls(V.cid), per = periodsFor(c)[V.p], t = $('#bul-in').value; const r = bulImport(c, per, t);
     if (!r.n) { toast('Aucune ligne « [numéro] appréciation » trouvée'); return; } renderKeep(); toast(`${plural(r.n, 'appréciation importée', 'appréciations importées')}${r.bad.length ? ' · numéros inconnus : ' + r.bad.join(', ') : ''}`); },
+  'moy-tip': el => { const on = !el.classList.contains('show'); document.querySelectorAll('.mtip.show').forEach(x => x.classList.remove('show')); if (on) el.classList.add('show'); },
   'kw-open': el => { V.kwOpen = V.kwOpen === el.dataset.sid ? null : el.dataset.sid; renderKeep(); },
   'kw-tog': el => { const k = el.dataset.k, w = el.dataset.w, l = ((DB.kw[k] || {}).w || []).slice(), i = l.indexOf(w); if (i >= 0) l.splice(i, 1); else l.push(w); kwSet(k, l); renderKeep(); },
   sex: el => { const s = stu(el.dataset.sid); if (!s) return; s.sex = s.sex === el.dataset.v ? '' : el.dataset.v; s.t = Date.now(); save(); renderKeep(); },

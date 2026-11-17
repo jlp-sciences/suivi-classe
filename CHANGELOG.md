@@ -1,5 +1,8 @@
 # Historique des versions
 
+## 3.18 — 17 novembre 2026
+- Bilan de séance de la classe : 5e choix « Correct » (gris), entre « Plutôt bien » et « Passive », repris dans les camemberts et la frise du Suivi.
+
 ## 3.17 — 16 novembre 2026
 - Consigne pour Claude : constat à la troisième personne en commençant par le prénom, conseil en vouvoyant l'élève.
 

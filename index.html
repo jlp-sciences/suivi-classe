@@ -331,6 +331,7 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .chip.dv{background:#F6D45A;color:#3D3000}
 .chip.appr-dyn{background:var(--pos);color:var(--on-pos)}
 .chip.appr-bien{background:var(--pos-soft);color:var(--pos-ink)}
+.chip.appr-correct{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-2)}
 .chip.appr-passive{background:var(--warn-soft);color:var(--warn-ink);border:1px solid var(--warn-line)}
 .chip.appr-penible{background:var(--neg);color:var(--on-neg)}
 .tile.dv-on{border:3px solid #E2B41B;background:#FFF4C2;box-shadow:0 0 0 1px #E2B41B}
@@ -357,6 +358,7 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--pos) 35%,trans
 .seg.appr button{min-height:44px;padding:0 16px;font-size:15px}
 .seg.appr button.appr-dyn[aria-pressed="true"]{background:var(--pos);color:var(--on-pos);border-color:var(--pos)}
 .seg.appr button.appr-bien[aria-pressed="true"]{background:var(--pos-soft);color:var(--pos-ink);border-color:var(--pos-line)}
+.seg.appr button.appr-correct[aria-pressed="true"]{background:#8A9099;color:#fff;border-color:#8A9099}
 .seg.appr button.appr-passive[aria-pressed="true"]{background:#D9A52B;color:#1B1E23;border-color:#D9A52B}
 .seg.appr button.appr-penible[aria-pressed="true"]{background:var(--neg);color:var(--on-neg);border-color:var(--neg)}
 .pnav{display:flex;align-items:center;gap:6px}
@@ -571,7 +573,7 @@ table.prev td,table.prev th{padding:6px 8px;border-top:1px solid var(--line);tex
 
 /* ---- v2.8 : fenêtre de contenu en blocs, travail à vérifier, cahier de textes, bilans ---- */
 :root{--sc-ch:#5A6B7D;--sc-ck:#C9951C;--sc-de:#1E8C8C;--sc-hw:#7B4FB3;--sc-no:#8A8F96;--cdt:#2F6DB5;
-  --a-dyn:#1E6B5C;--a-bien:#7DBBA9;--a-passive:#D9A52B;--a-penible:#9A3F1B;--ras:#9AA0A8}
+  --a-dyn:#1E6B5C;--a-bien:#7DBBA9;--a-correct:#9AA0A8;--a-passive:#D9A52B;--a-penible:#9A3F1B;--ras:#9AA0A8}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sc-ch:#8FA0B3;--sc-ck:#E2B547;--sc-de:#4DB8B8;--sc-hw:#A985DA;--sc-no:#9AA0A8;--cdt:#6FA3E6;--a-dyn:#5FB7A2;--a-bien:#3E7A6C;--a-penible:#E08A63;--ras:#6E747C}}
 :root[data-theme="dark"]{--sc-ch:#8FA0B3;--sc-ck:#E2B547;--sc-de:#4DB8B8;--sc-hw:#A985DA;--sc-no:#9AA0A8;--cdt:#6FA3E6;--a-dyn:#5FB7A2;--a-bien:#3E7A6C;--a-penible:#E08A63;--ras:#6E747C}
 .ctsec{position:relative;border:1px solid var(--line);border-left:5px solid var(--sc);border-radius:12px;padding:12px 14px 14px;background:var(--surface-2);background:color-mix(in srgb,var(--sc) 7%,var(--surface));display:flex;flex-direction:column;gap:8px}
@@ -624,7 +626,7 @@ table.prev td,table.prev th{padding:6px 8px;border-top:1px solid var(--line);tex
 .apie h3{margin:0;font-size:15px}
 .apie .pw{display:flex;align-items:center;gap:14px}
 .apie svg{width:120px;height:120px;flex:none}
-.apie svg .a-dyn{fill:var(--a-dyn)} .apie svg .a-bien{fill:var(--a-bien)} .apie svg .a-passive{fill:var(--a-passive)} .apie svg .a-penible{fill:var(--a-penible)}
+.apie svg .a-dyn{fill:var(--a-dyn)} .apie svg .a-bien{fill:var(--a-bien)} .apie svg .a-correct{fill:var(--a-correct)} .apie svg .a-passive{fill:var(--a-passive)} .apie svg .a-penible{fill:var(--a-penible)}
 .apie svg .ctr{font:700 22px var(--sans);fill:var(--ink)} .apie svg .ctr2{font:12px var(--sans);fill:var(--muted)}
 .apie svg .emp{fill:none;stroke:var(--surface-2);stroke-width:16}
 .aleg{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13px;min-width:0}
@@ -632,7 +634,7 @@ table.prev td,table.prev th{padding:6px 8px;border-top:1px solid var(--line);tex
 .aleg i{width:10px;height:10px;border-radius:3px;flex:none}
 .aleg b{margin-left:auto;font-variant-numeric:tabular-nums;padding-left:8px}
 .aleg .pc{color:var(--muted);font-variant-numeric:tabular-nums;width:46px;text-align:right;white-space:nowrap}
-.i-dyn{background:var(--a-dyn)} .i-bien{background:var(--a-bien)} .i-passive{background:var(--a-passive)} .i-penible{background:var(--a-penible)}
+.i-dyn{background:var(--a-dyn)} .i-bien{background:var(--a-bien)} .i-correct{background:var(--a-correct)} .i-passive{background:var(--a-passive)} .i-penible{background:var(--a-penible)}
 .frise{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .frise .fd{width:14px;height:14px;border-radius:50%;border:0;padding:0;cursor:pointer;flex:none}
 .frise .fd.none{background:transparent;box-shadow:inset 0 0 0 2px var(--line-2)}
@@ -1149,8 +1151,8 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.17', d: '2026-11-16'};
-const SW_CACHE = 'suivi-classe-v33'; // identique à CACHE dans sw.js (vérifié par les tests)
+const APP_VERSION = {n: '3.18', d: '2026-11-17'};
+const SW_CACHE = 'suivi-classe-v34'; // identique à CACHE dans sw.js (vérifié par les tests)
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1187,7 +1189,7 @@ const PANEL_HIDE = new Set(['devoir_inc', 'devoir_bac']);
 /* étiquettes masquées dans le panneau (Réglages › Étiquettes) : les observations déjà saisies restent */
 const catShown = k => !PANEL_HIDE.has(k) && !((DB.settings.hiddenCats || []).includes(k));
 /* appréciation de la classe pour une séance */
-const APPR = [['dyn', 'Dynamique'], ['bien', 'Plutôt bien'], ['passive', 'Passive'], ['penible', 'Pénible']];
+const APPR = [['dyn', 'Dynamique'], ['bien', 'Plutôt bien'], ['correct', 'Correct'], ['passive', 'Passive'], ['penible', 'Pénible']];
 const APPR_L = Object.fromEntries(APPR);
 const apprChip = key => { const a = DB.appr && DB.appr[key]; return a && APPR_L[a] ? `<span class="chip appr-${a}">${APPR_L[a]}</span>` : ''; };
 const CAT = Object.fromEntries(CATS.map(c => [c.k, c]));

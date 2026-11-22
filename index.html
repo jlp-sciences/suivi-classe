@@ -1021,7 +1021,7 @@ button.wpill{cursor:pointer}
 .mtip .tipx{display:none;position:absolute;z-index:30;top:calc(100% + 6px);right:0;padding:6px 10px;border-radius:8px;background:var(--surface);color:var(--ink);border:1px solid var(--line-2);box-shadow:0 6px 16px rgba(0,0,0,.16);font-size:13px;font-weight:600;white-space:nowrap}
 .mtip:hover .tipx,.mtip.show .tipx{display:block}
 .bullist .iimp{border:1.5px solid var(--ink-2);border-radius:7px;padding:0 0 0 6px;white-space:nowrap}
-.clscard .cst{margin:2px 0 4px;line-height:1.45}
+.clsai summary{font-weight:600;font-size:14px} .clscard .cst{margin:2px 0 4px;line-height:1.45}
 .kwrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:6px 0}
 .kwc{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid currentColor;background:transparent;line-height:1.3}
 .kwc.pos{color:var(--pos-ink)} .kwc.neg{color:var(--neg-ink)} .kwc.neu{color:var(--ink-2)} .kwc.cons{color:#2563A8}
@@ -2372,6 +2372,18 @@ function kwRow(s, per, cust0) {
       <div class="kwg"><span class="kwgl">Autre</span><input type="text" class="kwin" data-chg="kw-new" data-k="${esc(k)}" data-sid="${s.id}" placeholder="Écrire un mot puis Entrée" maxlength="60"></div></div>` : ''}`;
 }
 function kwSet(k, list) { if (list.length) DB.kw[k] = {w: list, t: Date.now()}; else delete DB.kw[k]; save(); }
+function clsExportText(c, per) {
+  return `APPRÉCIATION DE LA CLASSE À RÉDIGER — ${c.name} — ${levelOf(c) === '2de' ? 'Physique-chimie Seconde' : levelOf(c) === '1re' ? 'Enseignement scientifique' : 'Physique-chimie'} — ${per.n} (du ${fmtShort(per.s)} au ${fmtShort(per.e)})
+Consignes :
+- ${BUL_MAX} caractères maximum, espaces compris, le plus court possible tout en étant utile.
+- À la troisième personne (ex. « Classe agréable et investie… »).
+- Structure : un constat sur l'ambiance, le travail et le niveau, puis un conseil collectif.
+- Pas de chiffres, pas de prénoms ; ne rien inventer.
+- « Mots-clés du professeur » : mes impressions, prioritaires sur les repères chiffrés.
+Répondre avec une seule ligne, au format exact : [classe] appréciation
+
+${clsLine(c, per)}`;
+}
 function clsLine(c, per) {
   const kw = (DB.kw[clsKey(c.id, per)] || {}).w || [], cur = DB.bul[clsKey(c.id, per)], st = classStatsText(classStats(c, per));
   return `[classe] ${c.name} — ${kw.length ? 'Mots-clés du professeur : ' + kw.join(', ') + ' — ' : ''}${st || 'Pas encore de données chiffrées'}${cur ? ' — Appréciation actuelle : ' + cur.text.replace(/\s+/g, ' ') : ''}`;
@@ -2396,17 +2408,15 @@ Consignes :
 - « Mots-clés du professeur » (dont les conseils) : mes impressions, prioritaires sur le reste des données ; accorder selon fille / garçon.
 - « Implication » : simple repère, hors moyenne, à ne jamais citer.
 - Reprendre si elles conviennent mes expressions (une au plus par élève, pas deux fois de suite) : inverser la tendance, changer la dynamique, se donner les moyens, investi(e) dans ses apprentissages, revoir les méthodes de travail, je compte sur vous pour…
-- Appréciation de la classe (ligne [classe]) : ${BUL_MAX} caractères maximum, à la troisième personne (ex. « Classe agréable et investie… »), un constat sur l'ambiance, le travail et le niveau, puis un conseil collectif ; pas de chiffres, pas de prénoms.
-Répondre d'abord avec une ligne [classe] appréciation, puis une ligne par élève, au format exact : [numéro] appréciation
+Répondre avec une ligne par élève, au format exact : [numéro] appréciation
 
-${clsLine(c, per)}
 ${lines.join('\n')}`;
 }
 function bulImport(c, per, text) {
   const list = studentsOf(c.id); let n = 0, cl = false; const bad = [];
   text.split(/\r?\n/).forEach(line => {
     const mc = line.match(/^\s*\[\s*classe\s*\]\s*(.+)$/i);
-    if (mc) { let v = mc[1].trim().replace(/^["«]\s*|\s*["»]$/g, '').trim(); if (v) { DB.bul[clsKey(c.id, per)] = {text: v, t: Date.now()}; n++; cl = true; } return; }
+    if (mc) { cl = true; return; } // l'appréciation de la classe se fait à part, dans sa carte
     const m = line.match(/^\s*\[(\d+)\]\s*(.+)$/); if (!m) return;
     const s = list[+m[1] - 1]; if (!s) { bad.push(m[1]); return; }
     let v = m[2].trim(); const lab = stuLabel(s, list);
@@ -2428,14 +2438,18 @@ function viewBul() {
   <main class="main"><div class="wrap" style="max-width:980px;display:flex;flex-direction:column;gap:14px">
     <section class="card bulsteps">
       <div class="bstep"><b>1</b><div><strong>Copier le récapitulatif de la classe</strong><p class="small muted">Pour chaque élève (prénom et initiale du nom) : vos mots-clés, le résumé de vos observations, les moyennes, la tendance et vos notes de suivi, avec vos consignes de rédaction. Ajoutez d'abord les mots-clés ci-dessous si vous le souhaitez.</p><button class="btn ink" data-act="bul-export">Copier pour Claude</button></div></div>
-      <div class="bstep"><b>2</b><div><strong>Le coller dans la conversation avec Claude</strong><p class="small muted">Claude répond avec une ligne pour la classe, <code>[classe] appréciation</code>, puis une ligne par élève : <code>[numéro] appréciation</code>.</p></div></div>
+      <div class="bstep"><b>2</b><div><strong>Le coller dans la conversation avec Claude</strong><p class="small muted">Claude répond avec une ligne par élève : <code>[numéro] appréciation</code>.</p></div></div>
       <div class="bstep"><b>3</b><div><strong>Coller la réponse ici</strong><textarea id="bul-in" rows="4" placeholder="[1] …&#10;[2] …"></textarea><button class="btn ink" data-act="bul-import" style="margin-top:6px">Importer les appréciations</button></div></div>
     </section>
     ${(() => { const k = clsKey(c.id, per), cur = DB.bul[k] ? DB.bul[k].text : '', st = classStatsText(classStats(c, per));
       return `<section class="card clscard"><div class="row" style="justify-content:space-between;margin-bottom:4px"><h2 style="font-size:16px;margin:0">Appréciation de la classe</h2><span class="row" style="gap:8px"><span class="small muted bulcnt${cur.length > BUL_MAX ? ' over' : ''}">${cur.length} / ${BUL_MAX}</span><button class="btn" data-act="bul-copy" data-k="${esc(k)}" ${cur ? '' : 'disabled'}>Copier</button></span></div>
         <p class="small muted cst">${st ? esc(st) : 'Pas encore de notes ni de bilans pour cette période.'}</p>
         ${kwRowC(c, per)}
-        <textarea rows="2" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Pas encore d'appréciation de classe (à la troisième personne : « Classe agréable et investie… »)">${esc(cur)}</textarea></section>`; })()}
+        <textarea rows="2" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Pas encore d'appréciation de classe (à la troisième personne : « Classe agréable et investie… »)">${esc(cur)}</textarea>
+        <details class="idet clsai"><summary>Rédiger avec Claude</summary>
+          <p class="small muted" style="margin:6px 0">Copiez le récapitulatif de la classe (repères et mots-clés ci-dessus), collez-le dans la conversation avec Claude, puis collez sa réponse <code>[classe] …</code> ici.</p>
+          <div class="row" style="gap:8px;align-items:flex-start"><button class="btn ink" data-act="cls-export">Copier pour Claude</button><textarea id="cls-in" rows="2" style="flex:1;min-width:200px" placeholder="[classe] …"></textarea><button class="btn" data-act="cls-import">Importer</button></div>
+        </details></section>`; })()}
     <section class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="font-size:16px;margin:0">Relire et copier vers École Directe</h2>${implP().on ? '<button class="btn" data-act="impl-copy">Copier les notes d\'implication</button>' : ''}</div>
       <ul class="bullist">${(() => { const cust = kwCustom(); return list.map((s, i) => { const k = bulKey(s.id, per), cur = DB.bul[k] ? DB.bul[k].text : '';
         const ir = implP().on ? implCalc(s, per) : null, ret = implRet(s.id, per);
@@ -2994,9 +3008,12 @@ async function runSelfTests() {
         ACT['kw-tog']({dataset: {k: ck, sid: CLS_PFX + 'tA', w: 'agréable'}}); CHG['kw-new']({value: 'Investie', dataset: {k: ck, sid: CLS_PFX + 'tA'}}); CHG['kw-new']({value: 'groupe soudé', dataset: {k: ck, sid: CLS_PFX + 'tA'}});
         eq(DB.kw[ck].w, ['agréable', 'investie', 'groupe soudé'], 'mots-clés de la classe (liste de classe, mot connu reconnu, mot libre)');
         ok(!kwCustom().includes('groupe soudé') && kwcCustom().includes('groupe soudé'), 'mots libres de la classe séparés de ceux des élèves');
-        const ex = bulExportText(cA, per); ok(/\n\[classe\] .* — Mots-clés du professeur : agréable, investie, groupe soudé — /.test(ex) && /Répondre d'abord avec une ligne \[classe\]/.test(ex), 'récapitulatif : ligne [classe] avec mots-clés et consigne');
-        const r = bulImport(cA, per, '[classe] « Classe agréable et investie. Il faut maintenant approfondir le travail personnel. »\n[1] Bien.');
-        ok(r.cl && r.n === 2 && DB.bul[ck].text === 'Classe agréable et investie. Il faut maintenant approfondir le travail personnel.', 'import : appréciation de la classe rangée à part');
+        const ex = clsExportText(cA, per); ok(/\n\[classe\] .* — Mots-clés du professeur : agréable, investie, groupe soudé — /.test(ex) && /À la troisième personne/.test(ex) && !/\n\[1\]/.test(ex), 'récapitulatif de la classe : à part, avec mots-clés et consigne');
+        ok(!/\[classe\]/.test(bulExportText(cA, per)), 'récapitulatif des élèves : sans la classe');
+        const r = bulImport(cA, per, '[classe] Autre texte\n[1] Bien.'); ok(r.cl && r.n === 1 && !DB.bul[ck], 'import des élèves : ligne [classe] ignorée');
+        const keepV = V; V = {name: 'bul', cid: 'tA', p: 0}; document.body.insertAdjacentHTML('beforeend', '<textarea id="cls-in">[classe] « Classe agréable et investie. Il faut maintenant approfondir le travail personnel. »</textarea>');
+        try { ACT['cls-import'](); } finally { $('#cls-in').remove(); V = keepV; }
+        eq(DB.bul[ck] && DB.bul[ck].text, 'Classe agréable et investie. Il faut maintenant approfondir le travail personnel.', 'import de la classe dans sa carte');
         ok(html(viewBulTest()).querySelector('.clscard textarea').value.startsWith('Classe agréable'), 'page : carte « Appréciation de la classe »');
         delete DB.kw[ck]; delete DB.bul[ck]; }
       DB.implN[implKey('y0', per)] = {v: 14.5, t: 1}; ok(/Implication \(repère du professeur, hors moyenne\) : 14,5\/20/.test(bulExportText(cls('tA'), per)), 'note d\'implication retenue jointe au récapitulatif'); delete DB.implN[implKey('y0', per)];
@@ -5439,8 +5456,13 @@ const ACT = {
   'bul-open': el => { const c = cls(el.dataset.cid), periods = periodsFor(c); let p = V.sp != null ? V.sp : currentPeriodIndex(periods); if (p >= periods.length - 1) p = Math.max(0, currentPeriodIndex(periods)); go({name: 'bul', cid: c.id, p}); },
   'bul-export': async () => { const c = cls(V.cid), per = periodsFor(c)[V.p], txt = bulExportText(c, per);
     try { await navigator.clipboard.writeText(txt); toast('Récapitulatif copié : collez-le dans la conversation avec Claude'); } catch (e) { openModal(`<h2>Récapitulatif à copier</h2><textarea rows="14" style="width:100%" readonly>${esc(txt)}</textarea><div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`); } },
+  'cls-export': async () => { const c = cls(V.cid), per = periodsFor(c)[V.p], txt = clsExportText(c, per);
+    try { await navigator.clipboard.writeText(txt); toast('Récapitulatif de la classe copié : collez-le dans la conversation avec Claude'); } catch (e) { toast('Copie impossible : sélectionnez le texte à la main'); } },
+  'cls-import': () => { const c = cls(V.cid), per = periodsFor(c)[V.p], t = ($('#cls-in') || {}).value || '', m = t.match(/\[\s*classe\s*\]\s*(.+)/i);
+    const v = (m ? m[1] : t).trim().replace(/^["«]\s*|\s*["»]$/g, '').trim(); if (!v) { toast('Collez la réponse de Claude « [classe] … »'); return; }
+    DB.bul[clsKey(c.id, per)] = {text: v, t: Date.now()}; save(); renderKeep(); toast('Appréciation de la classe importée'); },
   'bul-import': () => { const c = cls(V.cid), per = periodsFor(c)[V.p], t = $('#bul-in').value; const r = bulImport(c, per, t);
-    if (!r.n) { toast('Aucune ligne « [classe] … » ou « [numéro] … » trouvée'); return; } renderKeep(); toast(`${plural(r.n, 'appréciation importée', 'appréciations importées')}${r.cl ? ', dont celle de la classe' : ''}${r.bad.length ? ' · numéros inconnus : ' + r.bad.join(', ') : ''}`); },
+    if (!r.n) { toast('Aucune ligne « [classe] … » ou « [numéro] … » trouvée'); return; } renderKeep(); toast(`${plural(r.n, 'appréciation importée', 'appréciations importées')}${r.cl ? ' · ligne [classe] ignorée : importez-la dans la carte « Appréciation de la classe »' : ''}${r.bad.length ? ' · numéros inconnus : ' + r.bad.join(', ') : ''}`); },
   'moy-tip': el => { const on = !el.classList.contains('show'); document.querySelectorAll('.mtip.show').forEach(x => x.classList.remove('show')); if (on) el.classList.add('show'); },
   'kw-open': el => { V.kwOpen = V.kwOpen === el.dataset.sid ? null : el.dataset.sid; renderKeep(); },
   'kw-tog': el => { const k = el.dataset.k, w = el.dataset.w, l = ((DB.kw[k] || {}).w || []).slice(), i = l.indexOf(w); if (i >= 0) l.splice(i, 1); else l.push(w); kwSet(k, l); renderKeep(); },

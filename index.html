@@ -1021,6 +1021,7 @@ button.wpill{cursor:pointer}
 .mtip .tipx{display:none;position:absolute;z-index:30;top:calc(100% + 6px);right:0;padding:6px 10px;border-radius:8px;background:var(--surface);color:var(--ink);border:1px solid var(--line-2);box-shadow:0 6px 16px rgba(0,0,0,.16);font-size:13px;font-weight:600;white-space:nowrap}
 .mtip:hover .tipx,.mtip.show .tipx{display:block}
 .bullist .iimp{border:1.5px solid var(--ink-2);border-radius:7px;padding:0 0 0 6px;white-space:nowrap}
+.clscard .cst{margin:2px 0 4px;line-height:1.45}
 .kwrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:6px 0}
 .kwc{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid currentColor;background:transparent;line-height:1.3}
 .kwc.pos{color:var(--pos-ink)} .kwc.neg{color:var(--neg-ink)} .kwc.neu{color:var(--ink-2)} .kwc.cons{color:#2563A8}
@@ -1151,8 +1152,8 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.18', d: '2026-11-17'};
-const SW_CACHE = 'suivi-classe-v34'; // identique à CACHE dans sw.js (vérifié par les tests)
+const APP_VERSION = {n: '3.19', d: '2026-11-22'};
+const SW_CACHE = 'suivi-classe-v35'; // identique à CACHE dans sw.js (vérifié par les tests)
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -2208,6 +2209,7 @@ function parseED(grid) {
 }
 /* moyenne d'un élève sur les évaluations du fichier, comme l'application la calculera */
 function gimpAvg(imp, r) { let a = 0, w = 0; imp.evs.forEach((e, i) => { const v = r.vals[i]; if (typeof v !== 'number' || (r.nc && r.nc[i]) || v < 0 || v > e.max) return; a += v / (e.max || 20) * 20 * gCoef(e); w += gCoef(e); }); return w ? a / w : null; }
+const viewBulTest = () => { const keep = V; V = {name: 'bul', cid: 'tA', p: 0}; try { return viewBul(); } finally { V = keep; } };
 const viewNotesPreviewTest = () => { const keep = V; V = {name: 'notes', cid: GIMP.cid, p: 0}; try { return viewNotes(); } finally { V = keep; } };
 /* correspondance entre les évaluations lues et celles déjà dans l'application :
    ex = même date et même intitulé ; ren = probablement renommée dans École Directe (même date, même barème, ancien intitulé absent, mêmes notes) ;
@@ -2317,7 +2319,47 @@ function kwForm(id, sex) {
   let i = 0; while (i < a[j].length && a[j][i] === b[j][i]) i++; a[j] = a[j] + '·' + b[j].slice(i); return a.join(' ');
 }
 const kwOf = (sid, per) => (DB.kw[bulKey(sid, per)] || {}).w || [];
-const kwCustom = () => [...new Set(Object.values(DB.kw).flatMap(x => x.w || []).filter(w => !KW[w]))].sort((a, b) => a.localeCompare(b, 'fr'));
+const kwCustom = () => [...new Set(Object.entries(DB.kw).filter(([k]) => !k.startsWith(CLS_PFX)).flatMap(([, x]) => x.w || []).filter(w => !KW[w]))].sort((a, b) => a.localeCompare(b, 'fr'));
+/* appréciation et mots-clés de la CLASSE : rangés comme ceux d'un élève, sous un identifiant « cls~<classe> » */
+const CLS_PFX = 'cls~', clsKey = (cid, per) => bulKey(CLS_PFX + cid, per);
+const KWC_G = [
+  ['Ambiance', [['agréable', 'pos'], ['dynamique', 'pos'], ['sérieuse', 'pos'], ['calme', 'pos'], ['bonne ambiance de travail', 'pos'], ['bavarde', 'neg'], ['agitée', 'neg'], ['dissipée', 'neg'], ['passive', 'neg'], ['hétérogène', 'neu']]],
+  ['Travail', [['investie', 'pos'], ['travail régulier', 'pos'], ['participation active', 'pos'], ['sérieuse en TP', 'pos'], ['participation inégale', 'neu'], ['travail personnel insuffisant', 'neg'], ['manque de régularité', 'neg']]],
+  ['Niveau', [['bon niveau', 'pos'], ['groupe de tête solide', 'pos'], ['en progrès', 'pos'], ['niveau correct', 'neu'], ['niveau hétérogène', 'neu'], ['résultats fragiles', 'neg'], ['plusieurs élèves en difficulté', 'neg'], ['en baisse', 'neg']]],
+  ['Conseils', [['maintenir cette dynamique', 'cons'], ['approfondir le travail personnel', 'cons'], ['apprendre régulièrement les leçons', 'cons'], ['participer davantage', 'cons'], ['gagner en concentration', 'cons'], ["s'investir davantage", 'cons']]]];
+const KWC = {}; KWC_G.forEach(([, l]) => l.forEach(([w, t]) => { KWC[w] = {m: w, f: w, t}; }));
+const kwcCustom = () => [...new Set(Object.entries(DB.kw).filter(([k]) => k.startsWith(CLS_PFX)).flatMap(([, x]) => x.w || []).filter(w => !KWC[w]))].sort((a, b) => a.localeCompare(b, 'fr'));
+function kwRowC(c, per) {
+  const id = CLS_PFX + c.id, k = clsKey(c.id, per), sel = (DB.kw[k] || {}).w || [], open = V.kwOpen === id;
+  const chip = (w, on) => `<button type="button" class="kwc ${KWC[w] ? KWC[w].t : 'neu'}${on ? ' on' : ''}" data-act="kw-tog" data-k="${esc(k)}" data-sid="${id}" data-w="${esc(w)}" aria-pressed="${on}">${esc(w)}${on ? ' ×' : ''}</button>`;
+  const cust = open ? kwcCustom().filter(w => !sel.includes(w)) : [];
+  return `<div class="kwrow">${sel.map(w => chip(w, true)).join('')}<button type="button" class="kwc add" data-act="kw-open" data-sid="${id}" aria-expanded="${open}">${open ? 'Fermer' : '+ Mots-clés de la classe'}</button></div>
+    ${open ? `<div class="kwpal">${KWC_G.map(([g, l]) => `<div class="kwg"><span class="kwgl">${g}</span>${l.map(([w]) => w).filter(w => !sel.includes(w)).map(w => chip(w, false)).join('')}</div>`).join('')}
+      ${cust.length ? `<div class="kwg"><span class="kwgl">Vos mots</span>${cust.map(w => chip(w, false)).join('')}</div>` : ''}
+      <div class="kwg"><span class="kwgl">Autre</span><input type="text" class="kwin" data-chg="kw-new" data-k="${esc(k)}" data-sid="${id}" placeholder="Écrire un mot puis Entrée" maxlength="60"></div></div>` : ''}`;
+}
+/* repères chiffrés de la classe sur la période */
+function classStats(c, per) {
+  const list = studentsOf(c.id), rs = list.map(s => resultsOf(s, per)), moys = rs.map(r => r.moy).filter(v => v != null && v >= 0);
+  const mean = l => { const x = l.filter(v => v != null && v >= 0); return x.length ? x.reduce((a, b) => a + b, 0) / x.length : null; };
+  const st = gStats(moys), ps = periodsFor(c), i = ps.findIndex(p => p.s === per.s && p.n === per.n), prev = i > 0 && ps[i - 1].n !== 'Année' ? ps[i - 1] : null;
+  const ses = classSessions(c.id).filter(x => !x.cancelled && !x.extra && x.date >= per.s && x.date <= per.e && sesStarted(x)), appr = {}; let nAppr = 0;
+  ses.forEach(x => { const a = DB.appr[x.key]; if (a && APPR_L[a]) { appr[a] = (appr[a] || 0) + 1; nAppr++; } });
+  const ks = new Set(ses.map(x => x.key)), dev = new Set(DB.obs.filter(o => ks.has(o.ses) && o.cat === 'devoir').map(o => o.ses)).size;
+  const impl = implP().on ? mean(list.map(s => { const r = implRet(s.id, per); if (r) return r.v; const ir = implCalc(s, per); return ir.note; })) : null;
+  return {n: list.length, st, low: moys.filter(v => v < 10).length, high: moys.filter(v => v >= 15).length, ecrit: mean(rs.map(r => r.ecrit)), tp: mean(rs.map(r => r.tp)),
+    prev: prev ? classAvg(c.id, prev) : null, prevN: prev ? prev.n : '', appr, nAppr, nSes: ses.length, dev, impl};
+}
+function classStatsText(x) {
+  const out = [];
+  if (x.st) out.push(`Moyenne de la classe ${fmtG(x.st.m)} (σ ${fmtG(x.st.sd)}, de ${fmtG(x.st.min)} à ${fmtG(x.st.max)} ; ${plural(x.low, 'élève')} sous 10, ${x.high} à 15 ou plus)`);
+  if (x.ecrit != null || x.tp != null) out.push(`écrit ${fmtG(x.ecrit)}, TP ${fmtG(x.tp)}`);
+  if (x.prev != null && x.st) out.push(`${x.prevN} : ${fmtG(x.prev)}`);
+  if (x.nAppr) out.push('Bilans de séance : ' + APPR.filter(([k]) => x.appr[k]).map(([k, l]) => `${l} ${x.appr[k]}`).join(', ') + ` (sur ${x.nAppr})`);
+  if (x.impl != null) out.push(`implication moyenne ${fmtH(x.impl)}`);
+  if (x.nSes) out.push(`devoirs non faits lors de ${x.dev} séance${x.dev > 1 ? 's' : ''} sur ${x.nSes}`);
+  return out.join(' · ');
+}
 function kwRow(s, per, cust0) {
   const k = bulKey(s.id, per), sel = kwOf(s.id, per), open = V.kwOpen === s.id;
   const chip = (w, on) => `<button type="button" class="kwc ${KW[w] ? KW[w].t : 'neu'}${on ? ' on' : ''}" data-act="kw-tog" data-k="${esc(k)}" data-sid="${s.id}" data-w="${esc(w)}" aria-pressed="${on}">${esc(kwForm(w, s.sex))}${on ? ' ×' : ''}</button>`;
@@ -2330,6 +2372,10 @@ function kwRow(s, per, cust0) {
       <div class="kwg"><span class="kwgl">Autre</span><input type="text" class="kwin" data-chg="kw-new" data-k="${esc(k)}" data-sid="${s.id}" placeholder="Écrire un mot puis Entrée" maxlength="60"></div></div>` : ''}`;
 }
 function kwSet(k, list) { if (list.length) DB.kw[k] = {w: list, t: Date.now()}; else delete DB.kw[k]; save(); }
+function clsLine(c, per) {
+  const kw = (DB.kw[clsKey(c.id, per)] || {}).w || [], cur = DB.bul[clsKey(c.id, per)], st = classStatsText(classStats(c, per));
+  return `[classe] ${c.name} — ${kw.length ? 'Mots-clés du professeur : ' + kw.join(', ') + ' — ' : ''}${st || 'Pas encore de données chiffrées'}${cur ? ' — Appréciation actuelle : ' + cur.text.replace(/\s+/g, ' ') : ''}`;
+}
 function bulExportText(c, per) {
   const list = studentsOf(c.id);
   const lines = list.map((s, i) => {
@@ -2350,13 +2396,17 @@ Consignes :
 - « Mots-clés du professeur » (dont les conseils) : mes impressions, prioritaires sur le reste des données ; accorder selon fille / garçon.
 - « Implication » : simple repère, hors moyenne, à ne jamais citer.
 - Reprendre si elles conviennent mes expressions (une au plus par élève, pas deux fois de suite) : inverser la tendance, changer la dynamique, se donner les moyens, investi(e) dans ses apprentissages, revoir les méthodes de travail, je compte sur vous pour…
-Répondre avec une ligne par élève, au format exact : [numéro] appréciation
+- Appréciation de la classe (ligne [classe]) : ${BUL_MAX} caractères maximum, à la troisième personne (ex. « Classe agréable et investie… »), un constat sur l'ambiance, le travail et le niveau, puis un conseil collectif ; pas de chiffres, pas de prénoms.
+Répondre d'abord avec une ligne [classe] appréciation, puis une ligne par élève, au format exact : [numéro] appréciation
 
+${clsLine(c, per)}
 ${lines.join('\n')}`;
 }
 function bulImport(c, per, text) {
-  const list = studentsOf(c.id); let n = 0; const bad = [];
+  const list = studentsOf(c.id); let n = 0, cl = false; const bad = [];
   text.split(/\r?\n/).forEach(line => {
+    const mc = line.match(/^\s*\[\s*classe\s*\]\s*(.+)$/i);
+    if (mc) { let v = mc[1].trim().replace(/^["«]\s*|\s*["»]$/g, '').trim(); if (v) { DB.bul[clsKey(c.id, per)] = {text: v, t: Date.now()}; n++; cl = true; } return; }
     const m = line.match(/^\s*\[(\d+)\]\s*(.+)$/); if (!m) return;
     const s = list[+m[1] - 1]; if (!s) { bad.push(m[1]); return; }
     let v = m[2].trim(); const lab = stuLabel(s, list);
@@ -2365,7 +2415,7 @@ function bulImport(c, per, text) {
     DB.bul[bulKey(s.id, per)] = {text: v, t: Date.now()}; n++;
   });
   if (n) save();
-  return {n, bad};
+  return {n, bad, cl};
 }
 function viewBul() {
   const c = cls(V.cid); if (!c) { back(); return ''; }
@@ -2378,9 +2428,14 @@ function viewBul() {
   <main class="main"><div class="wrap" style="max-width:980px;display:flex;flex-direction:column;gap:14px">
     <section class="card bulsteps">
       <div class="bstep"><b>1</b><div><strong>Copier le récapitulatif de la classe</strong><p class="small muted">Pour chaque élève (prénom et initiale du nom) : vos mots-clés, le résumé de vos observations, les moyennes, la tendance et vos notes de suivi, avec vos consignes de rédaction. Ajoutez d'abord les mots-clés ci-dessous si vous le souhaitez.</p><button class="btn ink" data-act="bul-export">Copier pour Claude</button></div></div>
-      <div class="bstep"><b>2</b><div><strong>Le coller dans la conversation avec Claude</strong><p class="small muted">Claude répond avec une ligne par élève : <code>[numéro] appréciation</code>.</p></div></div>
+      <div class="bstep"><b>2</b><div><strong>Le coller dans la conversation avec Claude</strong><p class="small muted">Claude répond avec une ligne pour la classe, <code>[classe] appréciation</code>, puis une ligne par élève : <code>[numéro] appréciation</code>.</p></div></div>
       <div class="bstep"><b>3</b><div><strong>Coller la réponse ici</strong><textarea id="bul-in" rows="4" placeholder="[1] …&#10;[2] …"></textarea><button class="btn ink" data-act="bul-import" style="margin-top:6px">Importer les appréciations</button></div></div>
     </section>
+    ${(() => { const k = clsKey(c.id, per), cur = DB.bul[k] ? DB.bul[k].text : '', st = classStatsText(classStats(c, per));
+      return `<section class="card clscard"><div class="row" style="justify-content:space-between;margin-bottom:4px"><h2 style="font-size:16px;margin:0">Appréciation de la classe</h2><span class="row" style="gap:8px"><span class="small muted bulcnt${cur.length > BUL_MAX ? ' over' : ''}">${cur.length} / ${BUL_MAX}</span><button class="btn" data-act="bul-copy" data-k="${esc(k)}" ${cur ? '' : 'disabled'}>Copier</button></span></div>
+        <p class="small muted cst">${st ? esc(st) : 'Pas encore de notes ni de bilans pour cette période.'}</p>
+        ${kwRowC(c, per)}
+        <textarea rows="2" data-chg="bul" data-k="${esc(k)}" data-count="${BUL_MAX}" placeholder="Pas encore d'appréciation de classe (à la troisième personne : « Classe agréable et investie… »)">${esc(cur)}</textarea></section>`; })()}
     <section class="card"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="font-size:16px;margin:0">Relire et copier vers École Directe</h2>${implP().on ? '<button class="btn" data-act="impl-copy">Copier les notes d\'implication</button>' : ''}</div>
       <ul class="bullist">${(() => { const cust = kwCustom(); return list.map((s, i) => { const k = bulKey(s.id, per), cur = DB.bul[k] ? DB.bul[k].text : '';
         const ir = implP().on ? implCalc(s, per) : null, ret = implRet(s.id, per);
@@ -2935,6 +2990,15 @@ async function runSelfTests() {
       V.kwOpen = null; { const st2 = stu('y1'); ok([...html(kwRow(st2, per)).querySelectorAll('.kwc')].length === 1, 'palette fermée par défaut'); V.kwOpen = 'y1'; ok([...html(kwRow(st2, per)).querySelectorAll('.kwg')].some(g => /Vos mots/.test(g.textContent) && /leader du groupe/.test(g.textContent)), 'mot écrit à la main proposé aux autres élèves'); V.kwOpen = null; }
       ACT['kw-tog']({dataset: {k: kk, sid: 'y0', w: 'bavard'}}); eq(kwOf('y0', per).length, 3, 'mot-clé retiré par clic');
       ok(recordsOf(DB, {}).has('kw:' + kk), 'mots-clés synchronisés');
+      { const cA = cls('tA'), ck = clsKey('tA', per);
+        ACT['kw-tog']({dataset: {k: ck, sid: CLS_PFX + 'tA', w: 'agréable'}}); CHG['kw-new']({value: 'Investie', dataset: {k: ck, sid: CLS_PFX + 'tA'}}); CHG['kw-new']({value: 'groupe soudé', dataset: {k: ck, sid: CLS_PFX + 'tA'}});
+        eq(DB.kw[ck].w, ['agréable', 'investie', 'groupe soudé'], 'mots-clés de la classe (liste de classe, mot connu reconnu, mot libre)');
+        ok(!kwCustom().includes('groupe soudé') && kwcCustom().includes('groupe soudé'), 'mots libres de la classe séparés de ceux des élèves');
+        const ex = bulExportText(cA, per); ok(/\n\[classe\] .* — Mots-clés du professeur : agréable, investie, groupe soudé — /.test(ex) && /Répondre d'abord avec une ligne \[classe\]/.test(ex), 'récapitulatif : ligne [classe] avec mots-clés et consigne');
+        const r = bulImport(cA, per, '[classe] « Classe agréable et investie. Il faut maintenant approfondir le travail personnel. »\n[1] Bien.');
+        ok(r.cl && r.n === 2 && DB.bul[ck].text === 'Classe agréable et investie. Il faut maintenant approfondir le travail personnel.', 'import : appréciation de la classe rangée à part');
+        ok(html(viewBulTest()).querySelector('.clscard textarea').value.startsWith('Classe agréable'), 'page : carte « Appréciation de la classe »');
+        delete DB.kw[ck]; delete DB.bul[ck]; }
       DB.implN[implKey('y0', per)] = {v: 14.5, t: 1}; ok(/Implication \(repère du professeur, hors moyenne\) : 14,5\/20/.test(bulExportText(cls('tA'), per)), 'note d\'implication retenue jointe au récapitulatif'); delete DB.implN[implKey('y0', per)];
       eq([cmpVer('3.10', '3.9'), cmpVer('3.14', '3.14'), cmpVer('3.9', '3.14') < 0, cmpVer('4.0', '3.99') > 0], [1, 0, true, true], 'comparaison de versions (3.10 > 3.9)');
       DB.kw = {}; y0.sex = '';
@@ -5376,7 +5440,7 @@ const ACT = {
   'bul-export': async () => { const c = cls(V.cid), per = periodsFor(c)[V.p], txt = bulExportText(c, per);
     try { await navigator.clipboard.writeText(txt); toast('Récapitulatif copié : collez-le dans la conversation avec Claude'); } catch (e) { openModal(`<h2>Récapitulatif à copier</h2><textarea rows="14" style="width:100%" readonly>${esc(txt)}</textarea><div class="ft"><button class="btn ink" data-act="m-close">Fermer</button></div>`); } },
   'bul-import': () => { const c = cls(V.cid), per = periodsFor(c)[V.p], t = $('#bul-in').value; const r = bulImport(c, per, t);
-    if (!r.n) { toast('Aucune ligne « [numéro] appréciation » trouvée'); return; } renderKeep(); toast(`${plural(r.n, 'appréciation importée', 'appréciations importées')}${r.bad.length ? ' · numéros inconnus : ' + r.bad.join(', ') : ''}`); },
+    if (!r.n) { toast('Aucune ligne « [classe] … » ou « [numéro] … » trouvée'); return; } renderKeep(); toast(`${plural(r.n, 'appréciation importée', 'appréciations importées')}${r.cl ? ', dont celle de la classe' : ''}${r.bad.length ? ' · numéros inconnus : ' + r.bad.join(', ') : ''}`); },
   'moy-tip': el => { const on = !el.classList.contains('show'); document.querySelectorAll('.mtip.show').forEach(x => x.classList.remove('show')); if (on) el.classList.add('show'); },
   'kw-open': el => { V.kwOpen = V.kwOpen === el.dataset.sid ? null : el.dataset.sid; renderKeep(); },
   'kw-tog': el => { const k = el.dataset.k, w = el.dataset.w, l = ((DB.kw[k] || {}).w || []).slice(), i = l.indexOf(w); if (i >= 0) l.splice(i, 1); else l.push(w); kwSet(k, l); renderKeep(); },
@@ -5505,7 +5569,7 @@ const CHG = {
   impl: el => { const P = {...(DB.settings.impl || {})}; if (el.type === 'checkbox') P[el.dataset.k] = el.checked; else { const n = parseFloat(String(el.value).replace(',', '.')); if (isNaN(n)) return; P[el.dataset.k] = n; } DB.settings.impl = P; save(); },
   'cat-show': el => { const h = new Set(DB.settings.hiddenCats || []); if (el.checked) h.delete(el.dataset.k); else h.add(el.dataset.k); DB.settings.hiddenCats = [...h]; save(); },
   'kw-new': el => { const w = el.value.trim().replace(/\s+/g, ' '); if (!w) return; const k = el.dataset.k, l = ((DB.kw[k] || {}).w || []).slice();
-    const id = Object.keys(KW).find(x => normN(x) === normN(w) || normN(KW[x].f) === normN(w)) || w; if (!l.includes(id)) l.push(id); el.value = ''; kwSet(k, l); renderKeep(); setTimeout(() => { const n = document.querySelector(`.kwin[data-sid="${el.dataset.sid}"]`); if (n) n.focus(); }, 60); },
+    const D = k.startsWith(CLS_PFX) ? KWC : KW, id = Object.keys(D).find(x => normN(x) === normN(w) || normN(D[x].f) === normN(w)) || w; if (!l.includes(id)) l.push(id); el.value = ''; kwSet(k, l); renderKeep(); setTimeout(() => { const n = document.querySelector(`.kwin[data-sid="${el.dataset.sid}"]`); if (n) n.focus(); }, 60); },
   bul: el => { const k = el.dataset.k; const v = el.value.trim(); if (v) DB.bul[k] = {text: v, t: Date.now()}; else delete DB.bul[k]; save(); },
   'class-pt': el => { cls(el.dataset.cid).pt = el.value; save(); },
   'class-g2': el => { const c = cls(el.dataset.cid); if (el.checked) c.g2 = true; else delete c.g2; save(); render(); },
@@ -5589,7 +5653,7 @@ document.addEventListener('pointermove', e => {
 ['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, e => { if (SPK && SPK.id === e.pointerId) SPK = null; }));
 document.addEventListener('pointerout', e => { if (e.pointerType !== 'mouse' || SPK) return; const w = e.target.closest('.spk'); if (w && !w.contains(e.relatedTarget)) spkHide(w); });
 document.addEventListener('keydown', e => { if (V.name !== 'fiche' || e.target.closest('input, textarea, select') || $('#modal').innerHTML || $('#layer').innerHTML) return; if (e.key === 'ArrowRight') ACT['fiche-nav']({dataset: {d: '1'}}); else if (e.key === 'ArrowLeft') ACT['fiche-nav']({dataset: {d: '-1'}}); });
-document.addEventListener('input', e => { const el = e.target; if (!el.dataset || !el.dataset.count) return; const box = el.closest('li, .bulcard'), c = box && box.querySelector('.bulcnt'); if (c) { c.textContent = el.value.trim().length + ' / ' + el.dataset.count; c.classList.toggle('over', el.value.trim().length > +el.dataset.count); } });
+document.addEventListener('input', e => { const el = e.target; if (!el.dataset || !el.dataset.count) return; const box = el.closest('li, .bulcard, .clscard'), c = box && box.querySelector('.bulcnt'); if (c) { c.textContent = el.value.trim().length + ' / ' + el.dataset.count; c.classList.toggle('over', el.value.trim().length > +el.dataset.count); } });
 document.addEventListener('change', e => { const el = e.target.closest('[data-chg]'); if (el && CHG[el.dataset.chg]) CHG[el.dataset.chg](el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('[data-form]'); if (!f) return; e.preventDefault(); FORMS[f.dataset.form]?.(f); });
 document.addEventListener('keydown', e => {

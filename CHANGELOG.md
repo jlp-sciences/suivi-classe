@@ -1,5 +1,9 @@
 # Historique des versions
 
+## 3.19 — 22 novembre 2026
+- Préparer le conseil de classe : appréciation de la classe (250 caractères, compteur, copier), avec repères chiffrés de la période (moyenne, écart type, écrit/TP, période précédente, bilans de séance, implication, devoirs non faits) et mots-clés de classe (ambiance, travail, niveau, conseils).
+- Récapitulatif pour Claude : ligne [classe] et consigne (3e personne, constat puis conseil collectif) ; l'import range la réponse [classe] dans la carte de la classe.
+
 ## 3.18 — 17 novembre 2026
 - Bilan de séance de la classe : 5e choix « Correct » (gris), entre « Plutôt bien » et « Passive », repris dans les camemberts et la frise du Suivi.
 

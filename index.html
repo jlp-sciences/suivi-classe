@@ -1022,6 +1022,7 @@ button.wpill{cursor:pointer}
 .mtip:hover .tipx,.mtip.show .tipx{display:block}
 .bullist .iimp{border:1.5px solid var(--ink-2);border-radius:7px;padding:0 0 0 6px;white-space:nowrap}
 .clsai summary{font-weight:600;font-size:14px} .clscard .cst{margin:2px 0 4px;line-height:1.45}
+.nwadd{align-self:flex-start;margin:0 0 4px;color:var(--ink-2)}
 .menp{display:flex;flex-direction:column;gap:8px;margin:10px 0}
 .menr{display:flex;flex-wrap:wrap;gap:6px}
 .menb{font:inherit;font-size:14.5px;font-weight:650;padding:9px 14px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--surface);color:var(--ink-2);cursor:pointer;min-height:44px}
@@ -1441,10 +1442,34 @@ function render() {
   else if (V.name === 'notes') app.innerHTML = viewNotes();
   else if (V.name === 'settings') app.innerHTML = viewSettings();
   else if (V.name === 'trombi') app.innerHTML = viewTrombi();
-  saveNav();
+  saveNav(); armBack();
   if (V.name === 'today' && V.tab === 'edt' && $('.wkmain')) fitWeek();
   if (V.name === 'today' && V.tab === 'prog') { const r = $('.prow.is-now'), k = V.pcid + '|' + V.pg; if (r && V.pScroll !== k) { V.pScroll = k; r.scrollIntoView({block: 'center'}); } }
 }
+/* bouton / geste « retour » du téléphone (et « précédent » du navigateur) : revenir en arrière DANS l'application.
+   Une entrée d'historique « app » est gardée tant qu'il y a un endroit où revenir ; à l'emploi du temps, plus d'entrée : retour = quitter. */
+/* history.back() est asynchrone : pendant qu'il est en cours, on ne touche plus à l'historique ; on refait le point quand il est terminé */
+let BACK_PENDING = 0;
+const canGoBack = () => !!($('#modal') && $('#modal').innerHTML) || !!($('#layer') && $('#layer').innerHTML) || STACK.length > 0 || V.name !== 'today' || (V.tab && V.tab !== 'edt');
+function armBack() {
+  if (TESTING || typeof history === 'undefined' || !history.pushState) return;
+  if (BACK_PENDING && Date.now() - BACK_PENDING < 1500) return; // repris à l'arrivée de l'événement popstate
+  BACK_PENDING = 0;
+  const armed = !!(history.state && history.state.sc === 'app');
+  try {
+    if (canGoBack() && !armed) history.pushState({sc: 'app'}, '');
+    else if (!canGoBack() && armed) { BACK_PENDING = Date.now(); history.back(); }
+  } catch (e) {}
+}
+function phoneBack() {
+  const ae = document.activeElement; if (ae && ae.blur) ae.blur(); // enregistre une saisie en cours (événement « change »)
+  if ($('#modal').innerHTML) { if (NW) ACT['nw-close'](); else closeModal(); }
+  else if ($('#layer').innerHTML) closeLayer();
+  else if (STACK.length || V.name !== 'today') back();
+  else if (V.tab && V.tab !== 'edt') { V.tab = 'edt'; V.sf = null; render(); $('.main')?.scrollTo(0, 0); }
+  armBack();
+}
+window.addEventListener('popstate', () => { if (BACK_PENDING) { BACK_PENDING = 0; armBack(); return; } phoneBack(); });
 /* se souvenir de la page ouverte, pour la retrouver après un rafraîchissement */
 const NAV_KEY = 'suivi-classe-nav';
 function saveNav() { if (TESTING) return; try { localStorage.setItem(NAV_KEY, JSON.stringify({t: Date.now(), V, STACK: STACK.slice(-10)})); } catch (e) {} }
@@ -1967,7 +1992,7 @@ function noteWalk() {
     <p class="small muted" style="margin:0">${esc(cap(fmtLong(k.date)))} · élève ${NW.i + 1} / ${list.length} · ${plural(done, 'élève saisi', 'élèves saisis')}</p>
     <div class="nwst"><span class="thumb nwph">${photoHTML(s)}</span><div><b style="font-size:18px">${esc(s.first + ' ' + s.last)}</b>${amenIcons(s)}<div class="sumline">${esc(sm.line)}</div><div class="small muted">${esc(periods[pi].n)} · ${esc(sm.detail)}</div></div></div>
     ${menPicker(cur, 'nw-men')}
-    <textarea id="nw-text" rows="2" placeholder="Commentaire libre (facultatif) : ce qui a été dit, conseil donné, suivi prévu…">${esc(cur ? cur.text : '')}</textarea>
+    ${cur && cur.text || NW.txt ? `<textarea id="nw-text" rows="2" placeholder="Commentaire libre : ce qui a été dit, conseil donné, suivi prévu…">${esc(cur ? cur.text : '')}</textarea>` : '<button type="button" class="btn ghost nwadd" data-act="nw-text-show">+ Ajouter un commentaire</button>'}
     <div class="ft"><button class="btn" data-act="nw-go" data-d="-1" ${NW.i ? '' : 'disabled'}>‹ Précédent</button><span class="grow"></span><button class="btn" data-act="nw-close">Terminer</button><button class="btn ink" data-act="nw-go" data-d="1">${NW.i < list.length - 1 ? 'Suivant ›' : 'Enregistrer et terminer'}</button></div>`);
 }
 function nwSave() {
@@ -3054,7 +3079,7 @@ async function runSelfTests() {
           ACT['nw-men']({dataset: {v: 'rot'}}); ACT['nw-men']({dataset: {v: 'rod'}}); n = DB.notes.find(x => x.sid === s0.id && x.ref === 'kz');
           eq([n.men, n.neg, menLabel(n), menLabel(n, true)], ['', ['rot', 'rod'], 'ROT + ROD', "Rappel à l'ordre de travail + Rappel à l'ordre de discipline"], 'conseil : ROT et ROD cumulables, la mention positive est retirée');
           ACT['nw-men']({dataset: {v: 'fel'}}); n = DB.notes.find(x => x.sid === s0.id && x.ref === 'kz'); eq([n.men, n.neg.length], ['fel', 0], 'conseil : une mention positive retire les rappels à l\'ordre');
-          $('#nw-text').value = 'Très bon trimestre'; ACT['nw-go']({dataset: {d: '1'}}); ACT['nw-men']({dataset: {v: 'sans'}}); ACT['nw-men']({dataset: {v: 'sans'}});
+          ok(!$('#nw-text') && $('[data-act=nw-text-show]'), 'conseil : commentaire libre derrière un bouton'); ACT['nw-text-show'](); $('#nw-text').value = 'Très bon trimestre'; ACT['nw-go']({dataset: {d: '1'}}); ACT['nw-men']({dataset: {v: 'sans'}}); ACT['nw-men']({dataset: {v: 'sans'}});
           ok(!DB.notes.some(x => x.sid === L[1].id && x.ref === 'kz'), 'conseil : mention retirée et pas de texte → rien d\'enregistré');
           ACT['nw-close'](); ok(/Félicitations/.test($('#modal').textContent) && /Bilan du conseil/.test($('#modal').textContent), 'conseil : bilan des mentions à la fin de la saisie');
           ok(/Félicitations \(1\) : /.test(councilTallyText(cA, cA.councils[0])), 'bilan du conseil copiable');
@@ -3211,8 +3236,8 @@ async function selfTestModal() {
 }
 
 /* ---------- modales ---------- */
-function openModal(html) { $('#modal').innerHTML = `<div class="scrim m" data-act="m-close"></div><div class="modal" role="dialog" aria-modal="true">${html}</div>`; $('#modal .modal button, #modal .modal input')?.focus(); }
-function closeModal() { $('#modal').innerHTML = ''; }
+function openModal(html) { $('#modal').innerHTML = `<div class="scrim m" data-act="m-close"></div><div class="modal" role="dialog" aria-modal="true">${html}</div>`; $('#modal .modal button, #modal .modal input')?.focus(); armBack(); }
+function closeModal() { $('#modal').innerHTML = ''; armBack(); }
 
 const otherDate = () => (V.name === 'today' && (V.mode === 'day' || isNarrow())) ? V.date : todayStr();
 function otherModal(cid, group = 'all') {
@@ -5547,7 +5572,8 @@ const ACT = {
   'impl-copy': async () => { const c = cls(V.cid), per = periodsFor(c)[V.p]; const lines = studentsOf(c.id).map(s => { const r = implCalc(s, per), ret = implRet(s.id, per); const n = ret ? ret.v : r.note; return `${s.last} ${s.first}\t${n == null ? '' : String(n).replace('.', ',')}`; }).join('\n');
     try { await navigator.clipboard.writeText(lines); toast('Notes copiées (une ligne par élève : nom, note)'); } catch (e) { toast('Copie impossible'); } },
   'nw-open': el => { NW = {cid: el.dataset.cid, kid: el.dataset.id, i: 0}; const c = cls(NW.cid), list = studentsOf(NW.cid); const j = list.findIndex(s => !DB.notes.some(n => n.sid === s.id && n.ref === NW.kid && noteHas(n))); if (j > 0) NW.i = j; noteWalk(); },
-  'nw-go': el => { nwSave(); const n = studentsOf(NW.cid).length, d = +el.dataset.d; if (d > 0 && NW.i >= n - 1) { const c = cls(NW.cid), k = (c.councils || []).find(x => x.id === NW.kid); NW = null; closeModal(); renderKeep(); if (k) councilSummary(c, k); return; } NW.i = Math.max(0, Math.min(n - 1, NW.i + d)); noteWalk(); },
+  'nw-go': el => { nwSave(); const n = studentsOf(NW.cid).length, d = +el.dataset.d; if (d > 0 && NW.i >= n - 1) { const c = cls(NW.cid), k = (c.councils || []).find(x => x.id === NW.kid); NW = null; closeModal(); renderKeep(); if (k) councilSummary(c, k); return; } NW.i = Math.max(0, Math.min(n - 1, NW.i + d)); NW.txt = false; noteWalk(); },
+  'nw-text-show': () => { if (!NW) return; NW.txt = true; noteWalk(); setTimeout(() => { const t = $('#nw-text'); if (t) t.focus(); }, 30); },
   'nw-close': () => { const c = cls(NW.cid), k = (c.councils || []).find(x => x.id === NW.kid); nwSave(); NW = null; closeModal(); renderKeep(); if (k) councilSummary(c, k); },
   'nw-men': el => { nwSave(); const c = cls(NW.cid), k = (c.councils || []).find(x => x.id === NW.kid), s = studentsOf(c.id)[NW.i]; if (!k || !s) return;
     let n = DB.notes.find(x => x.sid === s.id && x.ref === k.id); if (!n) { n = {id: uid(), sid: s.id, cid: c.id, kind: 'conseil', ref: k.id, date: k.date, text: '', t: Date.now()}; DB.notes.push(n); }

@@ -4,6 +4,8 @@
 - Notes du conseil de classe : saisie des mentions en gros boutons — Félicitations, Compliments, Encouragements, Sans mention (une seule), ou Mise en garde, ROT, ROD, Avertissement (cumulables) ; jamais une mention positive et un rappel à l'ordre ensemble. Le texte libre devient facultatif.
 - Bilan du conseil à la fin de la saisie (nombre et prénoms par mention), copiable.
 - Mention affichée en badge dans les notes de suivi de la fiche, et reprise dans le récapitulatif pour Claude.
+- Commentaire libre du conseil derrière un bouton « + Ajouter un commentaire » (affiché directement s'il existe déjà).
+- Bouton / geste « retour » du téléphone : revient en arrière dans l'application (ferme d'abord une fenêtre ouverte, puis page précédente, puis emploi du temps) ; on ne quitte l'application que depuis l'emploi du temps.
 
 ## 3.19 — 22 novembre 2026
 - Préparer le conseil de classe : appréciation de la classe (250 caractères, compteur, copier), avec repères chiffrés de la période (moyenne, écart type, écrit/TP, période précédente, bilans de séance, implication, devoirs non faits) et mots-clés de classe (ambiance, travail, niveau, conseils).

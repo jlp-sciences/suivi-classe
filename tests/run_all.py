@@ -6,7 +6,8 @@
    3. parcourt les écrans principaux et s'assure qu'aucune erreur JavaScript n'apparaît ;
    4. vérifie que la position de défilement est gardée lors d'une mise à jour automatique ;
    5. importe un export Excel « Les devoirs » d'École Directe fabriqué (élèves fictifs) et compare les moyennes ;
-   6. simule la publication d'une nouvelle version : l'application doit se mettre à jour dès l'ouverture, avant de synchroniser."""
+   6. simule la publication d'une nouvelle version : l'application doit se mettre à jour dès l'ouverture, avant de synchroniser ;
+   7. bouton « retour » du téléphone : il revient en arrière dans l'application, et ne quitte que depuis l'emploi du temps."""
 import asyncio, http.server, socketserver, threading, functools, os, sys, tempfile, shutil, re
 from playwright.async_api import async_playwright
 
@@ -189,6 +190,30 @@ async def main():
         await pg.wait_for_timeout(1500)
         check(await pg.evaluate("APP_VERSION.n") == '99.0' and await pg.evaluate("sessionStorage.getItem('sc-upd')") == '1', 'un seul rechargement, pas de boucle')
         await ctx.close(); srv2.shutdown()
+
+        print("7. Bouton « retour » du téléphone")
+        ctx = await b.new_context(viewport={'width': 390, 'height': 844}); pg = await ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
+        await pg.goto(f'http://localhost:{PORT}/'); await pg.wait_for_timeout(300); await pg.click('text=Essayer avec des élèves fictifs'); await pg.wait_for_timeout(400)
+        await pg.evaluate("document.querySelector('[data-act=htab][data-t=suivi]').click()"); await pg.wait_for_timeout(150)
+        await pg.evaluate("go({name: 'fiche', sid: studentsOf(DB.classes[0].id)[0].id})"); await pg.wait_for_timeout(150)
+        await pg.evaluate("openModal('<p>test</p>')"); await pg.wait_for_timeout(100)
+        st = []
+        for _ in range(3):
+            await pg.go_back(); await pg.wait_for_timeout(300)
+            st.append(await pg.evaluate("[V.name, V.tab || '', !!$('#modal').innerHTML]"))
+        check(st == [['fiche', '', False], ['today', 'suivi', False], ['today', 'edt', False]], f'retour : fenêtre fermée, puis fiche → Suivi → emploi du temps ({st})')
+        check(await pg.evaluate("!(history.state && history.state.sc === 'app')"), 'à l\'emploi du temps, le retour suivant quitte l\'application')
+        await pg.evaluate("window.__alive = 1; openModal('<p>a</p>'); closeModal(); openModal('<p>b</p>'); closeModal(); render(); openModal('<p>c</p>'); closeModal(); render()"); await pg.wait_for_timeout(600)
+        check(await pg.evaluate("window.__alive === 1 && V.name === 'today'"), 'ouvrir et fermer des fenêtres à l\'emploi du temps ne fait jamais quitter la page')
+        await pg.go_back(); await pg.wait_for_timeout(300)
+        check(await pg.evaluate("typeof window.__alive") == 'undefined', 'à l\'emploi du temps, un seul retour quitte l\'application')
+        await pg.go_forward(); await pg.wait_for_timeout(600)
+        if await pg.evaluate("typeof DB === 'undefined' || !DB.classes.length"):
+            await pg.click('text=Essayer avec des élèves fictifs'); await pg.wait_for_timeout(400)
+        await pg.evaluate("go({name: 'bul', cid: DB.classes[0].id, p: 0})"); await pg.wait_for_timeout(150)
+        await pg.click('[data-act=back]'); await pg.wait_for_timeout(300)
+        check(await pg.evaluate("[V.name, V.tab, !(history.state && history.state.sc === 'app')]") == ['today', 'edt', True], 'bouton Retour de l\'écran : pas de retour « fantôme » à refaire ensuite')
+        await ctx.close()
         await b.close()
     check(not errs, 'aucune erreur JavaScript' + ('' if not errs else ' : ' + ' | '.join(errs[:5])))
     print('\nRésultat :', 'TOUT EST CORRECT' if not FAILS else f'{len(FAILS)} ÉCHEC(S)')

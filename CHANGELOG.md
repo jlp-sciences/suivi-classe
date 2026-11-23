@@ -4,6 +4,7 @@
 - Nouveau logo (trois élèves, l'un suivi ; dégradé bleu nuit → violet).
 - Suivi : choix de la classe par une carte (halo de la couleur de la classe) qui ouvre la liste des classes ; périodes sur une ligne (T1, T2, T3, Année) ; affichage et filtres sur une ligne qui défile ; boutons Bilan conseil, Notes et Préparer le conseil mieux délimités, avec compteurs.
 - « Notes du conseil » devient « Bilan conseil ».
+- Onglets avec icônes pleines, l'onglet actif en dégradé du logo : sur téléphone, barre d'onglets en bas de l'écran et titre de la page en haut ; sur tablette, onglets-pilules en haut. Même style pour les onglets de la séance (Contenu, Devoirs, Plan, Bilan).
 - Points de mi-semestre : chaque date a un type (Conseil de classe ou Point mi-semestre, automatique par défaut pour les classes au semestre). Au point mi-semestre : Satisfaisant ou Efforts attendus, ou rappels à l'ordre (Mise en garde, ROT, ROD, Avertissement) ; libellés adaptés partout.
 
 ## 3.20 — 23 novembre 2026

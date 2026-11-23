@@ -1,5 +1,11 @@
 # Historique des versions
 
+## 3.21 — 24 novembre 2026
+- Nouveau logo (trois élèves, l'un suivi ; dégradé bleu nuit → violet).
+- Suivi : choix de la classe par une carte (halo de la couleur de la classe) qui ouvre la liste des classes ; périodes sur une ligne (T1, T2, T3, Année) ; affichage et filtres sur une ligne qui défile ; boutons Bilan conseil, Notes et Préparer le conseil mieux délimités, avec compteurs.
+- « Notes du conseil » devient « Bilan conseil ».
+- Points de mi-semestre : chaque date a un type (Conseil de classe ou Point mi-semestre, automatique par défaut pour les classes au semestre). Au point mi-semestre : Satisfaisant ou Efforts attendus, ou rappels à l'ordre (Mise en garde, ROT, ROD, Avertissement) ; libellés adaptés partout.
+
 ## 3.20 — 23 novembre 2026
 - Notes du conseil de classe : saisie des mentions en gros boutons — Félicitations, Compliments, Encouragements, Sans mention (une seule), ou Mise en garde, ROT, ROD, Avertissement (cumulables) ; jamais une mention positive et un rappel à l'ordre ensemble. Le texte libre devient facultatif.
 - Bilan du conseil à la fin de la saisie (nombre et prénoms par mention), copiable.

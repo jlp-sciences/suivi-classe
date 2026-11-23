@@ -1023,12 +1023,32 @@ button.wpill{cursor:pointer}
 .bullist .iimp{border:1.5px solid var(--ink-2);border-radius:7px;padding:0 0 0 6px;white-space:nowrap}
 .clsai summary{font-weight:600;font-size:14px} .clscard .cst{margin:2px 0 4px;line-height:1.45}
 .nwadd{align-self:flex-start;margin:0 0 4px;color:var(--ink-2)}
+.cpick{display:flex;align-items:center;gap:12px;width:100%;max-width:560px;padding:10px 14px;border-radius:16px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--cc) 26%,var(--surface)),var(--surface) 72%);border:1px solid color-mix(in srgb,var(--cc) 45%,var(--line))}
+.cpick .cpi{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--cc) 24%,var(--surface));color:color-mix(in srgb,var(--cc) 75%,var(--ink))}
+.cpick .cpi svg{width:24px;height:24px} .cpick b{display:block;font-size:19px;line-height:1.2} .cpick small{color:var(--muted);font-size:12.5px} .cpick .cpch{margin-left:auto;color:var(--muted);font-size:16px}
+.pseg{max-width:560px} .pseg .seg{display:grid;grid-template-columns:repeat(var(--n),1fr);width:100%;flex-wrap:nowrap} .pseg .seg button{padding:0 6px}
+.sflt{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:8px} .sflt::-webkit-scrollbar{display:none} .sflt>*{flex:none}
+.sflt .gchip{min-height:40px;font-size:14px;padding:0 12px}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.abtn{min-height:44px;padding:0 14px 0 6px;white-space:nowrap;text-align:left;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font:inherit;font-size:15px;font-weight:600;display:inline-flex;align-items:center;gap:9px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.10)}
+.abtn:hover{border-color:var(--ink-2)}
+.abtn .aic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:15px;flex:none} .abtn .aic svg{width:18px;height:18px}
+.aic.a-cons{background:color-mix(in srgb,#E0A43A 22%,transparent);color:#B87A14} .aic.a-notes{background:color-mix(in srgb,#3A80D2 20%,transparent);color:#3A80D2} .aic.a-bul{background:color-mix(in srgb,#2FA6A3 20%,transparent);color:#1E8A87}
+.abtn .acnt{font-size:12.5px;font-weight:600;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:1px 8px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.cgi{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.cgi i{width:10px;height:10px;border-radius:50%;background:var(--cc);flex:none} .cgi b{display:block;font-size:16px} .cgi small{color:var(--muted);font-size:12px}
+.cgi[aria-pressed="true"]{outline:2px solid var(--ink);background:color-mix(in srgb,var(--cc) 14%,var(--surface-2))}
+@media (max-width:700px){ #modal .modal.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;transform:none;max-width:none;width:auto;border-radius:20px 20px 0 0;max-height:80vh;overflow:auto;margin:0;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+  #modal .modal.sheet::before{content:'';display:block;width:40px;height:4px;border-radius:2px;background:var(--line-2);margin:-4px auto 12px} }
 .menp{display:flex;flex-direction:column;gap:8px;margin:10px 0}
 .menr{display:flex;flex-wrap:wrap;gap:6px}
 .menb{font:inherit;font-size:14.5px;font-weight:650;padding:9px 14px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--surface);color:var(--ink-2);cursor:pointer;min-height:44px}
 .menb[aria-pressed="true"]{color:#fff;border-color:transparent}
 .menb.mp-fel[aria-pressed="true"],.menbadge.mp-fel{background:#1F6B45} .menb.mp-comp[aria-pressed="true"],.menbadge.mp-comp{background:#3D8B5F}
-.menb.mp-enc[aria-pressed="true"],.menbadge.mp-enc{background:#6FAE86} .menb.mp-sans[aria-pressed="true"],.menbadge.mp-sans{background:#8A9099}
+.menb.mp-enc[aria-pressed="true"],.menbadge.mp-enc{background:#6FAE86} .menb.mp-sat[aria-pressed="true"],.menbadge.mp-sat{background:#3D8B5F} .menb.mp-eff[aria-pressed="true"],.menbadge.mp-eff{background:#C08A2A}
+.ktype{font-size:12.5px;font-weight:650;padding:1px 8px;border-radius:999px;background:var(--surface-2);color:var(--ink-2)} .ktype.k-mi{background:color-mix(in srgb,#C08A2A 18%,transparent);color:var(--ink)} .menb.mp-sans[aria-pressed="true"],.menbadge.mp-sans{background:#8A9099}
 .menb.mp-neg{border-style:dashed} .menb.mp-neg[aria-pressed="true"],.menbadge.mp-neg{background:#B4532A;border-style:solid}
 .menbadge{display:inline-block;padding:1px 9px;border-radius:999px;color:#fff;font-size:12.5px;font-weight:700;margin-left:8px;white-space:nowrap}
 .ctally{list-style:none;padding:0;margin:12px 0;display:flex;flex-direction:column;gap:8px} .ctally li{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap} .ctally .menbadge{margin:0}
@@ -1162,11 +1182,13 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.20', d: '2026-11-23'};
-const SW_CACHE = 'suivi-classe-v36'; // identique à CACHE dans sw.js (vérifié par les tests)
+const APP_VERSION = {n: '3.21', d: '2026-11-24'};
+const SW_CACHE = 'suivi-classe-v37'; // identique à CACHE dans sw.js (vérifié par les tests)
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
+  group:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8.2" r="3.4"/><path d="M5.8 19.2c0-3.6 2.8-6 6.2-6s6.2 2.4 6.2 6c0 .5-.4.8-.8.8H6.6c-.4 0-.8-.3-.8-.8z"/><circle cx="5.2" cy="10" r="2.3" opacity=".55"/><circle cx="18.8" cy="10" r="2.3" opacity=".55"/><path d="M.8 18.4c0-2.6 1.9-4.3 4.4-4.3.6 0 1.1.1 1.6.3-1 1.1-1.6 2.6-1.8 4.4H1.4c-.3 0-.6-.2-.6-.4zM23.2 18.4c0-2.6-1.9-4.3-4.4-4.3-.6 0-1.1.1-1.6.3 1 1.1 1.6 2.6 1.8 4.4h3.6c.3 0 .6-.2.6-.4z" opacity=".55"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M8 15l3.5-4 3 2.5L19 8"/></svg>',
   edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
   book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.5C4.5 4.2 8 4 12 6c4-2 7.5-1.8 10-.5V19c-2.5-1.3-6-1.5-10 .5-4-2-7.5-1.8-10-.5z"/><path d="M12 6v13.5"/></svg>',
   cross:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>',
@@ -1620,6 +1642,17 @@ function slotDots(d, x, st) {
 const isGraded = ct => !!(ct && ct.items.some(i => (i.type === 'tp' || i.type === 'act') && i.graded));
 /* ---------- vue : semaine ---------- */
 /* ---------- conseils de classe : enregistrés dans la classe (c.councils), affichés dans l'emploi du temps ---------- */
+/* type : « conseil » (conseil de classe) ou « mi » (point de mi-semestre). Sans type enregistré : pour une classe au semestre,
+   une date à plus de 3 semaines de la fin du semestre est un point de mi-semestre. */
+function kType(k, c) {
+  if (k && (k.type === 'mi' || k.type === 'conseil')) return k.type;
+  c = c || (k && k.cid ? cls(k.cid) : DB.classes.find(x => (x.councils || []).some(y => y.id === (k && k.id))));
+  if (!c || !k || !k.date || (c.pt || 'semestre') !== 'semestre') return 'conseil';
+  const p = periodsFor(c).slice(0, -1).find(x => k.date >= x.s && k.date <= x.e);
+  return p && k.date < addDays(p.e, -21) ? 'mi' : 'conseil';
+}
+const KTYPE_L = {conseil: 'Conseil de classe', mi: 'Point mi-semestre'};
+const kLabel = (k, c) => KTYPE_L[kType(k, c)];
 function councilsOn(d) { const out = []; DB.classes.forEach(c => (c.councils || []).forEach(k => { if (k.date === d && k.s && k.e) out.push({...k, cid: c.id}); })); return out.sort((a, b) => a.s.localeCompare(b.s)); }
 /* cours qui tombent pendant un conseil (toutes classes confondues) */
 const councilClash = k => k && k.date && k.s && k.e ? slotsOn(k.date).filter(x => tMin(x.start) < tMin(k.e) && tMin(x.end) > tMin(k.s)).map(x => k.date + '|' + x.id) : [];
@@ -1634,8 +1667,8 @@ function applyCouncil(id, oldK, newK) {
 const consCancel = key => { const v = DB.cancelled[key]; if (typeof v !== 'string' || !v.startsWith('cons:')) return null; const id = v.slice(5); for (const c of DB.classes) { const k = (c.councils || []).find(x => x.id === id); if (k) return {...k, cid: c.id}; } return null; };
 function consBlkHTML(k, o) {
   const c = cls(k.cid);
-  return `<button class="blk cons ${o.h < 58 ? 'short' : ''}" style="top:${o.top}px;height:${o.h}px;left:calc(${o.lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)}" data-act="cons-open" data-cid="${k.cid}" data-id="${k.id}" aria-label="${esc('Conseil de classe ' + (c ? c.name : '') + ', ' + fmtT(k.s))}">
-    <span class="consk">Conseil de classe</span>
+  return `<button class="blk cons ${o.h < 58 ? 'short' : ''}" style="top:${o.top}px;height:${o.h}px;left:calc(${o.lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)}" data-act="cons-open" data-cid="${k.cid}" data-id="${k.id}" aria-label="${esc(kLabel(k, c) + ' ' + (c ? c.name : '') + ', ' + fmtT(k.s))}">
+    <span class="consk">${kLabel(k, c)}</span>
     <span class="btop"><span class="bc">${esc(c ? c.name : '')}</span></span>
     <span class="bit"><span class="bil">${fmtT(k.s)} – ${fmtT(k.e)}</span></span>
     ${k.note ? `<span class="bit"><span class="bil">${esc(k.note)}</span></span>` : ''}</button>`;
@@ -1644,7 +1677,7 @@ function consCard(k) {
   const c = cls(k.cid);
   return `<li><button class="slot conscard" style="--cc:${ccol(c)}" data-act="cons-open" data-cid="${k.cid}" data-id="${k.id}">
     <span class="time">${fmtT(k.s)} – ${fmtT(k.e)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="consk">Conseil de classe</span><span class="cls">${esc(c ? c.name : '')}</span></span>${k.note ? `<span class="small muted">${esc(k.note)}</span>` : ''}</span></button></li>`;
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="consk">${kLabel(k, c)}</span><span class="cls">${esc(c ? c.name : '')}</span></span>${k.note ? `<span class="small muted">${esc(k.note)}</span>` : ''}</span></button></li>`;
 }
 /* ajustement de la hauteur de la grille, mesuré après affichage (pour que toute la semaine tienne à l'écran) */
 let WEEK_FIX = 0, WEEK_FIX_KEY = '';
@@ -1949,19 +1982,23 @@ const NOTE_L = Object.fromEntries(NOTE_K);
 /* mentions du conseil de classe : une mention positive OU des rappels à l'ordre (cumulables), jamais les deux */
 const MEN_POS = [['fel', 'Félicitations'], ['comp', 'Compliments'], ['enc', 'Encouragements'], ['sans', 'Sans mention']];
 const MEN_NEG = [['mg', 'Mise en garde', 'Mise en garde'], ['rot', 'ROT', 'Rappel à l\'ordre de travail'], ['rod', 'ROD', 'Rappel à l\'ordre de discipline'], ['av', 'Avertissement', 'Avertissement']];
-const MEN_L = Object.fromEntries([...MEN_POS, ...MEN_NEG.map(([k, l]) => [k, l])]), MEN_FULL = Object.fromEntries([...MEN_POS, ...MEN_NEG.map(([k, , f]) => [k, f])]);
+const MEN_MID = [['sat', 'Satisfaisant'], ['eff', 'Efforts attendus']]; // point mi-semestre : pas de mention positive
+const MEN_ONE = [...MEN_POS, ...MEN_MID];
+const MEN_L = Object.fromEntries([...MEN_ONE, ...MEN_NEG.map(([k, l]) => [k, l])]), MEN_FULL = Object.fromEntries([...MEN_ONE, ...MEN_NEG.map(([k, , f]) => [k, f])]);
 const menOf = n => n && n.men && MEN_L[n.men] ? [n.men] : (n && Array.isArray(n.neg) ? MEN_NEG.map(x => x[0]).filter(k => n.neg.includes(k)) : []);
 const menLabel = (n, full) => menOf(n).map(k => (full ? MEN_FULL : MEN_L)[k]).join(' + ');
 const menCls = n => n && n.men ? 'mp-' + n.men : menOf(n).length ? 'mp-neg' : '';
+const noteKey = n => { if (n && n.ref) for (const c of DB.classes) { const k = (c.councils || []).find(x => x.id === n.ref); if (k) return {k, c}; } return null; };
+const noteL = n => { const r = noteKey(n); return r ? kLabel(r.k, r.c) : NOTE_L[n.kind] || 'Note'; };
 const noteHas = n => !!(n && (n.text || menOf(n).length));
-function menPicker(cur, act) {
+function menPicker(cur, act, type) {
   const neg = cur && Array.isArray(cur.neg) ? cur.neg : [];
-  return `<div class="menp"><div class="menr" role="group" aria-label="Mention">${MEN_POS.map(([k, l]) => `<button type="button" class="menb mp-${k}" data-act="${act}" data-v="${k}" aria-pressed="${!!cur && cur.men === k}">${l}</button>`).join('')}</div>
+  return `<div class="menp"><div class="menr" role="group" aria-label="Mention">${(type === 'mi' ? MEN_MID : MEN_POS).map(([k, l]) => `<button type="button" class="menb mp-${k}" data-act="${act}" data-v="${k}" aria-pressed="${!!cur && cur.men === k}">${l}</button>`).join('')}</div>
     <div class="menr" role="group" aria-label="Rappels à l'ordre">${MEN_NEG.map(([k, l, f]) => `<button type="button" class="menb mp-neg" data-act="${act}" data-v="${k}" title="${esc(f)}" aria-pressed="${neg.includes(k)}">${l}</button>`).join('')}</div></div>`;
 }
 /* applique un toucher sur une mention (positif : choix unique ; négatif : cumulable ; l'un efface l'autre) */
 function menToggle(n, v) {
-  if (MEN_POS.some(x => x[0] === v)) { n.men = n.men === v ? '' : v; if (n.men) n.neg = []; }
+  if (MEN_ONE.some(x => x[0] === v)) { n.men = n.men === v ? '' : v; if (n.men) n.neg = []; }
   else { const l = Array.isArray(n.neg) ? n.neg.slice() : [], i = l.indexOf(v); if (i >= 0) l.splice(i, 1); else l.push(v); n.neg = l; if (l.length) n.men = ''; }
 }
 let NOTE_EDIT = null; // {sid, id|null}
@@ -1971,13 +2008,13 @@ function notesCard(s) {
   const form = ed ? `<div class="noteform">
       <div class="row" style="gap:8px"><div class="seg" role="group" aria-label="Type">${NOTE_K.map(([k, l]) => `<button type="button" data-act="note-k" data-k="${k}" aria-pressed="${(ed.k || (cur ? cur.kind : 'conseil')) === k}">${l}</button>`).join('')}</div>
         <input type="date" id="nt-date" value="${esc(ed.date || (cur ? cur.date : todayStr()))}" style="width:auto"></div>
-      ${(ed.k || (cur ? cur.kind : 'conseil')) === 'conseil' ? menPicker(ed.m || cur, 'note-men') : ''}
+      ${(ed.k || (cur ? cur.kind : 'conseil')) === 'conseil' ? menPicker(ed.m || cur, 'note-men', cur && noteKey(cur) ? kType(noteKey(cur).k, noteKey(cur).c) : 'conseil') : ''}
       <textarea id="nt-text" rows="3" placeholder="Commentaire libre (facultatif) : doit s'investir davantage à l'oral, parents à revoir en février…">${esc(ed.text != null ? ed.text : cur ? cur.text : '')}</textarea>
       <div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" data-act="note-cancel">Annuler</button><button class="btn ink" data-act="note-save" data-sid="${s.id}">Enregistrer la note</button></div></div>` : '';
   return `<section class="card notescard"><div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="font-size:16px;margin:0">Notes de suivi</h2>${ed ? '' : `<button class="btn" data-act="note-new" data-sid="${s.id}">+ Ajouter une note</button>`}</div>
     <p class="small muted" style="margin:0 0 8px">Conseil de classe, rencontre avec les parents… Visible par vous seul ; non compté dans les observations.</p>
     ${form}
-    ${list.length ? `<ul class="notes">${list.map(x => `<li><div class="nh"><b>${esc(NOTE_L[x.kind] || 'Note')}</b>${menOf(x).length ? `<span class="menbadge ${menCls(x)}" title="${esc(menLabel(x, true))}">${esc(menLabel(x))}</span>` : ''}<span class="small muted">${esc(cap(fmtLong(x.date)))}</span><span class="grow"></span><button class="btn ghost icon-btn" data-act="note-edit" data-sid="${s.id}" data-id="${x.id}" aria-label="Modifier">${ICON.edit}</button><button class="btn ghost icon-btn" data-act="note-del" data-id="${x.id}" aria-label="Supprimer">${ICON.close}</button></div>${x.text ? `<p>${esc(x.text)}</p>` : ''}</li>`).join('')}</ul>` : ed ? '' : '<p class="muted" style="margin:0">Aucune note pour l\'instant.</p>'}
+    ${list.length ? `<ul class="notes">${list.map(x => `<li><div class="nh"><b>${esc(noteL(x))}</b>${menOf(x).length ? `<span class="menbadge ${menCls(x)}" title="${esc(menLabel(x, true))}">${esc(menLabel(x))}</span>` : ''}<span class="small muted">${esc(cap(fmtLong(x.date)))}</span><span class="grow"></span><button class="btn ghost icon-btn" data-act="note-edit" data-sid="${s.id}" data-id="${x.id}" aria-label="Modifier">${ICON.edit}</button><button class="btn ghost icon-btn" data-act="note-del" data-id="${x.id}" aria-label="Supprimer">${ICON.close}</button></div>${x.text ? `<p>${esc(x.text)}</p>` : ''}</li>`).join('')}</ul>` : ed ? '' : '<p class="muted" style="margin:0">Aucune note pour l\'instant.</p>'}
   </section>`;
 }
 /* saisie des notes du conseil, élève par élève */
@@ -1988,10 +2025,10 @@ function noteWalk() {
   const cur = DB.notes.find(x => x.sid === s.id && x.ref === k.id);
   const periods = periodsFor(c), pi = Math.max(0, periods.findIndex(p => k.date >= p.s && k.date <= p.e)), sm = stuSummary(s, periods[pi], true);
   const done = list.filter(x => DB.notes.some(n => n.sid === x.id && n.ref === k.id && noteHas(n))).length;
-  openModal(`<h2 class="row" style="gap:10px">${dot(c)}Notes du conseil · ${esc(c.name)}</h2>
+  openModal(`<h2 class="row" style="gap:10px">${dot(c)}${kType(k, c) === 'mi' ? 'Bilan mi-semestre' : 'Bilan conseil'} · ${esc(c.name)}</h2>
     <p class="small muted" style="margin:0">${esc(cap(fmtLong(k.date)))} · élève ${NW.i + 1} / ${list.length} · ${plural(done, 'élève saisi', 'élèves saisis')}</p>
     <div class="nwst"><span class="thumb nwph">${photoHTML(s)}</span><div><b style="font-size:18px">${esc(s.first + ' ' + s.last)}</b>${amenIcons(s)}<div class="sumline">${esc(sm.line)}</div><div class="small muted">${esc(periods[pi].n)} · ${esc(sm.detail)}</div></div></div>
-    ${menPicker(cur, 'nw-men')}
+    ${menPicker(cur, 'nw-men', kType(k, c))}
     ${cur && cur.text || NW.txt ? `<textarea id="nw-text" rows="2" placeholder="Commentaire libre : ce qui a été dit, conseil donné, suivi prévu…">${esc(cur ? cur.text : '')}</textarea>` : '<button type="button" class="btn ghost nwadd" data-act="nw-text-show">+ Ajouter un commentaire</button>'}
     <div class="ft"><button class="btn" data-act="nw-go" data-d="-1" ${NW.i ? '' : 'disabled'}>‹ Précédent</button><span class="grow"></span><button class="btn" data-act="nw-close">Terminer</button><button class="btn ink" data-act="nw-go" data-d="1">${NW.i < list.length - 1 ? 'Suivant ›' : 'Enregistrer et terminer'}</button></div>`);
 }
@@ -2004,18 +2041,18 @@ function nwSave() {
 }
 /* bilan des mentions d'un conseil */
 function councilTally(c, k) {
-  const list = studentsOf(c.id), out = [...MEN_POS, ...MEN_NEG].map(([key, l]) => ({k: key, l, who: []})), by = Object.fromEntries(out.map(x => [x.k, x]));
+  const list = studentsOf(c.id), out = [...(kType(k, c) === 'mi' ? MEN_MID : MEN_POS), ...MEN_NEG].map(([key, l]) => ({k: key, l, who: []})), by = Object.fromEntries(out.map(x => [x.k, x]));
   list.forEach(s => { const n = DB.notes.find(x => x.sid === s.id && x.ref === k.id); menOf(n).forEach(m => by[m].who.push(s)); });
   return {rows: out.filter(x => x.who.length), none: list.filter(s => !menOf(DB.notes.find(x => x.sid === s.id && x.ref === k.id)).length), list};
 }
 function councilSummary(c, k) {
   const t = councilTally(c, k);
-  openModal(`<h2 class="row" style="gap:10px">${dot(c)}Bilan du conseil · ${esc(c.name)}</h2><p class="small muted" style="margin:0">${esc(cap(fmtLong(k.date)))}</p>
-    ${t.rows.length ? `<ul class="ctally">${t.rows.map(r => `<li><span class="menbadge ${MEN_POS.some(x => x[0] === r.k) ? 'mp-' + r.k : 'mp-neg'}">${esc(r.l)}</span><b>${r.who.length}</b><span class="small">${r.who.map(s => esc(s.first + ' ' + s.last[0] + '.')).join(', ')}</span></li>`).join('')}</ul>` : '<p class="muted">Aucune mention saisie.</p>'}
+  openModal(`<h2 class="row" style="gap:10px">${dot(c)}${kType(k, c) === 'mi' ? 'Bilan du point mi-semestre' : 'Bilan du conseil'} · ${esc(c.name)}</h2><p class="small muted" style="margin:0">${esc(cap(fmtLong(k.date)))}</p>
+    ${t.rows.length ? `<ul class="ctally">${t.rows.map(r => `<li><span class="menbadge ${MEN_ONE.some(x => x[0] === r.k) ? 'mp-' + r.k : 'mp-neg'}">${esc(r.l)}</span><b>${r.who.length}</b><span class="small">${r.who.map(s => esc(s.first + ' ' + s.last[0] + '.')).join(', ')}</span></li>`).join('')}</ul>` : '<p class="muted">Aucune mention saisie.</p>'}
     ${t.none.length ? `<p class="small muted">Sans mention saisie : ${t.none.map(s => esc(s.first + ' ' + s.last[0] + '.')).join(', ')}</p>` : ''}
     <div class="ft"><button class="btn" data-act="ctally-copy" data-cid="${c.id}" data-id="${k.id}">Copier le bilan</button><span class="grow"></span><button class="btn ink" data-act="m-close">Fermer</button></div>`);
 }
-const councilTallyText = (c, k) => { const t = councilTally(c, k); return `Conseil de classe ${c.name} — ${fmtLong(k.date)}\n` + t.rows.map(r => `${r.l} (${r.who.length}) : ${r.who.map(s => s.first + ' ' + s.last).join(', ')}`).join('\n'); };
+const councilTallyText = (c, k) => { const t = councilTally(c, k); return `${kLabel(k, c)} ${c.name} — ${fmtLong(k.date)}\n` + t.rows.map(r => `${r.l} (${r.who.length}) : ${r.who.map(s => s.first + ' ' + s.last).join(', ')}`).join('\n'); };
 /* ---------- note d'implication (modèle « capital ») ---------- */
 const IMPL_DEF = {on: true, base: 15, gain: 0.5, gainLow: 0.25, bonusMax: 5, cDis: 1, cPas: 0.5, cDev: 1, cDevPart: 0.5, cOrg: 0.5, rasLen: 2, rasPen: 0.5, isoN: 3, isoPen: 0.5, rasAlert: 3, capComp: 6, capDev: 5, capOrg: 3, capPas: 3, soft: 0.5, floor: 3, ref: 30, obsMin: 30};
 const implP = () => ({...IMPL_DEF, ...(DB.settings.impl || {})});
@@ -2458,7 +2495,7 @@ function clsLine(c, per) {
 function bulExportText(c, per) {
   const list = studentsOf(c.id);
   const lines = list.map((s, i) => {
-    const sm = stuSummary(s, per, true), notes = DB.notes.filter(n => n.sid === s.id && n.date >= addDays(per.s, -30) && n.date <= addDays(per.e, 30)).map(n => `${NOTE_L[n.kind] || 'Note'} (${dayShort(n.date)}) : ${[menLabel(n, true), (n.text || '').replace(/\s+/g, ' ')].filter(Boolean).join(' — ')}`);
+    const sm = stuSummary(s, per, true), notes = DB.notes.filter(n => n.sid === s.id && n.date >= addDays(per.s, -30) && n.date <= addDays(per.e, 30)).map(n => `${noteL(n)} (${dayShort(n.date)}) : ${[menLabel(n, true), (n.text || '').replace(/\s+/g, ' ')].filter(Boolean).join(' — ')}`);
     const cur = DB.bul[bulKey(s.id, per)];
     const rs = resultsOf(s, per), gtxt = rs.ev.length ? ` — Moyennes : écrit ${fmtG(rs.ecrit)}, TP ${fmtG(rs.tp)}, générale ${fmtG(rs.moy)} (classe ${fmtG(classAvg(c.id, per))})${rs.hist.length >= 2 ? ', évolution ' + rs.hist.map(h => fmtG(h.avg)).join(' → ') : ''}` : '';
     const kw = kwOf(s.id, per).map(w => kwForm(w, s.sex));
@@ -2630,18 +2667,19 @@ function councilsCard(c) {
   const ed = CONS_EDIT && CONS_EDIT.cid === c.id ? list.find(k => k.id === CONS_EDIT.id) : null;
   const t = todayStr();
   const rows = list.map(k => { const n = councilClash(k).filter(x => DB.cancelled[x] === 'cons:' + k.id).length;
-    return `<li class="${k.date < t ? 'muted' : ''} ${ed && ed.id === k.id ? 'editing' : ''}"><span style="flex:1 1 220px"><b>${esc(cap(fmtLong(k.date)))}</b> · ${fmtT(k.s)} – ${fmtT(k.e)}${k.note ? ' · ' + esc(k.note) : ''}${n ? `<br><span class="small muted">${plural(n, 'cours annulé', 'cours annulés')} automatiquement</span>` : ''}</span>
+    return `<li class="${k.date < t ? 'muted' : ''} ${ed && ed.id === k.id ? 'editing' : ''}"><span style="flex:1 1 220px"><b>${esc(cap(fmtLong(k.date)))}</b> · ${fmtT(k.s)} – ${fmtT(k.e)} · <span class="ktype k-${kType(k, c)}">${kLabel(k, c)}</span>${k.note ? ' · ' + esc(k.note) : ''}${n ? `<br><span class="small muted">${plural(n, 'cours annulé', 'cours annulés')} automatiquement</span>` : ''}</span>
       <button type="button" class="btn" data-act="cons-edit" data-cid="${c.id}" data-id="${k.id}">Modifier</button><button type="button" class="btn ghost" data-act="cons-del" data-cid="${c.id}" data-id="${k.id}">Supprimer</button></li>`; }).join('');
-  return `<section class="card" style="display:flex;flex-direction:column;gap:10px"><h3 style="margin:0;font-size:16px">Conseils de classe</h3>
+  return `<section class="card" style="display:flex;flex-direction:column;gap:10px"><h3 style="margin:0;font-size:16px">Conseils de classe et points mi-semestre</h3>
     ${rows ? `<ul class="stable">${rows}</ul>` : '<p class="small muted" style="margin:0">Aucun conseil de classe saisi.</p>'}
     <form class="form-grid" data-form="cons-save" data-cid="${c.id}">
       <label class="f" for="cs-date">Date<input type="date" id="cs-date" required value="${ed ? ed.date : ''}"></label>
       <label class="f" for="cs-s">Début<input type="time" id="cs-s" required value="${ed ? ed.s : '17:30'}"></label>
       <label class="f" for="cs-e">Fin<input type="time" id="cs-e" required value="${ed ? ed.e : '18:30'}"></label>
+      <label class="f" for="cs-type">Type<select id="cs-type"><option value="">Automatique</option><option value="conseil" ${ed && ed.type === 'conseil' ? 'selected' : ''}>Conseil de classe</option><option value="mi" ${ed && ed.type === 'mi' ? 'selected' : ''}>Point mi-semestre</option></select></label>
       <label class="f" for="cs-note">Note (facultatif)<input type="text" id="cs-note" placeholder="ex. salle 12" value="${ed ? esc(ed.note || '') : ''}"></label>
-      <button class="btn ${ed ? 'ink' : ''}" type="submit">${ed ? 'Enregistrer' : '+ Conseil de classe'}</button>${ed ? '<button type="button" class="btn ghost" data-act="cons-cancel">Annuler</button>' : ''}
+      <button class="btn ${ed ? 'ink' : ''}" type="submit">${ed ? 'Enregistrer' : '+ Ajouter la date'}</button>${ed ? '<button type="button" class="btn ghost" data-act="cons-cancel">Annuler</button>' : ''}
     </form>
-    <p class="small muted" style="margin:0">Le conseil apparaît dans l'emploi du temps. Les cours qui tombent au même moment sont marqués annulés ; appui long sur le créneau pour les rétablir.</p></section>`;
+    <p class="small muted" style="margin:0">Type « Automatique » : pour une classe au semestre, une date à plus de 3 semaines de la fin du semestre est un point mi-semestre. Le conseil apparaît dans l'emploi du temps. Les cours qui tombent au même moment sont marqués annulés ; appui long sur le créneau pour les rétablir.</p></section>`;
 }
 function setClasses() {
   if (!V.cid || !cls(V.cid)) V.cid = DB.classes[0]?.id;
@@ -3085,6 +3123,14 @@ async function runSelfTests() {
           ok(/Félicitations \(1\) : /.test(councilTallyText(cA, cA.councils[0])), 'bilan du conseil copiable');
           ok(/Conseil de classe \([^)]*\) : Félicitations — Très bon trimestre/.test(bulExportText(cA, per)), 'mention reprise dans le récapitulatif pour Claude');
           const h = html(notesCard(s0)); ok(h.querySelector('.menbadge.mp-fel'), 'fiche : badge de mention dans les notes de suivi');
+          { const pt0 = cA.pt, ps = periodsFor(cA).slice(0, -1); cA.pt = 'semestre'; const P1 = periodsFor(cA)[0];
+            const km = {id: 'km', date: addDays(P1.s, 20)}, kf = {id: 'kf', date: addDays(P1.e, -5)}; cA.councils = [km, kf];
+            eq([kType(km, cA), kType(kf, cA), kType({...km, type: 'conseil'}, cA)], ['mi', 'conseil', 'conseil'], 'type automatique : point mi-semestre loin de la fin du semestre, réglable à la main');
+            NW = {cid: 'tA', kid: 'km', i: 0}; noteWalk(); const t = $('#modal').textContent;
+            ok(/Bilan mi-semestre/.test(t) && /Satisfaisant/.test(t) && /Efforts attendus/.test(t) && !/Félicitations/.test(t) && /ROT/.test(t), 'point mi-semestre : pas de mention positive, Satisfaisant / Efforts attendus et rappels à l\'ordre');
+            ACT['nw-men']({dataset: {v: 'eff'}}); ACT['nw-men']({dataset: {v: 'mg'}}); const nm = DB.notes.find(x => x.ref === 'km');
+            ok(nm && nm.men === '' && nm.neg.join() === 'mg' && noteL(nm) === 'Point mi-semestre', 'point mi-semestre : rappels exclusifs avec « Efforts attendus », libellé de la note');
+            closeModal(); NW = null; cA.pt = pt0; }
         } finally { closeModal(); NW = null; DB.notes = notes0; cA.councils = k0; }
       }
       { const cA = cls('tA'), ck = clsKey('tA', per);
@@ -3236,7 +3282,7 @@ async function selfTestModal() {
 }
 
 /* ---------- modales ---------- */
-function openModal(html) { $('#modal').innerHTML = `<div class="scrim m" data-act="m-close"></div><div class="modal" role="dialog" aria-modal="true">${html}</div>`; $('#modal .modal button, #modal .modal input')?.focus(); armBack(); }
+function openModal(html, cl) { $('#modal').innerHTML = `<div class="scrim m" data-act="m-close"></div><div class="modal${cl ? ' ' + cl : ''}" role="dialog" aria-modal="true">${html}</div>`; $('#modal .modal button, #modal .modal input')?.focus(); armBack(); }
 function closeModal() { $('#modal').innerHTML = ''; armBack(); }
 
 const otherDate = () => (V.name === 'today' && (V.mode === 'day' || isNarrow())) ? V.date : todayStr();
@@ -4091,6 +4137,12 @@ function apprBlockHTML(c, per) {
     <div class="apprs">${pies}</div>
     <p class="small muted" style="margin:10px 0 0">Frise : une pastille par séance, de la plus ancienne à la plus récente (cercle vide : pas de bilan). Toucher une pastille : ouvrir la séance sur l'onglet Bilan.</p></section>`;
 }
+const shortPer = n => n.replace(/^Trimestre\s*/, 'T').replace(/^Semestre\s*/, 'S');
+const subjOf = c => levelOf(c) === '1re' ? 'Enseignement scientifique' : 'Physique-chimie';
+function classPicker() {
+  const classes = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
+  openModal(`<h2 style="margin:0 0 10px">Choisir une classe</h2><div class="cgrid">${classes.map(x => `<button type="button" class="cgi" data-act="sui-c" data-cid="${x.id}" aria-pressed="${x.id === V.scid}" style="--cc:${ccol(x)}"><i></i><span><b>${esc(x.name)}</b><small>${plural(studentsOf(x.id).length, 'élève')}</small></span></button>`).join('')}</div>`, 'sheet');
+}
 function viewSuivi() {
   const classes = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
   if (!V.scid || !cls(V.scid)) V.scid = classes[0] && classes[0].id;
@@ -4130,7 +4182,6 @@ function viewSuivi() {
   const sk = V.ssk || 'name', sd = V.ssd || (sk === 'name' ? 1 : -1);
   rows.sort((a, b) => (sk === 'name' ? byName(a.s, b.s) : (a[sk] - b[sk])) * sd || byName(a.s, b.s));
   const sh = (k, l, cl) => `<button type="button" class="sh ${cl || ''} ${sk === k ? 'on' : ''}" data-act="sui-sort" data-k="${k}" aria-label="Trier par ${l}">${l}${sk === k ? (sd > 0 ? ' ▲' : ' ▼') : ''}</button>`;
-  const chips = classes.map(x => `<button class="gchip" data-act="sui-c" data-cid="${x.id}" aria-pressed="${x.id === c.id}">${dot(x)}${esc(x.name)}</button>`).join('');
   const seg = (k, items, cur) => `<div class="seg" role="group">${items.map(([v, l]) => `<button type="button" data-act="${k}" data-v="${v}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join('')}</div>`;
   const sv = V.sv === 'grid' ? 'grid' : 'list';
   const grid = rows.map(r => { const tot = r.pos + r.neg + r.ras, w = v => tot ? (v / tot * 100).toFixed(1) : 0;
@@ -4149,14 +4200,17 @@ function viewSuivi() {
       <span class="bdg">${r.look ? '<span class="chip dark">👁 à regarder</span>' : ''}${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></button>`).join('');
   return `${tabBar('suivi')}
   <main class="main"><div class="wrap" style="max-width:1300px">
-    <div class="row" style="gap:6px">${chips}</div>
-    <div class="row">${seg('sui-p', periods.map((p, i) => [i, esc(p.n)]), V.sp)}<div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="sui-v" data-v="list" aria-pressed="${sv === 'list'}">Liste</button><button type="button" data-act="sui-v" data-v="grid" aria-pressed="${sv === 'grid'}">Grille</button></div>
-      <span class="grow" style="flex:1"></span>
+    <button type="button" class="cpick" data-act="cpick-open" style="--cc:${ccol(c)}" aria-haspopup="dialog" aria-label="Classe ${esc(c.name)} : changer de classe"><span class="cpi" aria-hidden="true">${ICON.group}</span><span class="cpt"><b>${esc(c.name)}</b><small>${esc(subjOf(c))} · ${plural(studentsOf(c.id).length, 'élève')}</small></span><span class="cpch" aria-hidden="true">▾</span></button>
+    <div class="pseg" style="--n:${periods.length}">${seg('sui-p', periods.map((p, i) => [i, esc(shortPer(p.n))]), V.sp)}</div>
+    <div class="row sflt"><div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="sui-v" data-v="list" aria-pressed="${sv === 'list'}">Liste</button><button type="button" data-act="sui-v" data-v="grid" aria-pressed="${sv === 'grid'}">Grille</button></div>
       <button class="gchip" data-act="sui-f" data-v="surv" aria-pressed="${V.sf === 'surv'}"><span class="chip neg">${nS}</span> à surveiller</button>
       <button class="gchip" data-act="sui-f" data-v="peu" aria-pressed="${V.sf === 'peu'}"><span class="chip neu">${nP}</span> peu observé${nP > 1 ? 's' : ''}</button>
       <button class="gchip" data-act="sui-f" data-v="disc" aria-pressed="${V.sf === 'disc'}"><span class="chip disc">${nD}</span> discret${nD > 1 ? 's' : ''}</button></div>
-    ${(() => { const ks = (c.councils || []).filter(k => k.date >= addDays(todayStr(), -60)).sort((a, b) => a.date.localeCompare(b.date)); const k = ks.filter(x => x.date <= todayStr()).pop() || ks[0]; return k ? `<div class="row" style="gap:8px"><button class="btn" data-act="nw-open" data-cid="${c.id}" data-id="${k.id}">✎ Notes du conseil du ${esc(dayShort(k.date))}</button><span class="small muted">${plural(new Set(DB.notes.filter(n => n.ref === k.id && noteHas(n)).map(n => n.sid)).size, 'élève saisi', 'élèves saisis')} sur ${studentsOf(c.id).length}</span></div>` : ''; })()}
-    <div class="row" style="gap:8px"><button class="btn" data-act="notes-open" data-cid="${c.id}">📊 Notes</button><button class="btn" data-act="bul-open" data-cid="${c.id}">✎ Préparer le conseil de classe${esc(per.n !== 'Année' ? ' (' + per.n + ')' : '')}</button><span class="small muted">${per.n !== 'Année' ? plural(studentsOf(c.id).filter(s => DB.bul[bulKey(s.id, per)]).length, 'rédigée', 'rédigées') + ' sur ' + studentsOf(c.id).length : ''}</span></div>
+    <div class="acts">${(() => { const ks = (c.councils || []).filter(k => k.date >= addDays(todayStr(), -60)).sort((a, b) => a.date.localeCompare(b.date)); const k = ks.filter(x => x.date <= todayStr()).pop() || ks[0]; if (!k) return '';
+        const n = new Set(DB.notes.filter(x => x.ref === k.id && noteHas(x)).map(x => x.sid)).size, N = studentsOf(c.id).length;
+        return `<button class="abtn" data-act="nw-open" data-cid="${c.id}" data-id="${k.id}"><span class="aic a-cons">✎</span>${kType(k, c) === 'mi' ? 'Bilan mi-semestre' : 'Bilan conseil'} · ${esc(fmtShort(k.date))}<span class="acnt">${n}/${N}</span></button>`; })()}
+      <button class="abtn" data-act="notes-open" data-cid="${c.id}"><span class="aic a-notes">${ICON.chart}</span>Notes</button>
+      <button class="abtn" data-act="bul-open" data-cid="${c.id}"><span class="aic a-bul">✍</span>Préparer le conseil${per.n !== 'Année' ? `<span class="acnt">${studentsOf(c.id).filter(s => DB.bul[bulKey(s.id, per)]).length}/${studentsOf(c.id).length}</span>` : ''}</button></div>
     ${hasG ? `<div class="isynth"><span><b>Notes</b> · moyennes des élèves : ${(() => { const st = gStats(moys.map(r => r.moy)); return statTxt(st, ' / 20'); })()}</span><button type="button" class="gchip" data-act="sui-sort" data-k="moy"><span class="chip neg">${mLow}</span> sous 10</button></div>` : ''}
     ${implP().on ? `<div class="isynth"><span><b>Implication</b> · moyenne ${iAvg != null ? fmtN(Math.round(iAvg * 10) / 10) : '—'} / 20</span><button type="button" class="gchip" data-act="sui-sort" data-k="impl"><span class="chip neg">${nLow}</span> sous 10</button><span><span class="chip dark">${nLook}</span> à regarder</span><span class="small muted">Comptes en séances (une étiquette par séance, RAS automatiques compris). Comp. : bavard, s'amuse, agité, passif, comportement, sécurité · Dev. : devoirs non faits, incomplets, bâclés · Oubli : matériel, blouse, retard.</span></div>` : ''}
     ${apprBlockHTML(c, per)}
@@ -5236,7 +5290,8 @@ const ACT = {
   htab: el => { V.tab = el.dataset.t; V.sf = null; render(); $('.main')?.scrollTo(0, 0); },
   eye: () => { DB.settings.hidePhotos = !DB.settings.hidePhotos; save(); renderKeep(); toast(DB.settings.hidePhotos ? 'Photos masquées' : 'Photos affichées'); },
   'fiche-open': el => go({name:'fiche', sid: el.dataset.sid, order: [...document.querySelectorAll('[data-act="fiche-open"]')].map(x => x.dataset.sid).filter((x, i, a) => a.indexOf(x) === i)}),
-  'sui-c': el => { V.scid = el.dataset.cid; V.sp = null; V.sf = null; render(); },
+  'sui-c': el => { V.scid = el.dataset.cid; V.sp = null; V.sf = null; if ($('#modal').innerHTML) closeModal(); render(); $('.main')?.scrollTo(0, 0); },
+  'cpick-open': () => classPicker(),
   'sui-v': el => { V.sv = el.dataset.v; render(); },
   'sui-p': el => { V.sp = +el.dataset.v; render(); },
   'sui-s': el => { V.ss = el.dataset.v; render(); },
@@ -5492,7 +5547,7 @@ const ACT = {
     const keys = councilClash(k), canc = keys.filter(x => DB.cancelled[x]);
     const line = key => { const [d, sid] = key.split('|'), x = DB.slots.find(y => y.id === sid), cc = x && cls(x.cid); if (!x || !cc) return ''; const on = !!DB.cancelled[key];
       return `<li><span style="flex:1">${dot(cc)} ${esc(cc.name)}${x.group !== 'all' ? ' · ' + x.group : ''} · ${fmtT(x.start)} – ${fmtT(x.end)} ${on ? '<span class="chip neu">Annulé</span>' : '<span class="chip pos">Maintenu</span>'}</span><button class="btn" data-act="slot-cancel" data-slot="${x.id}" data-date="${d}">${on ? 'Rétablir' : 'Annuler ce cours'}</button></li>`; };
-    openModal(`<h2 class="row" style="gap:10px">${dot(c)}Conseil de classe · ${esc(c.name)}</h2>
+    openModal(`<h2 class="row" style="gap:10px">${dot(c)}${kLabel(k, c)} · ${esc(c.name)}</h2>
       <p>${esc(cap(fmtLong(k.date)))}, ${fmtT(k.s)} – ${fmtT(k.e)}${k.note ? ' · ' + esc(k.note) : ''}</p>
       ${keys.length ? `<p class="small muted" style="margin:0 0 6px">Cours au même moment :</p><ul class="stable">${keys.map(line).join('')}</ul>` : ''}
       <div class="ft"><button class="btn" data-act="m-close">Fermer</button><button class="btn" data-act="settings" data-tab="classes" data-cid="${c.id}">Modifier dans Réglages</button><button class="btn ink" data-act="nw-open" data-cid="${c.id}" data-id="${k.id}">✎ Saisir les notes du conseil</button></div>`); },
@@ -5706,15 +5761,15 @@ const CHG = {
 const FORMS = {
   'cons-save': f => {
     const c = cls(f.dataset.cid); if (!c) return;
-    const date = $('#cs-date').value, st = $('#cs-s').value, en = $('#cs-e').value, note = $('#cs-note').value.trim();
+    const date = $('#cs-date').value, st = $('#cs-s').value, en = $('#cs-e').value, note = $('#cs-note').value.trim(), type = $('#cs-type') ? $('#cs-type').value : '';
     if (!date || !st || !en) { toast('Indiquez la date, le début et la fin.'); return; }
     if (en <= st) { toast("L'heure de fin doit être après le début."); $('#cs-e').focus(); return; }
     const list = c.councils || (c.councils = []);
     const old = CONS_EDIT && CONS_EDIT.cid === c.id ? list.find(k => k.id === CONS_EDIT.id) : null;
     const k = old ? Object.assign(old, {}) : {id: uid()}; const prev = old ? {...old} : null;
-    Object.assign(k, {date, s: st, e: en, note}); if (!old) list.push(k);
+    Object.assign(k, {date, s: st, e: en, note, type}); if (!old) list.push(k);
     const n = applyCouncil(k.id, prev, k); CONS_EDIT = null; save(); render();
-    toast((old ? 'Conseil modifié' : 'Conseil de classe ajouté') + (n ? ` · ${plural(n, 'cours annulé', 'cours annulés')}` : ''));
+    toast((old ? 'Date modifiée' : kLabel(k, c) + ' ajouté') + (n ? ` · ${plural(n, 'cours annulé', 'cours annulés')}` : ''));
   },
   'new-class': () => { const name = $('#nc-name').value.trim(); if (!name) return; const c = {id: uid(), name, pt: $('#nc-pt').value, color: nextColor()}; DB.classes.push(c); V.cid = c.id; V.imp = true; IMP = null; save(); render(); toast('Classe créée. Importez maintenant la liste des élèves.'); },
   'add-stu': f => { const first = titleCase($('#as-first').value.trim()), last = titleCase($('#as-last').value.trim()); if (!first || !last) return; const g2 = $('#as-group2') ? $('#as-group2').value : ''; DB.students.push({id: uid(), cid: f.dataset.cid, first, last, group: $('#as-group').value, ...(g2 ? {g2} : {})}); save(); render(); $('#as-first')?.focus(); },

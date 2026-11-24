@@ -1064,7 +1064,8 @@ button.wpill{cursor:pointer}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
 .cgi{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);font:inherit;color:var(--ink);text-align:left;cursor:pointer}
 .cgi i{width:10px;height:10px;border-radius:50%;background:var(--cc);flex:none} .cgi b{display:block;font-size:16px} .cgi small{color:var(--muted);font-size:12px}
-.cgi[aria-pressed="true"]{outline:2px solid var(--ink);background:color-mix(in srgb,var(--cc) 14%,var(--surface-2))}
+.cgi[aria-pressed="true"]{background:linear-gradient(135deg,var(--cc),color-mix(in srgb,var(--cc) 65%,#fff));border-color:transparent;color:#fff;box-shadow:0 4px 14px color-mix(in srgb,var(--cc) 35%,transparent)}
+.cgi[aria-pressed="true"] i{background:#fff} .cgi[aria-pressed="true"] small{color:rgba(255,255,255,.85)}
 @media (max-width:700px){ #modal .modal.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;transform:none;max-width:none;width:auto;border-radius:20px 20px 0 0;max-height:80vh;overflow:auto;margin:0;padding-bottom:max(16px,env(safe-area-inset-bottom))}
   #modal .modal.sheet::before{content:'';display:block;width:40px;height:4px;border-radius:2px;background:var(--line-2);margin:-4px auto 12px} }
 .menp{display:flex;flex-direction:column;gap:8px;margin:10px 0}
@@ -1197,6 +1198,11 @@ button.wpill{cursor:pointer}
 .lpal .lpg{display:block;width:100%;height:34px;border-radius:10px}
 .lpal .lps{display:flex;gap:6px}.lpal .lps i{width:26px;height:16px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(128,128,128,.35)}
 .lpal b{font-size:15px}.lpal b small{font-weight:500;color:var(--muted);font-size:12px;margin-left:4px}
+.gchip:has(.cdot){border:1.5px solid var(--line-2);background:transparent;color:var(--ink-2)}
+.gchip:has(.cdot)[aria-pressed="true"]{background:linear-gradient(135deg,var(--cc),color-mix(in srgb,var(--cc) 65%,#fff));border-color:transparent;color:#fff;box-shadow:0 4px 14px color-mix(in srgb,var(--cc) 35%,transparent)}
+.gchip:has(.cdot)[aria-pressed="true"] .cdot{background:#fff !important}
+.gpick{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.gpick .cpick{width:auto;max-width:340px;padding:8px 12px}.gpick .cpick b{font-size:17px}
+.gpick .seg{display:inline-flex;width:auto}
 </style>
 </head>
 <body>
@@ -2798,7 +2804,7 @@ function setClasses() {
 
         <select data-chg="class-pt" data-cid="${c.id}" style="width:auto" aria-label="Découpage de l'année"><option value="semestre" ${c.pt === 'semestre' ? 'selected' : ''}>Semestres</option><option value="trimestre" ${c.pt === 'trimestre' ? 'selected' : ''}>Trimestres</option></select></div>
       ${DB.classes.length > 1 ? (() => { const lv = levelOf(c), others = DB.classes.filter(x => x.id !== c.id).sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
-        return `<div class="shch"><span class="lbl" style="margin:0">Chapitres communs avec</span>${others.map(x => `<button type="button" class="gchip" data-act="ch-share" data-cid="${c.id}" data-other="${x.id}" aria-pressed="${levelOf(x) === lv}">${dot(x)}${esc(x.name)}</button>`).join('')}
+        return `<div class="shch"><span class="lbl" style="margin:0">Chapitres communs avec</span>${others.map(x => `<button type="button" class="gchip" data-act="ch-share" data-cid="${c.id}" data-other="${x.id}" style="--cc:${ccol(x)}" aria-pressed="${levelOf(x) === lv}">${dot(x)}${esc(x.name)}</button>`).join('')}
           <span class="small muted" style="flex-basis:100%">Les classes cochées utilisent la même liste de chapitres (numéros et titres). Le contenu des séances reste propre à chaque classe.</span></div>`; })() : ''}
       <div class="swatches" role="group" aria-label="Couleur de la classe">${CLASS_COLORS.map(([h, n]) => `<button type="button" class="sw" style="--sw:${h}" aria-label="${n}" aria-pressed="${c.color === h}" data-act="class-color" data-cid="${c.id}" data-col="${h}"></button>`).join('')}</div>
       <p class="small muted" style="margin:0">${plural(list.length, 'élève')} · G1 : ${g1} · G2 : ${g2}${twoG ? ` · Ga : ${ga} · Gb : ${gb}` : ''} · ${plural(list.filter(s => PHOTOS[s.id]).length, 'photo')}</p>
@@ -3243,6 +3249,8 @@ async function runSelfTests() {
         delete DB.settings.look; applyLook(); eq([r.dataset.theme, r.dataset.pal, r.dataset.flat], [undefined, undefined, undefined], 'apparence : retour par défaut');
         ok(html(setLook()).querySelectorAll('.lpal').length === 6, 'apparence : six palettes proposées');
         if (keep) DB.settings.look = keep; applyLook(); }
+      { const c0 = DB.classes[0]; if (c0) { const b = html(cpickBtn(c0, 'prog-c')).querySelector('.cpick'); eq([b.dataset.act, b.dataset.pact], ['cpick-open', 'prog-c'], 'sélecteur de classe : carte commune (Suivi, Salles, Progression)'); }
+        ok(CPICK['sal-c']().list.every(c => groupsOf(c.id).length), 'Salles : seules les classes à groupes sont proposées'); salNowGroup(); }
       eq([cmpVer('3.10', '3.9'), cmpVer('3.14', '3.14'), cmpVer('3.9', '3.14') < 0, cmpVer('4.0', '3.99') > 0], [1, 0, true, true], 'comparaison de versions (3.10 > 3.9)');
       DB.kw = {}; y0.sex = '';
       DB.bul = {};
@@ -4159,6 +4167,16 @@ function groupChoices() {
   DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true})).forEach(c => { groupsOf(c.id).forEach(g => out.push({c, g, k: c.id + '|' + g})); });
   return out;
 }
+function salNowGroup(cid) {
+  const t = todayStr(), nm = nowMin(), toM = h => { const [a, b] = String(h || '0:0').split(':').map(Number); return a * 60 + (b || 0); };
+  const gs = groupChoices();
+  for (const sl of slotsOn(t)) {
+    if (toM(sl.end) < nm || (cid && sl.cid !== cid)) continue;
+    const g = gs.find(x => x.c.id === sl.cid && x.g === sl.group);
+    if (g) return g;
+  }
+  return null;
+}
 function viewSalles() {
   if (!V.rid || !roomById(V.rid)) V.rid = DB.rooms[0] && DB.rooms[0].id;
   const room = roomById(V.rid), groups = groupChoices();
@@ -4167,7 +4185,8 @@ function viewSalles() {
   let right = '<div class="empty"><p>Aucun labo. Ajoutez-en un.</p></div>';
   if (room) {
     const sg = groups.find(x => x.k === V.sg);
-    const chips = groups.map(x => `<button class="gchip" data-act="sel-sg" data-k="${x.k}" aria-pressed="${x.k === V.sg}">${dot(x.c)}${esc(x.c.name)} · ${x.g}</button>`).join('');
+    const gs = sg ? groups.filter(x => x.c.id === sg.c.id) : [];
+    const chips = sg ? `<div class="gpick">${cpickBtn(sg.c, 'sal-c', ` · ${esc(sg.g)}`, `${esc(subjOf(sg.c))} · ${plural(studentsOf(sg.c.id, sg.g).length, 'élève')}`)}${gs.length > 1 ? `<div class="seg" role="group" aria-label="Groupe">${gs.map(x => `<button type="button" data-act="sel-sg" data-k="${x.k}" aria-pressed="${x.k === V.sg}">${esc(x.g)}</button>`).join('')}</div>` : ''}</div>` : '';
     let plan = '', ban = '', info = '';
     if (sg) {
       const pl = getPlace(sg.c.id, sg.g, room, false);
@@ -4182,7 +4201,7 @@ function viewSalles() {
         <button class="btn" data-act="tv" aria-pressed="${V.tv !== false}" title="Vue depuis le tableau (prof) ou vue des élèves">${V.tv !== false ? 'Vue prof' : 'Vue élèves'}</button>
         <button class="btn ink" data-act="plan-open" ${sg ? '' : 'disabled'}>Placer les élèves</button>
         <button class="btn" data-act="proj-open-s" ${sg ? '' : 'disabled'}>${ICON.proj}Projeter</button></div>
-      ${groups.length ? `<div class="row" style="gap:6px">${chips}</div>` : '<p class="muted" style="margin:0">Attribuez des demi-groupes (G1/G2) à vos élèves dans Réglages pour placer des groupes.</p>'}
+      ${groups.length ? chips : '<p class="muted" style="margin:0">Attribuez des demi-groupes (G1/G2) à vos élèves dans Réglages pour placer des groupes.</p>'}
       ${ban}
       ${sg ? `<div ${roomBox(57 + 48 + 150 + (ban ? 60 : 0))}>${plan}</div><p class="small muted" style="margin:0">${info}</p>` : ''}`;
   }
@@ -4236,9 +4255,17 @@ function apprBlockHTML(c, per) {
 }
 const shortPer = n => n.replace(/^Trimestre\s*/, 'T').replace(/^Semestre\s*/, 'S');
 const subjOf = c => levelOf(c) === '1re' ? 'Enseignement scientifique' : 'Physique-chimie';
-function classPicker() {
-  const classes = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
-  openModal(`<h2 style="margin:0 0 10px">Choisir une classe</h2><div class="cgrid">${classes.map(x => `<button type="button" class="cgi" data-act="sui-c" data-cid="${x.id}" aria-pressed="${x.id === V.scid}" style="--cc:${ccol(x)}"><i></i><span><b>${esc(x.name)}</b><small>${plural(studentsOf(x.id).length, 'élève')}</small></span></button>`).join('')}</div>`, 'sheet');
+/* sélecteur de classe : une carte (halo de la couleur de la classe) qui ouvre la liste des classes ; Suivi, Salles, Progression */
+const CPICK = {
+  'sui-c': () => ({cur: V.scid, list: DB.classes}),
+  'sal-c': () => ({cur: (V.sg || '').split('|')[0], list: DB.classes.filter(c => groupsOf(c.id).length)}),
+  'prog-c': () => ({cur: V.pcid, list: DB.classes}),
+};
+const cpickBtn = (c, act, extra, sub) => `<button type="button" class="cpick" data-act="cpick-open" data-pact="${act}" style="--cc:${ccol(c)}" aria-haspopup="dialog" aria-label="Classe ${esc(c.name)} : changer de classe"><span class="cpi" aria-hidden="true">${ICON.group}</span><span class="cpt"><b>${esc(c.name)}${extra || ''}</b><small>${sub || `${esc(subjOf(c))} · ${plural(studentsOf(c.id).length, 'élève')}`}</small></span><span class="cpch" aria-hidden="true">▾</span></button>`;
+function classPicker(act) {
+  act = CPICK[act] ? act : 'sui-c';
+  const {cur, list} = CPICK[act](), classes = list.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
+  openModal(`<h2 style="margin:0 0 10px">Choisir une classe</h2><div class="cgrid">${classes.map(x => `<button type="button" class="cgi" data-act="${act}" data-cid="${x.id}" aria-pressed="${x.id === cur}" style="--cc:${ccol(x)}"><i></i><span><b>${esc(x.name)}</b><small>${plural(studentsOf(x.id).length, 'élève')}</small></span></button>`).join('')}</div>`, 'sheet');
 }
 function viewSuivi() {
   const classes = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
@@ -4297,7 +4324,7 @@ function viewSuivi() {
       <span class="bdg">${r.look ? '<span class="chip dark">👁 à regarder</span>' : ''}${r.surv ? '<span class="chip neg">À surveiller</span>' : ''}${r.peu ? '<span class="chip neu">Peu observé</span>' : ''}${r.disc ? '<span class="chip disc">Discret</span>' : ''}</span></button>`).join('');
   return `${tabBar('suivi')}
   <main class="main"><div class="wrap" style="max-width:1300px">
-    <button type="button" class="cpick" data-act="cpick-open" style="--cc:${ccol(c)}" aria-haspopup="dialog" aria-label="Classe ${esc(c.name)} : changer de classe"><span class="cpi" aria-hidden="true">${ICON.group}</span><span class="cpt"><b>${esc(c.name)}</b><small>${esc(subjOf(c))} · ${plural(studentsOf(c.id).length, 'élève')}</small></span><span class="cpch" aria-hidden="true">▾</span></button>
+    ${cpickBtn(c, 'sui-c')}
     <div class="pseg" style="--n:${periods.length}">${seg('sui-p', periods.map((p, i) => [i, esc(shortPer(p.n))]), V.sp)}</div>
     <div class="row sflt"><div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="sui-v" data-v="list" aria-pressed="${sv === 'list'}">Liste</button><button type="button" data-act="sui-v" data-v="grid" aria-pressed="${sv === 'grid'}">Grille</button></div>
       <button class="gchip" data-act="sui-f" data-v="surv" aria-pressed="${V.sf === 'surv'}"><span class="chip neg">${nS}</span> à surveiller</button>
@@ -4846,7 +4873,7 @@ function viewProg() {
   const segs = [...opts.map(g => [g, g === 'all' ? 'Classe entière' : g]), ['tout', 'Toutes les séances']];
   return `${tabBar('prog')}
   <main class="main"><div class="wrap" style="max-width:1300px">
-    <div class="row" style="gap:6px">${classes.map(x => `<button class="gchip" data-act="prog-c" data-cid="${x.id}" aria-pressed="${x.id === c.id}">${dot(x)}${esc(x.name)}</button>`).join('')}</div>
+    <div class="row">${cpickBtn(c, 'prog-c')}</div>
     <div class="row"><div class="seg" role="group" aria-label="Séances">${segs.map(([v, l]) => `<button type="button" data-act="prog-g" data-v="${v}" aria-pressed="${V.pg === v}">${l}</button>`).join('')}</div>
       <span class="small muted">En cours : <strong style="color:var(--ink)">${lastCh ? esc(chapterLabel(lvl, DB.content[lastCh.key].ch)) : '—'}</strong></span>
       <span class="grow" style="flex:1"></span>
@@ -5388,17 +5415,18 @@ const ACT = {
   'tr-skip': el => { const it = TR.items[+el.dataset.i]; it.sid = it.sid === 'skip' ? 'new' : 'skip'; renderKeep(); },
   'tr-cancel': () => { TR = null; back(); },
   'tr-go': () => commitTrombi(),
-  htab: el => { V.tab = el.dataset.t; V.sf = null; render(); $('.main')?.scrollTo(0, 0); },
+  htab: el => { V.tab = el.dataset.t; V.sf = null; if (V.tab === 'salles') { const g = salNowGroup(); if (g) V.sg = g.k; } render(); $('.main')?.scrollTo(0, 0); },
   eye: () => { DB.settings.hidePhotos = !DB.settings.hidePhotos; save(); renderKeep(); toast(DB.settings.hidePhotos ? 'Photos masquées' : 'Photos affichées'); },
   'fiche-open': el => go({name:'fiche', sid: el.dataset.sid, order: [...document.querySelectorAll('[data-act="fiche-open"]')].map(x => x.dataset.sid).filter((x, i, a) => a.indexOf(x) === i)}),
   'sui-c': el => { V.scid = el.dataset.cid; V.sp = null; V.sf = null; if ($('#modal').innerHTML) closeModal(); render(); $('.main')?.scrollTo(0, 0); },
-  'cpick-open': () => classPicker(),
+  'cpick-open': el => classPicker(el.dataset.pact),
   'sui-v': el => { V.sv = el.dataset.v; render(); },
   'sui-p': el => { V.sp = +el.dataset.v; render(); },
   'sui-s': el => { V.ss = el.dataset.v; render(); },
   'sui-f': el => { V.sf = V.sf === el.dataset.v ? null : el.dataset.v; renderKeep(); },
   'sel-room': el => { V.rid = el.dataset.rid; render(); },
   'sel-sg': el => { V.sg = el.dataset.k; render(); },
+  'sal-c': el => { const gs = groupChoices().filter(x => x.c.id === el.dataset.cid), keep = gs.find(x => x.k === V.sg); V.sg = (keep || salNowGroup(el.dataset.cid) || gs[0] || {}).k || V.sg; if ($('#modal').innerHTML) closeModal(); render(); },
   'room-edit': () => go({name:'roomedit', rid: V.rid, selItem: null}),
   'plan-open': () => { const [cid, g] = V.sg.split('|'); go({name:'plan', cid, group: g, rid: V.rid, selSid: null}); },
   'proj-open-s': () => { const [cid, g] = V.sg.split('|'); openProj(cid, g, V.rid); },
@@ -5601,7 +5629,7 @@ const ACT = {
     shiftAt(s.cid, s.group, nxt.key, {ch: CT.data.ch, items: [{id: uid(), type: it.type, label: it.label, st: 'prev'}], hw: []});
     save(); const ses = CT.ses; openContent(ses); renderKeep(); toast('Suite décalée d\'une séance');
   },
-  'prog-c': el => { V.pcid = el.dataset.cid; V.pg = null; render(); },
+  'prog-c': el => { V.pcid = el.dataset.cid; V.pg = null; if ($('#modal').innerHTML) closeModal(); render(); },
   'prog-g': el => { V.pg = el.dataset.v; V.pAll = false; render(); },
   'prog-all': () => { V.pAll = true; renderKeep(); },
   'prog-shift': () => {

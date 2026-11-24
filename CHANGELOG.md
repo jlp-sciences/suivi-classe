@@ -5,6 +5,7 @@
 - Couleurs de sens en dégradé : positif en vert émeraude → turquoise, négatif en brique → corail, passif et à vérifier en ambre, plutôt bien en vert d'eau, correct en gris lavande ; mentions du conseil assorties.
 - Pastilles des bilans (frise, couronne, légendes) plus foncées et harmonisées.
 - Réglages → Apparence : mode (automatique, clair, sombre), six palettes (Améthyste par défaut, Abysses, Nébuleuse, Grenadine, Orage, Encre), couleurs des observations en dégradé ou en aplats, retour à l'apparence par défaut ; réglage synchronisé sur tous les appareils.
+- Salles et Progression : le choix de la classe passe par la même carte que le Suivi (halo de la couleur de la classe, liste des classes en un toucher) ; dans Salles, les groupes de la classe à côté (G1, G2…), et à l'ouverture de l'onglet, le groupe qui a cours maintenant ou juste après est présélectionné. Classe choisie en couleur pleine dans les listes.
 
 ## 3.21 — 24 novembre 2026
 - Nouveau logo (trois élèves, l'un suivi ; dégradé bleu nuit → violet).

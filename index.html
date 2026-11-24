@@ -203,7 +203,7 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 35%,trans
 .appbar .tb{display:flex;align-items:center;gap:7px;padding:0 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--ink-2);font-weight:600;font-size:14.5px;min-height:40px;cursor:pointer;white-space:nowrap}
 .appbar .tb:hover{border-color:var(--line-2);color:var(--ink)}
 .appbar .tb .tbi{display:grid;place-items:center} .appbar .tb .tbi svg{width:18px;height:18px} .appbar .tb .tbs{display:none}
-.appbar .tb[aria-current="page"]{background:linear-gradient(135deg,#3B4CCA,#7B3FE4);border-color:transparent;color:#fff}
+.appbar .tb[aria-current="page"]{background:var(--grad);border-color:transparent;color:var(--on-acc)}
 .appbar .blogo{width:26px;height:26px;border-radius:7px;margin-right:9px} .appbar .ptitle{display:none}
 .appbar .grow{flex:1}
 .appbar > .btn{align-self:center}
@@ -216,7 +216,7 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 35%,trans
   .appbar .tb{flex-direction:column;gap:3px;padding:0;border:0;background:transparent;min-height:56px;font-size:11px;color:var(--muted);border-radius:0}
   .appbar .tb .tbl{display:none} .appbar .tb .tbs{display:block}
   .appbar .tb .tbi{width:54px;height:32px;border-radius:16px} .appbar .tb .tbi svg{width:22px;height:22px}
-  .appbar .tb[aria-current="page"]{background:transparent;color:var(--ink)} .appbar .tb[aria-current="page"] .tbi{background:linear-gradient(135deg,#3B4CCA,#7B3FE4);color:#fff}
+  .appbar .tb[aria-current="page"]{background:transparent;color:var(--ink)} .appbar .tb[aria-current="page"] .tbi{background:var(--grad);color:var(--on-acc)}
   body:has(.appbar .tbar) .main{padding-bottom:96px}
   .appbar .grow{display:none}
   .appbar .eye{padding:0 10px;font-size:0;gap:0;flex:none}
@@ -368,7 +368,7 @@ button.pgblk.cur.sel{box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 35%,trans
 .tabs.stabs{gap:8px;padding:10px 24px;align-items:center}
 .tabs.stabs button{min-height:42px;padding:0 15px;font-size:15px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--ink-2);font-weight:600}
 .tabs.stabs button .tbi{display:grid;place-items:center} .tabs.stabs button .tbi svg{width:18px;height:18px}
-.tabs.stabs button[aria-selected="true"]{background:linear-gradient(135deg,#3B4CCA,#7B3FE4);color:#fff;border-color:transparent}
+.tabs.stabs button[aria-selected="true"]{background:var(--grad);color:var(--on-acc);border-color:transparent}
 @media (max-width:700px){
   .tabs.stabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;padding:8px 10px;overflow:visible}
   .tabs.stabs button{flex-direction:column;gap:2px;min-height:54px;padding:4px 2px;font-size:12.5px;position:relative;justify-content:center}
@@ -1173,6 +1173,30 @@ button.wpill{cursor:pointer}
 .sptip .pos{color:var(--pos)} .sptip .neg{color:var(--neg)}
 .sptip .tf{border-top:1px solid var(--line);padding-top:4px}
 .stile .ibadge.mb ~ .stags{top:56px}
+/* ---- 3.22 : réglage Apparence (palettes, mode, aplats) ---- */
+:root[data-pal="abysses"]{--bg:#EBF1F7;--surface:#FFFFFF;--surface-2:#E1EAF2;--line:#D3DFEA;--line-2:#B9CADB;--acc:#1D6FD8;--acc-ink:#0B4A9E;--acc-soft:#E3EEFC;--acc-line:#BBD3F4;--on-acc:#FFFFFF;--ph:#D6E1EC;--ph-ink:#5B6E82;--grad:linear-gradient(135deg,#1D4ED8,#0EA5E9)}
+@media (prefers-color-scheme: dark){:root[data-pal="abysses"]:not([data-theme="light"]){--bg:#0A1118;--surface:#121C26;--surface-2:#1B2833;--line:#24384A;--line-2:#34506A;--acc:#38BDF8;--acc-ink:#A5DEFB;--acc-soft:#0F2A3D;--acc-line:#34506A;--on-acc:#FFFFFF;--ph:#1E2C38;--ph-ink:#8DA3B8;--grad:linear-gradient(135deg,#1D4ED8,#0EA5E9)}}
+:root[data-pal="abysses"][data-theme="dark"]{--bg:#0A1118;--surface:#121C26;--surface-2:#1B2833;--line:#24384A;--line-2:#34506A;--acc:#38BDF8;--acc-ink:#A5DEFB;--acc-soft:#0F2A3D;--acc-line:#34506A;--on-acc:#FFFFFF;--ph:#1E2C38;--ph-ink:#8DA3B8;--grad:linear-gradient(135deg,#1D4ED8,#0EA5E9)}
+:root[data-pal="nebuleuse"]{--bg:#F3EEF8;--surface:#FFFFFF;--surface-2:#EBE2F3;--line:#DED3EA;--line-2:#C8B8DC;--acc:#9333EA;--acc-ink:#6B21A8;--acc-soft:#F3E8FD;--acc-line:#DCC3F6;--on-acc:#FFFFFF;--ph:#E2D8EE;--ph-ink:#6E5E85;--grad:linear-gradient(135deg,#7B3FE4,#D946EF)}
+@media (prefers-color-scheme: dark){:root[data-pal="nebuleuse"]:not([data-theme="light"]){--bg:#120D1A;--surface:#1B1426;--surface-2:#261C35;--line:#33264A;--line-2:#4A3768;--acc:#D07CF5;--acc-ink:#EBC2FC;--acc-soft:#2E1A3F;--acc-line:#4A3768;--on-acc:#FFFFFF;--ph:#2A2038;--ph-ink:#A493BC;--grad:linear-gradient(135deg,#7B3FE4,#D946EF)}}
+:root[data-pal="nebuleuse"][data-theme="dark"]{--bg:#120D1A;--surface:#1B1426;--surface-2:#261C35;--line:#33264A;--line-2:#4A3768;--acc:#D07CF5;--acc-ink:#EBC2FC;--acc-soft:#2E1A3F;--acc-line:#4A3768;--on-acc:#FFFFFF;--ph:#2A2038;--ph-ink:#A493BC;--grad:linear-gradient(135deg,#7B3FE4,#D946EF)}
+:root[data-pal="grenadine"]{--bg:#F7EEF2;--surface:#FFFFFF;--surface-2:#F0E2E9;--line:#E6D2DC;--line-2:#D4B6C5;--acc:#BE185D;--acc-ink:#8B1145;--acc-soft:#FCE7F0;--acc-line:#F3BFD5;--on-acc:#FFFFFF;--ph:#EBDAE2;--ph-ink:#7A5A69;--grad:linear-gradient(135deg,#8E2A6B,#E0457B)}
+@media (prefers-color-scheme: dark){:root[data-pal="grenadine"]:not([data-theme="light"]){--bg:#150D12;--surface:#1F141B;--surface-2:#2B1C26;--line:#3A2533;--line-2:#55364A;--acc:#F472A6;--acc-ink:#FBC3D9;--acc-soft:#3A1729;--acc-line:#55364A;--on-acc:#FFFFFF;--ph:#2E1F29;--ph-ink:#B193A3;--grad:linear-gradient(135deg,#8E2A6B,#E0457B)}}
+:root[data-pal="grenadine"][data-theme="dark"]{--bg:#150D12;--surface:#1F141B;--surface-2:#2B1C26;--line:#3A2533;--line-2:#55364A;--acc:#F472A6;--acc-ink:#FBC3D9;--acc-soft:#3A1729;--acc-line:#55364A;--on-acc:#FFFFFF;--ph:#2E1F29;--ph-ink:#B193A3;--grad:linear-gradient(135deg,#8E2A6B,#E0457B)}
+:root[data-pal="orage"]{--bg:#EEF0F3;--surface:#FFFFFF;--surface-2:#E4E7EC;--line:#D6DAE1;--line-2:#BCC3CE;--acc:#475569;--acc-ink:#1E293B;--acc-soft:#E8ECF2;--acc-line:#C6CED9;--on-acc:#FFFFFF;--ph:#DDE1E7;--ph-ink:#5E6673;--grad:linear-gradient(135deg,#475569,#7B8BA3)}
+@media (prefers-color-scheme: dark){:root[data-pal="orage"]:not([data-theme="light"]){--bg:#0E1013;--surface:#171A1F;--surface-2:#21252C;--line:#2C313A;--line-2:#3E4552;--acc:#94A3B8;--acc-ink:#CBD5E1;--acc-soft:#222A36;--acc-line:#3E4552;--on-acc:#FFFFFF;--ph:#252A32;--ph-ink:#98A1AE;--grad:linear-gradient(135deg,#475569,#7B8BA3)}}
+:root[data-pal="orage"][data-theme="dark"]{--bg:#0E1013;--surface:#171A1F;--surface-2:#21252C;--line:#2C313A;--line-2:#3E4552;--acc:#94A3B8;--acc-ink:#CBD5E1;--acc-soft:#222A36;--acc-line:#3E4552;--on-acc:#FFFFFF;--ph:#252A32;--ph-ink:#98A1AE;--grad:linear-gradient(135deg,#475569,#7B8BA3)}
+:root[data-pal="encre"]{--bg:#F4F4F5;--surface:#FFFFFF;--surface-2:#E9E9EB;--line:#DCDCE0;--line-2:#C4C4CA;--acc:#18181B;--acc-ink:#09090B;--acc-soft:#EDEDEF;--acc-line:#CFCFD4;--on-acc:#FFFFFF;--ph:#E1E1E4;--ph-ink:#5E5E66;--grad:linear-gradient(135deg,#18181B,#52525B)}
+@media (prefers-color-scheme: dark){:root[data-pal="encre"]:not([data-theme="light"]){--bg:#000000;--surface:#0D0D0F;--surface-2:#18181B;--line:#232327;--line-2:#34343A;--acc:#E4E4E7;--acc-ink:#FAFAFA;--acc-soft:#1F1F23;--acc-line:#34343A;--on-acc:#0B0B0C;--ph:#1C1C20;--ph-ink:#9A9AA2;--grad:linear-gradient(135deg,#F4F4F5,#A1A1AA)}}
+:root[data-pal="encre"][data-theme="dark"]{--bg:#000000;--surface:#0D0D0F;--surface-2:#18181B;--line:#232327;--line-2:#34343A;--acc:#E4E4E7;--acc-ink:#FAFAFA;--acc-soft:#1F1F23;--acc-line:#34343A;--on-acc:#0B0B0C;--ph:#1C1C20;--ph-ink:#9A9AA2;--grad:linear-gradient(135deg,#F4F4F5,#A1A1AA)}
+:root[data-flat="1"]{--g-pos:#0E8A68;--g-neg:#C8472A;--g-bien:#38A88E;--g-warn:#E8AE2A;--g-corr:#7F83A0}
+.lrow{display:flex;flex-direction:column;gap:8px}
+.lpals{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.lpal{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:10px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);text-align:left;cursor:pointer;font:inherit}
+.lpal[aria-pressed="true"]{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 25%,transparent)}
+.lpal .lpg{display:block;width:100%;height:34px;border-radius:10px}
+.lpal .lps{display:flex;gap:6px}.lpal .lps i{width:26px;height:16px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(128,128,128,.35)}
+.lpal b{font-size:15px}.lpal b small{font-weight:500;color:var(--muted);font-size:12px;margin-left:4px}
 </style>
 </head>
 <body>
@@ -1486,6 +1510,7 @@ function go(v) { STACK.push(V); V = v; closeLayer(); render(); $('.main')?.scrol
 function back() { V = STACK.pop() || homeV(); closeLayer(); render(); }
 
 function render() {
+  applyLook();
   const app = $('#app'); SESS_CACHE = {}; hideAmen(); if (typeof hideHover === 'function') { hideHover(); hovEl = null; }
   if (V.name === 'today') app.innerHTML = V.tab === 'prog' ? viewProg() : V.tab === 'suivi' ? viewSuivi() : V.tab === 'salles' ? viewSalles() : (isNarrow() || V.mode === 'day') ? viewToday() : viewWeek();
   else if (V.name === 'grid') app.innerHTML = viewSession();
@@ -2667,18 +2692,50 @@ function viewFiche() {
 /* ---------- vue : réglages ---------- */
 function viewSettings() {
   const tab = V.tab || 'classes';
-  const tabs = [['classes','Classes et élèves'],['edt','Emploi du temps'],['periodes','Périodes et vacances'],['etiquettes','Étiquettes'],['sauvegarde','Sauvegarde'],['sync','Synchronisation']];
+  const tabs = [['classes','Classes et élèves'],['edt','Emploi du temps'],['periodes','Périodes et vacances'],['etiquettes','Étiquettes'],['apparence','Apparence'],['sauvegarde','Sauvegarde'],['sync','Synchronisation']];
   let body = '';
   if (tab === 'classes') body = setClasses();
   if (tab === 'edt') body = setEdt();
   if (tab === 'periodes') body = setPeriodes();
   if (tab === 'sauvegarde') body = setBackup();
   if (tab === 'etiquettes') body = setCats();
+  if (tab === 'apparence') body = setLook();
   if (tab === 'sync') body = setSync2();
   return `
   <header class="bar"><button class="btn ghost" data-act="home">${ICON.back}Accueil</button><div class="ttl"><h1>Réglages</h1></div><span class="grow"></span><span class="small muted">${versionLabel()}</span></header>
   <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${k === tab}" data-act="tab" data-tab="${k}">${l}</button>`).join('')}</nav>
   <main class="main"><div class="wrap" style="max-width:1100px">${body}</div></main>`;
+}
+/* ---- Apparence : mode, palette, aplats (synchronisé avec les autres réglages) ---- */
+const LOOK_PALS = [
+  ['amethyste', 'Améthyste', "indigo → violet, la couleur du logo", '#3B4CCA', '#7B3FE4', '#EEEFF7', '#0F1019'],
+  ['abysses', 'Abysses', "bleu profond → cyan", '#1D4ED8', '#0EA5E9', '#EBF1F7', '#0A1118'],
+  ['nebuleuse', 'Nébuleuse', "violet → magenta", '#7B3FE4', '#D946EF', '#F3EEF8', '#120D1A'],
+  ['grenadine', 'Grenadine', "prune → framboise", '#8E2A6B', '#E0457B', '#F7EEF2', '#150D12'],
+  ['orage', 'Orage', "gris-bleu acier, la plus sobre", '#475569', '#7B8BA3', '#EEF0F3', '#0E1013'],
+  ['encre', 'Encre', "noir pur, accents argent", '#3F3F46', '#D4D4D8', '#F4F4F5', '#000000']
+];
+const LOOK_DEF = {mode: 'auto', pal: 'amethyste', flat: false};
+const lookP = () => { const L = Object.assign({}, LOOK_DEF, DB.settings.look || {}); if (!LOOK_PALS.some(p => p[0] === L.pal)) L.pal = 'amethyste'; if (!['auto', 'light', 'dark'].includes(L.mode)) L.mode = 'auto'; return L; };
+function applyLook() {
+  const L = lookP(), r = document.documentElement;
+  if (L.mode === 'auto') delete r.dataset.theme; else r.dataset.theme = L.mode;
+  if (L.pal === 'amethyste') delete r.dataset.pal; else r.dataset.pal = L.pal;
+  if (L.flat) r.dataset.flat = '1'; else delete r.dataset.flat;
+  const m = document.querySelector('meta[name="theme-color"]'), pp = LOOK_PALS.find(p => p[0] === L.pal);
+  if (m && pp) m.content = pp[3];
+}
+function setLookK(k, v) { DB.settings.look = Object.assign(lookP(), {[k]: v}); save(); renderKeep(); }
+function setLook() {
+  const L = lookP();
+  const seg = (act, opts, cur) => `<div class="seg" role="group">${opts.map(([v, l]) => `<button type="button" data-act="${act}" data-v="${v}" aria-pressed="${String(cur) === v}">${l}</button>`).join('')}</div>`;
+  const cards = LOOK_PALS.map(([k, n, sub, a, b, bl, bd]) => `<button type="button" class="lpal" data-act="look-pal" data-v="${k}" aria-pressed="${L.pal === k}"><span class="lpg" style="background:linear-gradient(135deg,${a},${b})"></span><span class="lps" aria-hidden="true"><i style="background:${bl}"></i><i style="background:${bd}"></i></span><b>${n}${k === 'amethyste' ? '<small>par défaut</small>' : ''}</b><span class="small muted">${sub}</span></button>`).join('');
+  return `<section class="card" style="display:flex;flex-direction:column;gap:18px"><h3 style="font-size:17px">Apparence</h3>
+    <div class="lrow"><div class="lbl">Mode</div>${seg('look-mode', [['auto', 'Automatique'], ['light', 'Clair'], ['dark', 'Sombre']], L.mode)}<p class="small muted" style="margin:0">Automatique : suit le réglage clair ou sombre de l'appareil.</p></div>
+    <div class="lrow"><div class="lbl">Palette</div><div class="lpals">${cards}</div></div>
+    <div class="lrow"><div class="lbl">Couleurs des observations</div>${seg('look-flat', [['0', 'Dégradés'], ['1', 'Aplats']], L.flat ? '1' : '0')}<p class="small muted" style="margin:0">Positif, négatif, passif, mentions… en dégradé ou en couleur unie.</p></div>
+    <p class="small muted" style="margin:0">Ce réglage est le même sur tous vos appareils.</p>
+    <div><button class="btn" data-act="look-reset">Revenir à l'apparence par défaut</button></div></section>`;
 }
 function setCats() {
   const hid = new Set(DB.settings.hiddenCats || []);
@@ -3179,6 +3236,13 @@ async function runSelfTests() {
         ok(html(viewBulTest()).querySelector('.clscard textarea').value.startsWith('Classe agréable'), 'page : carte « Appréciation de la classe »');
         delete DB.kw[ck]; delete DB.bul[ck]; }
       DB.implN[implKey('y0', per)] = {v: 14.5, t: 1}; ok(/Implication \(repère du professeur, hors moyenne\) : 14,5\/20/.test(bulExportText(cls('tA'), per)), 'note d\'implication retenue jointe au récapitulatif'); delete DB.implN[implKey('y0', per)];
+      { const r = document.documentElement, keep = DB.settings.look; DB.settings.look = {mode: 'dark', pal: 'abysses', flat: true}; applyLook();
+        eq([r.dataset.theme, r.dataset.pal, r.dataset.flat], ['dark', 'abysses', '1'], 'apparence : mode, palette et aplats appliqués');
+        ok(syncKnown('settings:look'), 'apparence : réglage synchronisé');
+        DB.settings.look = {pal: 'inconnue', mode: 'x'}; eq([lookP().pal, lookP().mode], ['amethyste', 'auto'], 'apparence : valeurs inconnues → par défaut');
+        delete DB.settings.look; applyLook(); eq([r.dataset.theme, r.dataset.pal, r.dataset.flat], [undefined, undefined, undefined], 'apparence : retour par défaut');
+        ok(html(setLook()).querySelectorAll('.lpal').length === 6, 'apparence : six palettes proposées');
+        if (keep) DB.settings.look = keep; applyLook(); }
       eq([cmpVer('3.10', '3.9'), cmpVer('3.14', '3.14'), cmpVer('3.9', '3.14') < 0, cmpVer('4.0', '3.99') > 0], [1, 0, true, true], 'comparaison de versions (3.10 > 3.9)');
       DB.kw = {}; y0.sex = '';
       DB.bul = {};
@@ -5660,6 +5724,10 @@ const ACT = {
     DB.evals = DB.evals.filter(x => x !== e); saved.g.forEach(([k]) => delete DB.grades[k]); save(); renderKeep();
     toast('Évaluation supprimée', {label: 'Annuler', fn: () => { DB.evals.push(saved.e); saved.g.forEach(([k, v]) => { DB.grades[k] = v; }); save(); renderKeep(); }}); },
   'fiche-nav': el => { const o = V.order || [], i = o.indexOf(V.sid), j = i + (+el.dataset.d); if (j < 0 || j >= o.length) return; V.sid = o[j]; NOTE_EDIT = null; saveNav(); renderKeep(); },
+  'look-mode': el => setLookK('mode', el.dataset.v),
+  'look-pal': el => setLookK('pal', el.dataset.v),
+  'look-flat': el => setLookK('flat', el.dataset.v === '1'),
+  'look-reset': () => { delete DB.settings.look; save(); renderKeep(); toast('Apparence par défaut rétablie'); },
   'impl-reset': () => { delete DB.settings.impl; save(); renderKeep(); toast('Barème par défaut rétabli'); },
   'impl-copy': async () => { const c = cls(V.cid), per = periodsFor(c)[V.p]; const lines = studentsOf(c.id).map(s => { const r = implCalc(s, per), ret = implRet(s.id, per); const n = ret ? ret.v : r.note; return `${s.last} ${s.first}\t${n == null ? '' : String(n).replace('.', ',')}`; }).join('\n');
     try { await navigator.clipboard.writeText(lines); toast('Notes copiées (une ligne par élève : nom, note)'); } catch (e) { toast('Copie impossible'); } },
@@ -5918,7 +5986,7 @@ async function showPersist() {
    Les suppressions sont mémorisées pour ne pas réapparaître. */
 const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup', 'notes', 'evals'];
 const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN', 'grades', 'kw'];
-const SYNC_SET = ['evenIsA', 'holidays', 'periods', 'hiddenCats', 'impl'];
+const SYNC_SET = ['evenIsA', 'holidays', 'periods', 'hiddenCats', 'impl', 'look'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
 const freshSM = () => ({m: {}, init: false, last: 0, etag: null, dirty: false});
 let SYNC = {state: 'off', busy: false, again: false, msg: '', rootOk: false};

@@ -1,5 +1,10 @@
 # Historique des versions
 
+## 3.22 — 24 novembre 2026
+- Nouvelles couleurs « lavande moderne », accordées au logo : fonds gris lavande (bleu nuit en mode sombre) ; l'indigo-violet du logo remplace l'ancien vert de l'interface (boutons principaux en dégradé, « Aujourd'hui », séance et créneau en cours, barre du téléphone et écran de démarrage).
+- Couleurs de sens en dégradé : positif en vert émeraude → turquoise, négatif en brique → corail, passif et à vérifier en ambre, plutôt bien en vert d'eau, correct en gris lavande ; mentions du conseil assorties.
+- Pastilles des bilans (frise, couronne, légendes) plus foncées et harmonisées.
+
 ## 3.21 — 24 novembre 2026
 - Nouveau logo (trois élèves, l'un suivi ; dégradé bleu nuit → violet).
 - Suivi : choix de la classe par une carte (halo de la couleur de la classe) qui ouvre la liste des classes ; périodes sur une ligne (T1, T2, T3, Année) ; affichage et filtres sur une ligne qui défile ; boutons Bilan conseil, Notes et Préparer le conseil mieux délimités, avec compteurs.

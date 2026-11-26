@@ -1,5 +1,11 @@
 # Historique des versions
 
+## 3.23 — 27 novembre 2026
+- Créneaux ponctuels (bouton « + » de l'emploi du temps, ou toucher une plage vide de la semaine) : RCD, séance supplémentaire ou autre (réunion, sortie…), avec date, heures, salle et note. Avec une de vos classes, c'est une vraie séance (contenu, observations, bilan) ; avec la classe d'un collègue, un simple créneau. Étiquette « RCD » / « SUPP. » dans l'emploi du temps ; appui long pour modifier ou supprimer.
+- Compteur des RCD de l'année dans la barre de la semaine (nombre, durée totale, liste copiable).
+- Créneaux en dégradé de la couleur de la classe, avec liseré dégradé ; séance en cours entourée du violet ; couleurs de classe accordées aux palettes (à l'affichage).
+- Barres du système (haut et bas du téléphone) de la couleur du fond de l'application.
+
 ## 3.22 — 24 novembre 2026
 - Nouvelles couleurs « lavande moderne », accordées au logo : fonds gris lavande (bleu nuit en mode sombre) ; l'indigo-violet du logo remplace l'ancien vert de l'interface (boutons principaux en dégradé, « Aujourd'hui », séance et créneau en cours, barre du téléphone et écran de démarrage).
 - Couleurs de sens en dégradé : positif en vert émeraude → turquoise, négatif en brique → corail, passif et à vérifier en ambre, plutôt bien en vert d'eau, correct en gris lavande ; mentions du conseil assorties.

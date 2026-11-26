@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Suivi de classe</title>
-<meta name="theme-color" content="#4F46E5">
+<meta name="theme-color" content="#0F1019">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1203,6 +1203,28 @@ button.wpill{cursor:pointer}
 .gchip:has(.cdot)[aria-pressed="true"] .cdot{background:#fff !important}
 .gpick{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.gpick .cpick{width:auto;max-width:340px;padding:8px 12px}.gpick .cpick b{font-size:17px}
 .gpick .seg{display:inline-flex;width:auto}
+/* 3.23 : créneaux en dégradé de la couleur de la classe, liseré dégradé en haut, séance en cours entourée du violet */
+.blk:not(.cancel):not(.cons):not(.xtra){background:linear-gradient(160deg,color-mix(in srgb,var(--cc) 38%,var(--surface)) 0%,color-mix(in srgb,var(--cc) 6%,var(--surface)) 100%);border:1px solid color-mix(in srgb,var(--cc) 35%,transparent);box-shadow:none;overflow:hidden}
+.blk:not(.cancel):not(.cons):not(.xtra)::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--cc),color-mix(in srgb,var(--cc) 55%,#fff));pointer-events:none}
+.blk.past:not(.cancel):not(.cons):not(.xtra){background:linear-gradient(160deg,color-mix(in srgb,var(--cc) 14%,var(--surface-2)),color-mix(in srgb,var(--cc) 4%,var(--surface-2)))}
+.blk.past:not(.cancel):not(.cons):not(.xtra)::before{opacity:.6}
+.blk.now:not(.cancel):not(.cons){outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--acc),0 6px 18px color-mix(in srgb,var(--acc) 35%,transparent)}
+.blk.has-eval:not(.cancel):not(.cons){border-color:color-mix(in srgb,var(--neg) 55%,transparent)}
+/* créneaux ponctuels */
+.btag.rcd{background:var(--grad);color:var(--on-acc)}.btag.sup{background:var(--acc-soft);color:var(--acc-ink);box-shadow:inset 0 0 0 1px var(--acc-line)}.btag.autre{background:var(--surface-2);color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line-2)}
+.blk .btop .btag.rcd,.blk .btop .btag.sup,.blk .btop .btag.autre{margin-left:auto}
+.blk.xtra{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--acc) 18%,var(--surface)) 0 8px,color-mix(in srgb,var(--acc) 8%,var(--surface)) 8px 16px);border:1.5px dashed color-mix(in srgb,var(--acc) 60%,transparent);box-shadow:none}
+.blk.xtra.autre{background:repeating-linear-gradient(135deg,var(--surface-2) 0 8px,var(--surface) 8px 16px);border-color:var(--line-2)}
+.blk.xtra.past{opacity:.7}
+.slot.xcard{border-style:dashed}
+.tt-col[data-act="tt-add"]{cursor:copy}
+.wpill.rcdp{gap:6px}
+.gchip[data-cid="~"][aria-pressed="true"]{background:var(--grad);color:var(--on-acc);border-color:transparent}
+#xm{display:flex;flex-direction:column;gap:12px}
+.xmrow{display:flex;gap:10px;flex-wrap:wrap}.xmrow .f{flex:1;min-width:110px}
+.rcdl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;max-height:50vh;overflow:auto}
+.rcdl li{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.rcdl small{display:block;color:var(--muted);font-size:12px}.rcdl .rd{width:110px}.rcdl .rn{flex:1}.rcdl .rm{font-weight:600;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1237,8 +1259,8 @@ const titleCase = s => s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu, (m, a,
 const plural = (n, w, p) => n + ' ' + (n > 1 ? (p || w + 's') : w);
 const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const IS_DEMO = /claude/.test(location.hostname);
-const APP_VERSION = {n: '3.22', d: '2026-11-24'};
-const SW_CACHE = 'suivi-classe-v38'; // identique à CACHE dans sw.js (vérifié par les tests)
+const APP_VERSION = {n: '3.23', d: '2026-11-27'};
+const SW_CACHE = 'suivi-classe-v39'; // identique à CACHE dans sw.js (vérifié par les tests)
 const versionLabel = () => `Version ${APP_VERSION.n} du ${parseD(APP_VERSION.d).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}`;
 
 const ICON = {
@@ -1329,7 +1351,7 @@ const SEATDEF = {
 const FIXED = {board: [560, 56], desk: [240, 96]};
 const ITEM_LABEL = {ilot: 'Îlot de 4', ilot6: 'Îlot de 6', simple: 'Paillasse de 2', double: 'Paillasses face à face', L: 'Paillasse en L (3)', board: 'Tableau', desk: 'Bureau'};
 const isFixed = it => !!FIXED[it.type];
-const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], evals:[], bul:{}, implN:{}, grades:{}, kw:{}, appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
+const freshDB = () => ({v:1, classes:[], students:[], slots:[], obs:[], cancelled:{}, rooms: defaultRooms(), place:{}, sep:{}, sesRoom:{}, lastRoom:{}, content:{}, chapters:{}, catchup:[], notes:[], evals:[], extra:[], bul:{}, implN:{}, grades:{}, kw:{}, appr:{}, hwOk:{}, hwMove:{}, hwSt:{}, cdt:{}, tog:{}, settings: defaultSettings()});
 let DB = freshDB();
 let PHOTOS = {};
 const MIG_STAMP = new Map(); // enregistrements créés par une migration : datés « anciens » pour la synchro (une vraie modification l'emporte toujours)
@@ -1344,6 +1366,7 @@ function migrate(core) {
   if (!Array.isArray(d.catchup)) d.catchup = [];
   if (!Array.isArray(d.notes)) d.notes = [];
   if (!Array.isArray(d.evals)) d.evals = [];
+  if (!Array.isArray(d.extra)) d.extra = [];
   ['place', 'sep', 'sesRoom', 'lastRoom', 'content', 'chapters', 'appr', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN', 'grades', 'kw'].forEach(k => { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
   /* labos v3 : on repart des 6 labos par défaut et de plans vides (une seule fois par appareil).
      Les labos par défaut sont marqués « anciens » pour la synchro : une disposition déjà retouchée sur un autre appareil l'emporte. */
@@ -1442,7 +1465,9 @@ const hideAmen = () => { const b = $('#amenpop'); if (b) b.hidden = true; };
 const initials = s => ((s.first || '')[0] || '') + ((s.last || '')[0] || '');
 const photoHTML = s => PHOTOS[s.id] && !DB.settings.hidePhotos ? `<img src="${PHOTOS[s.id]}" alt="" draggable="false">` : `<span class="ini">${esc(initials(s))}</span>`;
 
-const ccol = c => (c && c.color) || '#5A6B7D';
+/* couleurs de classe accordées aux palettes (affichage seulement : la couleur enregistrée ne change pas) */
+const CMAP = {'#2F6DB5':'#3B82F6','#D9822B':'#F08A3C','#7B4FB3':'#8B5CF6','#1E8C8C':'#14B8A6','#C2477A':'#E0457B','#6E8B2E':'#84A83A','#B5472F':'#E0603F','#3B4BA8':'#6366F1','#B8901C':'#E0B23A','#5A6B7D':'#7C8BA1'};
+const ccol = c => { const h = (c && c.color) || '#5A6B7D'; return CMAP[h.toUpperCase()] || h; };
 const dot = c => `<span class="cdot" style="background:${ccol(c)}" aria-hidden="true"></span>`;
 function yearBounds() {
   const all = [...DB.settings.periods.semestre, ...DB.settings.periods.trimestre].filter(p => p.s && p.e);
@@ -1482,7 +1507,7 @@ let HOME_MODE = 'week';
 /* jour mis en avant : aujourd'hui, ou le lundi suivant le week-end */
 function focusDay() {
   const t = todayStr(), wd = parseD(t).getDay();
-  const satOk = wd === 6 && DB.slots.some(x => x.day === 6 && (x.week === 'all' || x.week === weekType(t)) && cls(x.cid));
+  const satOk = wd === 6 && (DB.slots.some(x => x.day === 6 && (x.week === 'all' || x.week === weekType(t)) && cls(x.cid) && slotValid(x, t)) || DB.extra.some(x => x.date === t));
   if (wd === 0) return addDays(t, 1);
   if (wd === 6 && !satOk) return addDays(t, 2);
   return t;
@@ -1637,8 +1662,8 @@ function viewToday() {
   let body = banners();
   if (!DB.classes.length) body += welcomeCard();
   else if (hol) body += `<div class="empty"><p><strong>${esc(hol.n)}</strong> : pas de cours ce jour-là.</p></div>`;
-  else if (!slots.length && !councilsOn(d).length) body += `<div class="empty"><p>Aucun cours prévu ${d === t ? "aujourd'hui" : 'ce jour-là'} (semaine ${wt}).</p><div class="row"><button class="btn" data-act="other">Ouvrir une classe</button><button class="btn" data-act="settings" data-tab="edt">${ICON.cal}Emploi du temps</button></div></div>`;
-  else body += '<ol class="slots">' + slots.map(s => ({t: s.start, h: slotCard(d, s, FM)})).concat(councilsOn(d).map(k => ({t: k.s, h: consCard(k)}))).sort((a, b) => a.t.localeCompare(b.t)).map(x => x.h).join('') + '</ol><p class="small muted" style="margin:4px 0 0">Appui long sur un créneau : le marquer comme annulé.</p>';
+  else if (!slots.length && !councilsOn(d).length && !extrasOn(d).length) body += `<div class="empty"><p>Aucun cours prévu ${d === t ? "aujourd'hui" : 'ce jour-là'} (semaine ${wt}).</p><div class="row"><button class="btn" data-act="other">Ajouter un créneau ponctuel</button><button class="btn" data-act="settings" data-tab="edt">${ICON.cal}Emploi du temps</button></div></div>`;
+  else body += '<ol class="slots">' + slots.map(s => ({t: s.start, h: slotCard(d, s, FM)})).concat(councilsOn(d).map(k => ({t: k.s, h: consCard(k)})), extrasOn(d).map(e => ({t: e.start, h: xCard(e)}))).sort((a, b) => a.t.localeCompare(b.t)).map(x => x.h).join('') + '</ol><p class="small muted" style="margin:4px 0 0">Appui long sur un créneau : le marquer comme annulé.</p>';
   return `${tabBar('edt')}
   <header class="bar">
     <button class="btn icon-btn" data-act="day" data-n="-1" aria-label="Jour précédent">${ICON.back}</button>
@@ -1647,7 +1672,7 @@ function viewToday() {
     <span class="chip dark" style="font-size:14px;padding:5px 12px">Semaine ${wt}</span>
     <span class="grow"></span>
     ${modeSeg('day')}
-    <button class="btn" data-act="other">Autre classe</button>
+    <button class="btn" data-act="other">+ Créneau ponctuel</button>
   </header>
   <main class="main"><div class="wrap">${body}</div></main>`;
 }
@@ -1665,7 +1690,7 @@ function slotCard(d, s, FM) {
     ${right}</button></li>`;
   return `<li><button class="slot ${isNow ? 'now' : ''} ${d < t ? 'past' : ''} ${st.k !== 'cancel' && hasEval(ctS) ? 'has-eval' : st.k !== 'cancel' && isGraded(ctS) ? 'has-graded' : ''}" data-act="open-slot" data-slot="${s.id}" data-date="${d}" data-long="slot">
     <span class="time">${fmtT(s.start)} – ${fmtT(s.end)}</span>
-    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; const hs = hwState(sesFromSlot(d, s)); return (hs ? `<span class="dlab">${hwDot(hs)}${hs === 'todo' ? 'Devoir à vérifier' : 'Devoirs vérifiés'}</span>` : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const ct = DB.content[d + '|' + s.id]; return ct && ct.ch != null ? ' · ' + esc(chapterLabel(levelOf(c), ct.ch)) : ''; })()}</span>${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.items.length || st.k === 'cancel') return ''; return `<span class="slitems">${ct.items.map(it => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim(); return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}${it.graded && (it.type === 'tp' || it.type === 'act') ? '<span class="bnote">noté</span>' : ''}</span>`; }).join('')}</span>`; })()}${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.hw || !ct.hw.length || st.k === 'cancel') return ''; const ses = sesFromSlot(d, s); return `<span class="slitems slhw"><span class="slhwt">Travail donné</span>${ct.hw.map(h => `<span class="bit"><i class="bty" style="--tc:var(--sc-hw)">${esc(cap(hwDueLabel(h, ses, s.cid, s.group)))}</i><span class="bil">${esc(hwText(h))}</span></span>`).join('')}</span>`; })()}</span>
+    <span class="mid"><span class="row" style="gap:10px">${dot(c)}<span class="cls">${esc(c.name)}</span><span class="chip neu">${groupLabel(s.group)}</span>${s.once ? `<span class="btag ${s.kind === 'rcd' ? 'rcd' : 'sup'}">${s.kind === 'rcd' ? 'RCD' : 'SUPP.'}</span>` : ''}${(() => { if (st.k === 'cancel') return ''; const rdy = DB.content[d + '|' + s.id] && DB.content[d + '|' + s.id].ready; const hs = hwState(sesFromSlot(d, s)); return (hs ? `<span class="dlab">${hwDot(hs)}${hs === 'todo' ? 'Devoir à vérifier' : 'Devoirs vérifiés'}</span>` : '') + `<span class="dlab">${cdtDot(d + '|' + s.id)}${DB.cdt[d + '|' + s.id] ? 'Cahier de textes' : 'Cahier de textes à faire'}</span>` + (rdy ? '<span class="dlab"><i class="pdot pg">✓</i>Prête</span>' : !sesStarted({date: d, start: s.start}) ? '<span class="dlab"><i class="pdot pr">!</i>À préparer</span>' : ''); })()}</span><span class="small muted">${plural(n, 'élève')}${(() => { const ct = DB.content[d + '|' + s.id]; return ct && ct.ch != null ? ' · ' + esc(chapterLabel(levelOf(c), ct.ch)) : ''; })()}</span>${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.items.length || st.k === 'cancel') return ''; return `<span class="slitems">${ct.items.map(it => { const ty = ITYPE[it.type] || ITYPE.autre, lab = (it.label || '').trim(); return `<span class="bit"><i class="bty" style="--tc:${ty.c}">${esc(lab ? ITY_SHORT[ty.k] || ty.l : ty.l)}</i>${lab ? `<span class="bil">${esc(lab)}</span>` : ''}${it.graded && (it.type === 'tp' || it.type === 'act') ? '<span class="bnote">noté</span>' : ''}</span>`; }).join('')}</span>`; })()}${(() => { const ct = DB.content[d + '|' + s.id]; if (!ct || !ct.hw || !ct.hw.length || st.k === 'cancel') return ''; const ses = sesFromSlot(d, s); return `<span class="slitems slhw"><span class="slhwt">Travail donné</span>${ct.hw.map(h => `<span class="bit"><i class="bty" style="--tc:var(--sc-hw)">${esc(cap(hwDueLabel(h, ses, s.cid, s.group)))}</i><span class="bil">${esc(hwText(h))}</span></span>`).join('')}</span>`; })()}</span>
     ${right}</button></li>`;
 }
 
@@ -1773,7 +1798,7 @@ function blkHTML(d, x, c, st, o) {
   const lines = show.map((it, i) => line(it, i === show.length - 1)).join('');
   const hl = V.hl && blkMatches(V.hl, d, x, st) ? 'hl hl-' + V.hl : '';
   return `<button class="blk ${ev ? 'has-eval' : ''} ${gr ? 'has-graded' : ''} ${o.past ? 'past' : ''} ${o.isNow ? 'now' : ''} ${cancel ? 'cancel' : ''} ${o.h < 58 ? 'short' : ''} ${lines ? '' : 'noitems'} ${dotLine ? 'dotline' : ''} ${x.vdc ? 'vdc' : ''} ${hl}" style="top:${o.top}px;height:${o.h}px;left:calc(${x._lane * o.w}% + 2px);width:calc(${o.w}% - 4px);--cc:${ccol(c)};--dw:${nd ? nd * 19 + 4 : 0}px" data-act="open-slot" data-slot="${x.id}" data-date="${d}" data-long="slot" aria-label="${esc(c.name + ', ' + o.g + ', ' + fmtT(x.start))}">
-    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null && !x.vdc ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span>${x.vdc && !cancel ? '<span class="btag vdc">VIE DE CLASSE</span>' : ''}${ev && !cancel ? '<span class="btag ev">ÉVAL</span>' : gr && !cancel ? '<span class="btag gr">NOTÉ</span>' : ''}${chip && o.h < 44 ? chip.replace('class="chip neu"', 'class="chip neu bchip"') : ''}</span>
+    <span class="btop"><span class="bc">${esc(c.name)}${x.group === 'all' ? '' : ` <span class="bgrp">${x.group}</span>`}${ct && ct.ch != null && !x.vdc ? ` <span class="bch">· ${esc(chapShort(levelOf(c), ct.ch))}</span>` : ''}</span>${x.once && !cancel ? `<span class="btag ${x.kind === 'rcd' ? 'rcd' : 'sup'}">${x.kind === 'rcd' ? 'RCD' : 'SUPP.'}</span>` : ''}${x.vdc && !cancel ? '<span class="btag vdc">VIE DE CLASSE</span>' : ''}${ev && !cancel ? '<span class="btag ev">ÉVAL</span>' : gr && !cancel ? '<span class="btag gr">NOTÉ</span>' : ''}${chip && o.h < 44 ? chip.replace('class="chip neu"', 'class="chip neu bchip"') : ''}</span>
     ${lines ? `<span class="bits">${lines}</span>` : ''}
     ${chip && o.h >= 44 ? `<span class="bfoot">${chip}</span>` : ''}${dots}</button>`;
 }
@@ -1791,10 +1816,10 @@ function viewWeek() {
   const t = todayStr(), mon = mondayOf(V.date), FM = fillMap(), fd = focusDay();
   const wt = weekType(mon);
   const days = [0, 1, 2, 3, 4, 5].map(i => addDays(mon, i));
-  const sat = DB.slots.some(x => x.day === 6 && (x.week === 'all' || x.week === wt) && cls(x.cid));
+  const sat = DB.slots.some(x => x.day === 6 && (x.week === 'all' || x.week === wt) && cls(x.cid) && (!x.once || x.from === days[5])) || DB.extra.some(x => x.date === days[5]);
   const shown = sat ? days : days.slice(0, 5);
-  const valid = DB.slots.filter(x => cls(x.cid));
-  const wkCons = shown.flatMap(d => holidayOn(d) ? [] : councilsOn(d));
+  const valid = DB.slots.filter(x => cls(x.cid) && (!x.once || shown.includes(x.from)));
+  const wkCons = shown.flatMap(d => holidayOn(d) ? [] : councilsOn(d).concat(extrasOn(d).map(x => ({s: x.start, e: x.end}))));
   const t0 = valid.length || wkCons.length ? Math.floor(Math.min(...valid.map(x => tMin(x.start)), ...wkCons.map(k => tMin(k.s))) / 60) * 60 : 480;
   const t1 = valid.length || wkCons.length ? Math.ceil(Math.max(...valid.map(x => tMin(x.end)), ...wkCons.map(k => tMin(k.e))) / 60) * 60 : 1020;
   const nb = (IS_DEMO ? 1 : 0) + (backupDue() && !IS_DEMO ? 1 : 0) + (!STORAGE_OK && !IS_DEMO ? 1 : 0);
@@ -1813,12 +1838,13 @@ function viewWeek() {
     if (hol) return {head, body: `<div class="tt-col ${hi ? 'hi' : ''}" style="height:${H}px"><div class="tt-hol">${esc(hol.n)}</div>${nowLine}</div>`};
     // chevauchements : répartir côte à côte
     /* cours et conseils de classe : répartis côte à côte quand ils se chevauchent */
-    const cons = councilsOn(d);
-    const evs = sl.map(x => ({x, start: x.start, end: x.end})).concat(cons.map(k => ({k, start: k.s, end: k.e}))).sort((a, b) => a.start.localeCompare(b.start) || (a.k ? 1 : -1));
+    const cons = councilsOn(d), xs = extrasOn(d);
+    const evs = sl.map(x => ({x, start: x.start, end: x.end})).concat(cons.map(k => ({k, start: k.s, end: k.e})), xs.map(e => ({e, start: e.start, end: e.end}))).sort((a, b) => a.start.localeCompare(b.start) || (a.x ? -1 : 1));
     const lanes = []; evs.forEach(ev => { let i = lanes.findIndex(end => end <= ev.start); if (i < 0) { i = lanes.length; lanes.push(ev.end); } else lanes[i] = ev.end; ev.lane = i; if (ev.x) ev.x._lane = i; });
     const nl = Math.max(1, lanes.length);
     const consB = evs.filter(ev => ev.k).map(ev => consBlkHTML(ev.k, {top: (tMin(ev.k.s) - t0) * PPM, h: (tMin(ev.k.e) - tMin(ev.k.s)) * PPM - 4, w: 100 / nl, lane: ev.lane})).join('');
-    const blocks = consB + sl.map(x => {
+    const xB = evs.filter(ev => ev.e).map(ev => xBlkHTML(ev.e, {top: (tMin(ev.e.start) - t0) * PPM, h: (tMin(ev.e.end) - tMin(ev.e.start)) * PPM - 4, w: 100 / nl, lane: ev.lane, past: d < t})).join('');
+    const blocks = consB + xB + sl.map(x => {
       const c = cls(x.cid), st = sesState(d, x, FM);
       if (st.k === 'none' || st.k === 'part') todo++;
       if (st.k !== 'future' && st.k !== 'cancel') started++;
@@ -1828,7 +1854,7 @@ function viewWeek() {
       const g = x.group === 'all' ? 'Classe entière' : 'Demi-groupe ' + x.group;
       return blkHTML(d, x, c, st, {top, h, w, isNow, past: d < t, g});
     }).join('');
-    return {head, body: `<div class="tt-col ${hi ? 'hi' : ''}" style="height:${H}px">${pastShade}${blocks}${nowLine}</div>`};
+    return {head, body: `<div class="tt-col ${hi ? 'hi' : ''}" style="height:${H}px" data-act="tt-add" data-d="${d}" data-t0="${t0}" data-ppm="${PPM}">${pastShade}${blocks}${nowLine}</div>`};
   });
   const hours = []; for (let m = t0; m <= t1; m += 60) hours.push(`<span style="top:${(m - t0) * PPM}px">${m / 60} h</span>`);
   const isCur = mon === mondayOf(fd);
@@ -1843,7 +1869,8 @@ function viewWeek() {
     pill('bilan', nB, 'warn', '<i class="pdot pq part">!</i>', `${nB} bilan${nB > 1 ? 's' : ''} élèves`, '<i class="pdot pq ok">' + SILH + '</i>Bilans à jour'),
     pill('prep', nP, 'red', '<i class="pdot pr">!</i>', `${nP} à préparer`, '<i class="pdot pg">✓</i>Tout est prêt'),
     pill('cdt', nC, 'blue', '<i class="pdot pbx">!</i>', `${nC} cahier${nC > 1 ? 's' : ''} de textes`, '<i class="pdot pb">✓</i>Cahiers de textes'),
-    wk.length ? `<button type="button" class="wpill ghost" data-act="cdt-week" data-keys="${wk.join(',')}" data-on="${wkAll ? '0' : '1'}" title="${wkAll ? 'Décocher le cahier de textes pour toute la semaine' : 'Cocher le cahier de textes pour toutes les séances de cette semaine'}">${wkAll ? 'Décocher la semaine' : 'Cocher la semaine'}</button>` : ''
+    wk.length ? `<button type="button" class="wpill ghost" data-act="cdt-week" data-keys="${wk.join(',')}" data-on="${wkAll ? '0' : '1'}" title="${wkAll ? 'Décocher le cahier de textes pour toute la semaine' : 'Cocher le cahier de textes pour toutes les séances de cette semaine'}">${wkAll ? 'Décocher la semaine' : 'Cocher la semaine'}</button>` : '',
+    rcdPill(),
   ].join('');
   const endD = parseD(shown[shown.length - 1]);
   const title = `Du ${parseD(mon).getDate()} ${parseD(mon).getMonth() === endD.getMonth() ? '' : parseD(mon).toLocaleDateString('fr-FR', {month:'short'}) + ' '}au ${endD.toLocaleDateString('fr-FR', {day:'numeric', month:'long'})}`;
@@ -1863,10 +1890,131 @@ function viewWeek() {
     <span class="wpills">${pills}</span>
     <span class="grow"></span>
     ${modeSeg('week')}
-    <button class="btn icon-btn" data-act="other" aria-label="Autre classe (séance hors emploi du temps)" title="Autre classe (séance hors emploi du temps)">${ICON.plus || '+'}</button>
+    <button class="btn icon-btn" data-act="other" aria-label="Ajouter un créneau ponctuel (RCD, séance supplémentaire…)" title="Ajouter un créneau ponctuel (RCD, séance supplémentaire…)">${ICON.plus || '+'}</button>
     <button class="btn icon-btn" data-act="legend" aria-label="Légende" title="Légende">?</button>
   </header>
   <main class="main wkmain"><div class="wrap wkwrap">${body}</div></main>`;
+}
+/* ---------- créneaux ponctuels : RCD (remplacement de courte durée), séance supplémentaire, autre ----------
+   avec une de mes classes : un vrai créneau (DB.slots, once:true, valable ce seul jour) → séance complète (contenu, observations, bilan) ;
+   avec une autre classe, ou « autre » (réunion, sortie…) : DB.extra, un simple créneau affiché dans l'emploi du temps */
+const XK = {rcd: 'RCD', sup: 'Séance supp.', autre: 'Autre'};
+const extrasOn = d => DB.extra.filter(x => x.date === d && x.start && x.end && !holidayOn(d)).sort((a, b) => a.start.localeCompare(b.start));
+const xTitle = e => e.kind === 'rcd' ? (e.cname || 'Autre classe') : (e.title || 'Créneau');
+const xTag = k => `<span class="btag ${k === 'rcd' ? 'rcd' : k === 'sup' ? 'sup' : 'autre'}">${k === 'rcd' ? 'RCD' : k === 'sup' ? 'SUPP.' : 'AUTRE'}</span>`;
+const hmin = m => { const h = Math.floor(m / 60), r = m % 60; return h ? h + ' h' + (r ? ' ' + String(r).padStart(2, '0') : '') : r + ' min'; };
+function xBlkHTML(e, o) {
+  return `<button class="blk xtra ${e.kind === 'rcd' ? 'rcd' : 'autre'} ${o.h < 58 ? 'short' : ''} ${o.past ? 'past' : ''}" style="top:${o.top}px;height:${o.h}px;left:calc(${o.lane * o.w}% + 2px);width:calc(${o.w}% - 4px)" data-act="x-open" data-id="${e.id}" aria-label="${esc((e.kind === 'rcd' ? 'RCD ' : '') + xTitle(e) + ', ' + fmtT(e.start))}">
+    <span class="btop"><span class="bc">${esc(xTitle(e))}</span>${xTag(e.kind)}</span>
+    <span class="bit"><span class="bil">${fmtT(e.start)} – ${fmtT(e.end)}${e.room ? ' · ' + esc(e.room) : ''}</span></span>
+    ${e.who ? `<span class="bit"><span class="bil">Remplace ${esc(e.who)}</span></span>` : e.note ? `<span class="bit"><span class="bil">${esc(e.note)}</span></span>` : ''}</button>`;
+}
+function xCard(e) {
+  const sub = [e.who ? 'Remplace ' + e.who : '', e.room || '', e.note || ''].filter(Boolean).join(' · ');
+  return `<li><button class="slot xcard ${e.kind === 'rcd' ? 'rcd' : 'autre'}" data-act="x-open" data-id="${e.id}">
+    <span class="time">${fmtT(e.start)} – ${fmtT(e.end)}</span>
+    <span class="mid"><span class="row" style="gap:10px">${xTag(e.kind)}<span class="cls">${esc(xTitle(e))}</span></span>${sub ? `<span class="small muted">${esc(sub)}</span>` : ''}</span></button></li>`;
+}
+/* RCD de l'année scolaire (créneaux annulés exclus) */
+function schoolYear() {
+  const yb = yearBounds(); if (yb) return yb;
+  const t = parseD(todayStr()), y = t.getMonth() >= 7 ? t.getFullYear() : t.getFullYear() - 1;
+  return {s: y + '-08-15', e: (y + 1) + '-08-14'};
+}
+function rcdList() {
+  const {s, e} = schoolYear();
+  const a = DB.slots.filter(x => x.once && x.kind === 'rcd' && cls(x.cid) && x.from >= s && x.from <= e && !DB.cancelled[x.from + '|' + x.id])
+    .map(x => ({date: x.from, start: x.start, end: x.end, name: cls(x.cid).name + (x.group !== 'all' ? ' · ' + x.group : ''), who: x.who || '', slot: x.id}));
+  const b = DB.extra.filter(x => x.kind === 'rcd' && x.date >= s && x.date <= e && x.start && x.end)
+    .map(x => ({date: x.date, start: x.start, end: x.end, name: x.cname || 'Autre classe', who: x.who || '', xid: x.id}));
+  return a.concat(b).sort((p, q) => (p.date + p.start).localeCompare(q.date + q.start));
+}
+const rcdTotal = l => l.reduce((m, r) => m + Math.max(0, tMin(r.end) - tMin(r.start)), 0);
+const rcdPill = () => { const l = rcdList(); return l.length ? `<button type="button" class="wpill rcdp" data-act="rcd-list" title="Remplacements de l'année">${xTag('rcd')}${hmin(rcdTotal(l))}</button>` : ''; };
+function rcdModal() {
+  const l = rcdList(), tot = rcdTotal(l);
+  openModal(`<h2>Remplacements (RCD)</h2>
+    <p><strong>${plural(l.length, 'remplacement')} · ${hmin(tot)}</strong> depuis le début de l'année scolaire.</p>
+    ${l.length ? `<ul class="rcdl">${l.map(r => `<li><span class="rd">${esc(fmtShort(r.date))}<small>${fmtT(r.start)} – ${fmtT(r.end)}</small></span><span class="rn">${esc(r.name)}${r.who ? `<small>Remplace ${esc(r.who)}</small>` : ''}</span><span class="rm">${hmin(tMin(r.end) - tMin(r.start))}</span><button class="btn" data-act="${r.slot ? 'xm-slot' : 'x-open'}" ${r.slot ? `data-slot="${r.slot}"` : `data-id="${r.xid}"`}>Modifier</button></li>`).join('')}</ul>` : '<p class="muted">Aucun remplacement pour l\'instant.</p>'}
+    <div class="ft"><button class="btn" data-act="rcd-copy">Copier la liste</button><button class="btn primary" data-act="m-close">Fermer</button></div>`);
+}
+const rcdText = () => { const l = rcdList(); return `Remplacements (RCD) · ${plural(l.length, 'remplacement')} · ${hmin(rcdTotal(l))}\n` + l.map(r => `${fmtShort(r.date)}\t${fmtT(r.start)} – ${fmtT(r.end)}\t${r.name}${r.who ? '\tremplace ' + r.who : ''}\t${hmin(tMin(r.end) - tMin(r.start))}`).join('\n'); };
+/* fenêtre d'ajout / de modification */
+let XM = null;
+const pad2 = n => String(n).padStart(2, '0');
+const minT = m => pad2(Math.floor(m / 60) % 24) + ':' + pad2(m % 60);
+function xModal(o) {
+  o = o || {};
+  const d = o.date || (V.name === 'today' && V.mode === 'day' ? V.date : focusDay());
+  let st = o.start;
+  if (!st) { const nm = nowMin(); st = d === todayStr() && nm > 7 * 60 && nm < 18 * 60 ? minT(Math.ceil(nm / 60) * 60) : '08:00'; }
+  XM = Object.assign({kind: 'rcd', date: d, start: st, end: minT(tMin(st) + 55), cid: '', group: 'all', cname: '', who: '', title: '', room: '', note: '', id: null, slot: null, del: false}, o.xm || {});
+  openModal('<div id="xm"></div>');
+  xmPaint();
+}
+function xmEditSlot(id) {
+  const x = DB.slots.find(y => y.id === id); if (!x) return;
+  xModal({xm: {kind: x.kind || 'sup', date: x.from, start: x.start, end: x.end, cid: x.cid, group: x.group, who: x.who || '', room: x.room || '', note: x.note || '', slot: x.id}});
+}
+function xmEditExtra(id) {
+  const e = DB.extra.find(y => y.id === id); if (!e) return;
+  xModal({xm: {kind: e.kind, date: e.date, start: e.start, end: e.end, cid: e.kind === 'rcd' ? '~' : '', cname: e.cname || '', who: e.who || '', title: e.title || '', room: e.room || '', note: e.note || '', id: e.id}});
+}
+function xmRead() {
+  if (!XM || !$('#xm')) return;
+  const v = id => { const el = $('#' + id); return el ? el.value.trim() : undefined; };
+  ['date:xm-date', 'start:xm-s', 'end:xm-e', 'cname:xm-cname', 'who:xm-who', 'title:xm-title', 'room:xm-room', 'note:xm-note'].forEach(p => { const [k, id] = p.split(':'), x = v(id); if (x !== undefined) XM[k] = x; });
+}
+function xmPaint() {
+  const box = $('#xm'); if (!box || !XM) return;
+  const k = XM.kind, edit = !!(XM.id || XM.slot);
+  const classes = DB.classes.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
+  const mine = XM.cid && XM.cid !== '~' ? cls(XM.cid) : null, gl = mine ? groupsOf(mine.id) : [];
+  const chips = classes.map(c => `<button type="button" class="gchip" style="--cc:${ccol(c)}" data-act="xm-cls" data-cid="${c.id}" aria-pressed="${XM.cid === c.id}">${dot(c)}${esc(c.name)}</button>`).join('')
+    + (k === 'rcd' ? `<button type="button" class="gchip" data-act="xm-cls" data-cid="~" aria-pressed="${XM.cid === '~'}">Autre classe</button>` : '');
+  const hint = k === 'autre' ? 'Réunion, sortie, permanence… : le créneau apparaît dans l\'emploi du temps ce jour-là.'
+    : mine ? 'Une vraie séance avec cette classe : contenu, observations et bilan, comme un cours habituel.'
+    : k === 'rcd' && XM.cid === '~' ? 'Classe d\'un collègue : le créneau apparaît dans l\'emploi du temps et compte dans vos RCD.' : '';
+  box.innerHTML = `<h2>${edit ? 'Modifier le créneau' : 'Ajouter un créneau ponctuel'}</h2>
+    <div class="seg" role="group" aria-label="Type" style="--n:3">${['rcd', 'sup', 'autre'].map(x => `<button type="button" data-act="xm-kind" data-k="${x}" aria-pressed="${k === x}">${XK[x]}</button>`).join('')}</div>
+    <div class="xmrow"><label class="f">Date<input type="date" id="xm-date" value="${XM.date}"></label><label class="f">Début<input type="time" id="xm-s" step="300" value="${XM.start}"></label><label class="f">Fin<input type="time" id="xm-e" step="300" value="${XM.end}"></label></div>
+    ${k === 'autre' ? `<label class="f">Intitulé<input type="text" id="xm-title" value="${esc(XM.title)}" placeholder="Réunion, sortie, permanence…"></label>` : `<div class="f" style="gap:6px">Classe<div class="row" style="gap:6px;flex-wrap:wrap">${chips}</div></div>
+    ${gl.length ? `<div class="seg" role="group" aria-label="Groupe" style="--n:${gl.length + 1}">${['all', ...gl].map(g => `<button type="button" data-act="xm-grp" data-g="${g}" aria-pressed="${XM.group === g}">${g === 'all' ? 'Classe entière' : g}</button>`).join('')}</div>` : ''}
+    ${k === 'rcd' && XM.cid === '~' ? `<label class="f">Classe remplacée<input type="text" id="xm-cname" value="${esc(XM.cname)}" placeholder="4e 3"></label>` : ''}`}
+    ${k === 'rcd' ? `<label class="f">Collègue remplacé (facultatif)<input type="text" id="xm-who" value="${esc(XM.who)}" placeholder="M. Martin, anglais"></label>` : ''}
+    <div class="xmrow"><label class="f">Salle (facultatif)<input type="text" id="xm-room" value="${esc(XM.room)}"></label><label class="f" style="flex:2">Note (facultatif)<input type="text" id="xm-note" value="${esc(XM.note)}"></label></div>
+    ${hint ? `<p class="small muted" style="margin:0">${hint}</p>` : ''}
+    <div class="ft">${edit ? `<button class="btn ${XM.del ? 'danger' : ''}" data-act="xm-del">${XM.del ? 'Confirmer la suppression' : 'Supprimer'}</button>` : ''}<button class="btn" data-act="m-close">Annuler</button><button class="btn primary" data-act="xm-save">${edit ? 'Enregistrer' : 'Ajouter'}</button></div>`;
+}
+const sesHasData = key => DB.obs.some(o => o.ses === key) || !!DB.content[key];
+function xmSave() {
+  xmRead(); const x = XM; if (!x) return;
+  if (!x.date || !x.start || !x.end) { toast('Indiquez la date et les heures'); return; }
+  if (tMin(x.end) <= tMin(x.start)) { toast('L\'heure de fin doit suivre l\'heure de début'); return; }
+  const asSlot = x.kind !== 'autre' && x.cid && x.cid !== '~' && cls(x.cid);
+  if (x.kind !== 'autre' && !x.cid) { toast('Choisissez la classe'); return; }
+  if (x.kind === 'sup' && !asSlot) { toast('Choisissez une de vos classes'); return; }
+  const old = x.slot ? DB.slots.find(y => y.id === x.slot) : null;
+  if (old && (!asSlot || old.from !== x.date || old.cid !== x.cid || old.group !== x.group) && sesHasData(old.from + '|' + old.id)) { toast('Cette séance contient déjà des données : gardez la même date et la même classe'); return; }
+  if (asSlot) {
+    const sl = old || {id: uid()};
+    Object.assign(sl, {cid: x.cid, group: groupsOf(x.cid).includes(x.group) ? x.group : 'all', day: parseD(x.date).getDay(), week: 'all', start: x.start, end: x.end, from: x.date, to: x.date, once: true, kind: x.kind, who: x.kind === 'rcd' ? x.who : '', room: x.room, note: x.note});
+    if (!old) DB.slots.push(sl);
+    if (x.id) DB.extra = DB.extra.filter(e => e.id !== x.id);
+  } else {
+    const e = (x.id && DB.extra.find(y => y.id === x.id)) || {id: uid()};
+    Object.assign(e, {date: x.date, start: x.start, end: x.end, kind: x.kind === 'autre' ? 'autre' : 'rcd', cname: x.kind === 'rcd' ? x.cname : '', who: x.kind === 'rcd' ? x.who : '', title: x.kind === 'autre' ? x.title : '', room: x.room, note: x.note});
+    if (!DB.extra.includes(e)) DB.extra.push(e);
+    if (old) DB.slots = DB.slots.filter(y => y !== old);
+  }
+  SESS_CACHE = {}; save(); closeModal(); XM = null; render(); toast(x.id || x.slot ? 'Créneau modifié' : 'Créneau ajouté');
+}
+function xmDel() {
+  const x = XM; if (!x) return;
+  if (!x.del) { xmRead(); x.del = true; xmPaint(); return; }
+  if (x.slot) { const sl = DB.slots.find(y => y.id === x.slot); DB.slots = DB.slots.filter(y => y.id !== x.slot); if (sl) delete DB.cancelled[sl.from + '|' + sl.id]; }
+  if (x.id) DB.extra = DB.extra.filter(e => e.id !== x.id);
+  SESS_CACHE = {}; save(); closeModal(); XM = null; render(); toast('Créneau supprimé');
 }
 function slotMenu(slotId, date) {
   const x = DB.slots.find(y => y.id === slotId); if (!x) return;
@@ -1876,7 +2024,7 @@ function slotMenu(slotId, date) {
     <p class="small muted">${canc ? 'Rétablir la séance la fera de nouveau apparaître comme à compléter.' : 'Une séance annulée (sortie, stage, absence…) ne compte plus comme à compléter.'}</p>
     <div class="ft"><button class="btn" data-act="m-close">Fermer</button>
     <button class="btn" data-act="slot-cancel" data-slot="${x.id}" data-date="${date}">${canc ? 'Rétablir la séance' : 'Marquer comme annulée'}</button>
-    <button class="btn primary" data-act="open-slot" data-slot="${x.id}" data-date="${date}">Ouvrir la séance</button></div>`);
+    ${x.once ? `<button class="btn" data-act="xm-slot" data-slot="${x.id}">Modifier le créneau</button>` : ''}<button class="btn primary" data-act="open-slot" data-slot="${x.id}" data-date="${date}">Ouvrir la séance</button></div>`);
 }
 function welcomeCard() {
   return `<section class="card welcome">
@@ -2728,8 +2876,9 @@ function applyLook() {
   if (L.mode === 'auto') delete r.dataset.theme; else r.dataset.theme = L.mode;
   if (L.pal === 'amethyste') delete r.dataset.pal; else r.dataset.pal = L.pal;
   if (L.flat) r.dataset.flat = '1'; else delete r.dataset.flat;
-  const m = document.querySelector('meta[name="theme-color"]'), pp = LOOK_PALS.find(p => p[0] === L.pal);
-  if (m && pp) m.content = pp[3];
+  const m = document.querySelector('meta[name="theme-color"]');
+  /* barres du système (haut et bas) : couleur du fond de l'application, pour qu'elles se fondent */
+  if (m) requestAnimationFrame(() => { const bg = getComputedStyle(document.body).backgroundColor; if (bg) m.content = bg; });
 }
 function setLookK(k, v) { DB.settings.look = Object.assign(lookP(), {[k]: v}); save(); renderKeep(); }
 function setLook() {
@@ -2806,7 +2955,7 @@ function setClasses() {
       ${DB.classes.length > 1 ? (() => { const lv = levelOf(c), others = DB.classes.filter(x => x.id !== c.id).sort((a, b) => a.name.localeCompare(b.name, 'fr', {numeric: true}));
         return `<div class="shch"><span class="lbl" style="margin:0">Chapitres communs avec</span>${others.map(x => `<button type="button" class="gchip" data-act="ch-share" data-cid="${c.id}" data-other="${x.id}" style="--cc:${ccol(x)}" aria-pressed="${levelOf(x) === lv}">${dot(x)}${esc(x.name)}</button>`).join('')}
           <span class="small muted" style="flex-basis:100%">Les classes cochées utilisent la même liste de chapitres (numéros et titres). Le contenu des séances reste propre à chaque classe.</span></div>`; })() : ''}
-      <div class="swatches" role="group" aria-label="Couleur de la classe">${CLASS_COLORS.map(([h, n]) => `<button type="button" class="sw" style="--sw:${h}" aria-label="${n}" aria-pressed="${c.color === h}" data-act="class-color" data-cid="${c.id}" data-col="${h}"></button>`).join('')}</div>
+      <div class="swatches" role="group" aria-label="Couleur de la classe">${CLASS_COLORS.map(([h, n]) => `<button type="button" class="sw" style="--sw:${CMAP[h] || h}" aria-label="${n}" aria-pressed="${c.color === h}" data-act="class-color" data-cid="${c.id}" data-col="${h}"></button>`).join('')}</div>
       <p class="small muted" style="margin:0">${plural(list.length, 'élève')} · G1 : ${g1} · G2 : ${g2}${twoG ? ` · Ga : ${ga} · Gb : ${gb}` : ''} · ${plural(list.filter(s => PHOTOS[s.id]).length, 'photo')}</p>
       <label class="check"><input type="checkbox" data-chg="class-g2" data-cid="${c.id}" ${twoG ? 'checked' : ''} ${list.some(s => s.g2) ? 'disabled' : ''}> <span>Deuxième répartition en demi-groupes <b>Ga / Gb</b> <span class="small muted">(groupes différents de G1 / G2${list.some(s => s.g2) ? ' · videz les Ga / Gb pour la retirer' : ''})</span></span></label>
       <div class="row">
@@ -2871,7 +3020,7 @@ function parseList(text, cid) {
 const EG_T0 = 7 * 60, EG_T1 = 19 * 60, EG_PPM = 1.05;
 function egSlots(wt) {
   const t = todayStr();
-  return DB.slots.filter(s => cls(s.cid) && (!s.to || s.to >= t) && (s.week === 'all' || s.week === wt));
+  return DB.slots.filter(s => cls(s.cid) && !s.once && (!s.to || s.to >= t) && (s.week === 'all' || s.week === wt));
 }
 function setEdt() {
   if (!DB.classes.length) return `<div class="empty"><p>Créez d'abord vos classes.</p><button class="btn" data-act="tab" data-tab="classes">Classes et élèves</button></div>`;
@@ -3251,6 +3400,21 @@ async function runSelfTests() {
         if (keep) DB.settings.look = keep; applyLook(); }
       { const c0 = DB.classes[0]; if (c0) { const b = html(cpickBtn(c0, 'prog-c')).querySelector('.cpick'); eq([b.dataset.act, b.dataset.pact], ['cpick-open', 'prog-c'], 'sélecteur de classe : carte commune (Suivi, Salles, Progression)'); }
         ok(CPICK['sal-c']().list.every(c => groupsOf(c.id).length), 'Salles : seules les classes à groupes sont proposées'); salNowGroup(); }
+      { let d = addDays(todayStr(), 1); while (holidayOn(d) || [0, 6].includes(parseD(d).getDay())) d = addDays(d, 1);
+        const c0 = DB.classes[0], n0 = DB.slots.length;
+        XM = {kind: 'rcd', date: d, start: '07:00', end: '07:55', cid: c0.id, group: 'all', cname: '', who: 'M. Martin', title: '', room: '', note: '', id: null, slot: null, del: false}; xmSave();
+        const sl = DB.slots[DB.slots.length - 1];
+        ok(DB.slots.length === n0 + 1 && sl.once && sl.from === d && sl.to === d, 'créneau ponctuel : RCD avec ma classe = un vrai créneau, ce seul jour');
+        ok(slotsOn(d).some(x => x.id === sl.id) && !slotsOn(addDays(d, 7)).some(x => x.id === sl.id), 'créneau ponctuel : présent ce jour-là seulement');
+        ok(!egSlots('A').concat(egSlots('B')).some(x => x.id === sl.id), 'créneau ponctuel : absent de l\'emploi du temps habituel (Réglages)');
+        XM = {kind: 'rcd', date: d, start: '18:00', end: '19:00', cid: '~', group: 'all', cname: '4e 3', who: '', title: '', room: 'B12', note: '', id: null, slot: null, del: false}; xmSave();
+        ok(extrasOn(d).length === 1 && extrasOn(d)[0].cname === '4e 3', 'RCD avec une autre classe : simple créneau dans l\'emploi du temps');
+        const l = rcdList(); eq([l.length, rcdTotal(l)], [2, 115], 'compteur RCD : nombre et durée (55 min + 1 h)');
+        ok(rcdPill().includes('1 h 55'), 'compteur RCD affiché dans la barre');
+        XM = {kind: 'sup', date: d, start: '08:00', end: '07:00', cid: c0.id, group: 'all', cname: '', who: '', title: '', room: '', note: '', id: null, slot: null, del: false}; xmSave();
+        ok(DB.slots.length === n0 + 1, 'créneau ponctuel : fin avant le début refusée');
+        xmEditSlot(sl.id); XM.del = true; xmDel(); ok(!DB.slots.some(x => x.id === sl.id), 'créneau ponctuel : suppression');
+        eq(ccol({color: '#6E8B2E'}), '#84A83A', 'couleurs de classe accordées à l\'affichage'); closeModal(); }
       eq([cmpVer('3.10', '3.9'), cmpVer('3.14', '3.14'), cmpVer('3.9', '3.14') < 0, cmpVer('4.0', '3.99') > 0], [1, 0, true, true], 'comparaison de versions (3.10 > 3.9)');
       DB.kw = {}; y0.sex = '';
       DB.bul = {};
@@ -5255,7 +5419,17 @@ const ACT = {
   settings: el => go({name:'settings', tab: el.dataset.tab || 'classes', cid: el.dataset.cid}),
   tab: el => { V.tab = el.dataset.tab; render(); if (V.tab === 'sauvegarde') showPersist(); },
   'open-slot': el => { const s = DB.slots.find(x => x.id === el.dataset.slot); closeModal(); if (s) openSession(sesFromSlot(el.dataset.date || V.date, s)); },
-  other: () => otherModal(),
+  other: () => xModal(),
+  'tt-add': (el, e) => { if (!e || e.target !== el && !e.target.classList.contains('tt-past')) return; const y = e.clientY - el.getBoundingClientRect().top, m = Math.round((+el.dataset.t0 + y / +el.dataset.ppm) / 15) * 15; xModal({date: el.dataset.d, start: minT(Math.max(0, m))}); },
+  'x-open': el => { closeModal(); xmEditExtra(el.dataset.id); },
+  'xm-slot': el => { closeModal(); xmEditSlot(el.dataset.slot); },
+  'xm-kind': el => { xmRead(); XM.kind = el.dataset.k; XM.del = false; if (XM.kind === 'sup' && XM.cid === '~') XM.cid = ''; xmPaint(); },
+  'xm-cls': el => { xmRead(); XM.cid = el.dataset.cid; XM.group = 'all'; xmPaint(); },
+  'xm-grp': el => { xmRead(); XM.group = el.dataset.g; xmPaint(); },
+  'xm-save': () => xmSave(),
+  'xm-del': () => xmDel(),
+  'rcd-list': () => rcdModal(),
+  'rcd-copy': () => { const t = rcdText(); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('Liste copiée'), () => toast('Copie impossible sur cet appareil')); },
   'om-cls': el => otherModal(el.dataset.cid),
   'om-grp': el => otherModal(el.dataset.cid, el.dataset.g),
   'om-go': el => { const d = otherDate(); closeModal(); openSession(sesOther(d, el.dataset.cid, el.dataset.g)); },
@@ -6012,7 +6186,7 @@ async function showPersist() {
 /* Chaque enregistrement (élève, observation, contenu de séance…) porte une date de modification.
    Deux appareils fusionnent en gardant, enregistrement par enregistrement, la version la plus récente.
    Les suppressions sont mémorisées pour ne pas réapparaître. */
-const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup', 'notes', 'evals'];
+const SYNC_ARR = ['classes', 'students', 'slots', 'obs', 'rooms', 'catchup', 'notes', 'evals', 'extra'];
 const SYNC_MAP = ['cancelled', 'place', 'sep', 'sesRoom', 'lastRoom', 'content', 'appr', 'chapters', 'hwOk', 'hwMove', 'hwSt', 'cdt', 'tog', 'bul', 'implN', 'grades', 'kw'];
 const SYNC_SET = ['evenIsA', 'holidays', 'periods', 'hiddenCats', 'impl', 'look'];
 let SM = {m: {}, init: false, last: 0, etag: null, dirty: false};
